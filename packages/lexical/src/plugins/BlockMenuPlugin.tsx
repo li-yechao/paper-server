@@ -196,7 +196,6 @@ export function replaceWithNode(editor: LexicalEditor, node: () => LexicalNode) 
     const n = node()
     anchorNode.getParent()?.replace(n)
     if (n instanceof ElementNode) {
-      console.log('n is ElementNode')
       n.selectStart()
     } else {
       n.selectPrevious()
