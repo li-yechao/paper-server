@@ -16,3 +16,5 @@ import { lazy } from 'react'
 import LazyView from '../../components/LazyView'
 
 export const AuthViewLazy = LazyView(lazy(() => import('./AuthView')))
+
+export const GithubAuthViewLazy = LazyView(lazy(() => import('./GithubAuthView')))

@@ -16,13 +16,13 @@ import { ApolloProvider } from '@apollo/client'
 import { ConfigProvider } from 'antd'
 import enUS from 'antd/lib/locale/en_US'
 import { Suspense, useMemo } from 'react'
-import { HashRouter, Navigate, Route, Routes } from 'react-router-dom'
+import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
 import { createClient } from './apollo'
+import { useViewer } from './apollo/viewer'
 import AppBar from './components/AppBar'
 import ErrorBoundary from './components/ErrorBoundary'
-import { useAccount } from './state/account'
-import { AuthViewLazy } from './views/auth'
+import { AuthViewLazy, GithubAuthViewLazy } from './views/auth'
 import { ErrorViewLazy, NotFoundViewLazy } from './views/error'
 import { MainViewLazy } from './views/main'
 
@@ -33,7 +33,7 @@ export default function App() {
     <ConfigProvider locale={enUS}>
       <RecoilRoot>
         <ApolloProvider client={apolloClient}>
-          <HashRouter>
+          <BrowserRouter>
             <Suspense fallback={<div />}>
               <ErrorBoundary fallback={ErrorViewLazy}>
                 <AppBar />
@@ -43,7 +43,7 @@ export default function App() {
                 </ErrorBoundary>
               </ErrorBoundary>
             </Suspense>
-          </HashRouter>
+          </BrowserRouter>
         </ApolloProvider>
       </RecoilRoot>
     </ConfigProvider>
@@ -51,10 +51,17 @@ export default function App() {
 }
 
 const AppRoutes = () => {
+  const viewer = useViewer()
+
+  if (viewer.loading) {
+    return null
+  }
+
   return (
     <Routes>
       <Route index element={<Index />} />
       <Route path="/auth" element={<AuthViewLazy />} />
+      <Route path="/auth/github" element={<GithubAuthViewLazy />} />
       <Route path="/:userId/*" element={<MainViewLazy />} />
       <Route path="*" element={<NotFoundViewLazy />} />
     </Routes>
@@ -62,9 +69,12 @@ const AppRoutes = () => {
 }
 
 const Index = () => {
-  const account = useAccount()
-  if (!account) {
+  const viewer = useViewer()
+
+  if (viewer.error) {
     return <Navigate to="/auth" replace />
+  } else if (viewer.data) {
+    return <Navigate to={`/${viewer.data.viewer.id}`} replace />
   }
-  return <Navigate to={`/${account.id}`} replace />
+  return null
 }

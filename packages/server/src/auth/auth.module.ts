@@ -14,11 +14,22 @@
 
 import { Module } from '@nestjs/common'
 import { ConfigModule } from '@nestjs/config'
+import { MongooseModule } from '@nestjs/mongoose'
+import fetch from 'cross-fetch'
 import { Config } from '../config'
+import { User, UserSchema } from '../user/user.schema'
+import { UserService } from '../user/user.service'
 import { AuthResolver } from './auth.resolver'
+import { AuthService } from './auth.service'
 
 @Module({
-  imports: [ConfigModule],
-  providers: [Config, AuthResolver],
+  imports: [ConfigModule, MongooseModule.forFeature([{ name: User.name, schema: UserSchema }])],
+  providers: [
+    { provide: 'FETCH', useValue: fetch },
+    Config,
+    AuthService,
+    UserService,
+    AuthResolver,
+  ],
 })
 export class AuthModule {}

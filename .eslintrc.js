@@ -17,5 +17,7 @@ module.exports = {
     es2021: true,
   },
   ignorePatterns: ['**/dist/**', '**/coverage/**'],
-  rules: {},
+  rules: {
+    '@typescript-eslint/no-explicit-any': false,
+  },
 }

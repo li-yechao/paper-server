@@ -12,16 +12,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { Args, Query, Resolver } from '@nestjs/graphql'
-import { User } from './user.schema'
-import { UserService } from './user.service'
+import { Field, ObjectType } from '@nestjs/graphql'
 
-@Resolver()
-export class UserResolver {
-  constructor(private readonly userService: UserService) {}
+@ObjectType({ description: 'auth' })
+export class AuthResult {
+  @Field()
+  accessToken!: string
 
-  @Query(() => User)
-  async user(@Args('userId') userId: string): Promise<User> {
-    return this.userService.findOne({ userId })
-  }
+  @Field()
+  refreshToken!: string
+
+  @Field()
+  expiresIn!: number
+
+  @Field()
+  tokenType!: 'Bearer'
 }

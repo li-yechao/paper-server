@@ -48,9 +48,7 @@ import { UserModule } from './user/user.module'
       },
       context: ({ extra, req }) => {
         return {
-          publickey: req?.get('publickey') ?? extra?.publickey,
-          timestamp: req?.get('timestamp') ?? extra?.timestamp,
-          signature: req?.get('signature') ?? extra?.signature,
+          authorization: req?.get('authorization') ?? extra?.authorization,
         }
       },
     }),

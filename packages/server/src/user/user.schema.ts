@@ -13,9 +13,29 @@
 // limitations under the License.
 
 import { Field, ObjectType } from '@nestjs/graphql'
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose'
+import mongoose from 'mongoose'
 
 @ObjectType()
+@Schema()
 export class User {
   @Field()
   id!: string
+
+  @Field()
+  @Prop({ required: true })
+  createdAt!: number
+
+  @Field({ nullable: true })
+  @Prop()
+  updatedAt?: number
+
+  @Field({ nullable: true })
+  @Prop()
+  name?: string
+
+  @Prop({ type: mongoose.Schema.Types.Mixed })
+  thirds?: { github?: unknown }
 }
+
+export const UserSchema = SchemaFactory.createForClass(User)

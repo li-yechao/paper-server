@@ -15,11 +15,10 @@
 import { Injectable } from '@nestjs/common'
 import { InjectModel } from '@nestjs/mongoose'
 import all from 'it-all'
-import mongoose from 'mongoose'
-import { Model } from 'mongoose'
+import mongoose, { Model } from 'mongoose'
 import { IpfsService } from './ipfs.service'
 import { CreateObjectInput, ObjectDataEncoding, UpdateObjectInput } from './object.input'
-import { ObjectHistory, Object_ } from './object.schema'
+import { Object_, ObjectHistory } from './object.schema'
 
 @Injectable()
 export class ObjectService {

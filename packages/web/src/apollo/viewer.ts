@@ -12,16 +12,30 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { Args, Query, Resolver } from '@nestjs/graphql'
-import { User } from './user.schema'
-import { UserService } from './user.service'
+import { gql, QueryHookOptions, useQuery } from '@apollo/client'
 
-@Resolver()
-export class UserResolver {
-  constructor(private readonly userService: UserService) {}
+export interface Viewer {
+  id: string
+  name?: string
+}
 
-  @Query(() => User)
-  async user(@Args('userId') userId: string): Promise<User> {
-    return this.userService.findOne({ userId })
+export const VIEWER_QUERY = gql`
+  query Viewer {
+    viewer {
+      id
+      name
+    }
   }
+`
+
+export const useViewer = (options?: QueryHookOptions<{ viewer: Viewer }>) => {
+  return useQuery(VIEWER_QUERY, options)
+}
+
+export const useCurrentUser = () => {
+  const viewer = useViewer()
+  if (!viewer.data) {
+    throw viewer.error || new Error('Unauthorized')
+  }
+  return viewer.data.viewer
 }

@@ -13,23 +13,18 @@
 // limitations under the License.
 
 import { useApolloClient } from '@apollo/client'
-import { PrivateKey } from 'libp2p-crypto'
 import { useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { atom, useRecoilValue, useSetRecoilState } from 'recoil'
-import Storage from '../Storage'
+import Storage, { Token } from '../Storage'
 
 export interface AccountState {
-  privateKey: PrivateKey
-  id: string
+  token: Token | null
 }
 
 const accountState = atom<AccountState | null>({
   key: 'account',
-  default: (async () => {
-    const privateKey = await Storage.getPrivateKey()
-    return privateKey ? { privateKey, id: await privateKey.id() } : null
-  })(),
+  default: { token: Storage.token },
 })
 
 export const useSignOut = () => {
@@ -40,7 +35,7 @@ export const useSignOut = () => {
   return useCallback(async () => {
     await client.clearStore()
     setAccountState(() => {
-      Storage.setPrivateKey(null)
+      Storage.token = null
       return null
     })
     navigate('/')
@@ -50,12 +45,10 @@ export const useSignOut = () => {
 export const useSignIn = () => {
   const setAccountState = useSetRecoilState(accountState)
 
-  return useCallback(async (privateKey: PrivateKey) => {
-    const id = await privateKey.id()
-
+  return useCallback(async (token: Token) => {
     return setAccountState(() => {
-      Storage.setPrivateKey(privateKey)
-      return { privateKey, id }
+      Storage.token = token
+      return { token }
     })
   }, [])
 }

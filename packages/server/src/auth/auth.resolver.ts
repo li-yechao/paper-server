@@ -13,15 +13,32 @@
 // limitations under the License.
 
 import { UseGuards } from '@nestjs/common'
-import { Query, Resolver } from '@nestjs/graphql'
-import { AuthGuard, CurrentUser } from './auth.guard'
+import { Args, Mutation, Query, Resolver } from '@nestjs/graphql'
+import { GraphQLJSONObject } from 'graphql-type-json'
 import { User } from '../user/user.schema'
+import { UserService } from '../user/user.service'
+import { AuthGuard, CurrentUser } from './auth.guard'
+import { AuthResult } from './auth.schema'
+import { AuthService } from './auth.service'
 
 @Resolver()
 export class AuthResolver {
+  constructor(
+    private readonly userService: UserService,
+    private readonly authService: AuthService
+  ) {}
+
   @Query(() => User)
   @UseGuards(AuthGuard)
   async viewer(@CurrentUser() user: CurrentUser): Promise<User> {
-    return { id: user.id }
+    return this.userService.findOne({ userId: user.id })
+  }
+
+  @Mutation(() => AuthResult)
+  async auth(
+    @Args('type') type: string,
+    @Args('input', { type: () => GraphQLJSONObject }) input: any
+  ): Promise<AuthResult> {
+    return this.authService.authCustom(type, input)
   }
 }

@@ -13,3 +13,6 @@
 // limitations under the License.
 
 export const GRAPHQL_URI = import.meta.env.VITE_GRAPHQL_URI
+
+export const GITHUB_CLIENT_ID = import.meta.env.VITE_GITHUB_CLIENT_ID
+export const GITHUB_REDIRECT_URL = import.meta.env.VITE_GITHUB_REDIRECT_URL

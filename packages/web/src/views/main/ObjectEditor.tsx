@@ -21,7 +21,6 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { toString } from 'uint8arrays'
 import { useHeaderActionsCtrl } from '../../components/AppBar'
-import { useAccount } from '../../state/account'
 import useOnSave from '../../utils/useOnSave'
 import { usePrompt } from '../../utils/usePrompt'
 import {
@@ -33,6 +32,7 @@ import {
 } from './apollo'
 import LexicalEditor from './LexicalEditor'
 import { ImageNode } from '@paper/lexical/src/nodes/ImageNode'
+import { useCurrentUser } from '../../apollo/viewer'
 
 const AUTO_SAVE_TIMEOUT = 3e3
 
@@ -70,7 +70,7 @@ const _Loading = styled.div`
 `
 
 const _ObjectEditor = ({ object }: { object: { id: string; userId: string; data?: string } }) => {
-  const account = useAccount()
+  const user = useCurrentUser()
   const [updateObject] = useUpdateObject()
   const [state, setState] = useState<EditorState>()
   const [savedState, setSavedState] = useState<EditorState>()
@@ -195,13 +195,13 @@ const _ObjectEditor = ({ object }: { object: { id: string; userId: string; data?
 
   return (
     <_Container>
-      {account?.id === object.userId && <ObjectMenu object={object} />}
+      {user?.id === object.userId && <ObjectMenu object={object} />}
 
       <ImageNode.Provider value={imageProviderValue}>
         <_Editor
           key={object.id}
           defaultValue={object.data}
-          readOnly={account?.id !== object.userId}
+          readOnly={user?.id !== object.userId}
           onChange={onChange}
         />
       </ImageNode.Provider>

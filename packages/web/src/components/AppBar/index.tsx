@@ -16,7 +16,8 @@ import { LogoutOutlined, UserOutlined } from '@ant-design/icons'
 import styled from '@emotion/styled'
 import { Button, Dropdown, Menu, Space } from 'antd'
 import { useLocation, useNavigate } from 'react-router-dom'
-import { useAccount, useSignOut } from '../../state/account'
+import { useViewer } from '../../apollo/viewer'
+import { useSignOut } from '../../state/account'
 import { useHeaderActions } from './state'
 
 export * from './state'
@@ -81,11 +82,11 @@ const _Logo = styled.div`
 const AccountButton = () => {
   const navigate = useNavigate()
   const location = useLocation()
-  const account = useAccount()
+  const viewer = useViewer()
   const signOut = useSignOut()
 
-  if (!account) {
-    if (location.pathname === '/auth') {
+  if (!viewer.data?.viewer) {
+    if (location.pathname.startsWith('/auth')) {
       return null
     }
 

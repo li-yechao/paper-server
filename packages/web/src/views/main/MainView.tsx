@@ -19,9 +19,9 @@ import { Button, Spin } from 'antd'
 import { lazy, Suspense, useEffect, useMemo, useState } from 'react'
 import { Route, Routes, useParams } from 'react-router-dom'
 import { useToggle } from 'react-use'
+import { useCurrentUser } from '../../apollo/viewer'
 import { HeaderAction, useHeaderActionsCtrl } from '../../components/AppBar'
 import ErrorBoundary from '../../components/ErrorBoundary'
-import { useAccount } from '../../state/account'
 import { ErrorViewLazy, NotFoundViewLazy } from '../error'
 import CreateButton from './CreateButton'
 
@@ -31,7 +31,7 @@ export default function MainView() {
     throw new Error('Missing required params `userId`')
   }
 
-  const account = useAccount()
+  const user = useCurrentUser()
 
   const isSmallScreen = useIsSmallScreen()
   const [collapse, toggleCollapse] = useToggle(isSmallScreen)
@@ -60,7 +60,7 @@ export default function MainView() {
     return () => headerActionsCtl.remove(action)
   }, [])
 
-  if (account?.id === userId) {
+  if (user?.id === userId) {
     return (
       <_Container className={cx(collapse && 'collapse', isSmallScreen && 'small-screen')}>
         <CreateObjectAction />

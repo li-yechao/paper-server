@@ -17,6 +17,8 @@ interface ImportMetaEnv extends Readonly<Record<string, string | boolean>> {
   PROD: boolean
 
   VITE_GRAPHQL_URI: string
+  VITE_GITHUB_CLIENT_ID: string
+  VITE_GITHUB_REDIRECT_URL: string
 }
 
 interface ImportMeta {

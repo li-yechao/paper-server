@@ -16,27 +16,27 @@ import { FileAddOutlined, PlusOutlined } from '@ant-design/icons'
 import { Button, Dropdown, Menu } from 'antd'
 import { useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useAccount } from '../../state/account'
+import { useCurrentUser } from '../../apollo/viewer'
 import { useCreateObject } from './apollo'
 
 export default function CreateButton() {
   const navigate = useNavigate()
-  const account = useAccount()
+  const user = useCurrentUser()
   const [createObject] = useCreateObject()
 
   const handleCreateObject = useCallback(async () => {
-    if (!account) {
+    if (!user) {
       return
     }
     createObject({ variables: { input: {} } }).then(res => {
       const object = res.data?.createObject
       if (object) {
-        navigate(`/${account.id}/${object.id}`)
+        navigate(`/${user.id}/${object.id}`)
       }
     })
   }, [])
 
-  if (!account) {
+  if (!user) {
     return null
   }
 

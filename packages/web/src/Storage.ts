@@ -12,36 +12,31 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { keys, PrivateKey } from 'libp2p-crypto'
-import { fromString, toString as uint8arraysToString } from 'uint8arrays'
+export interface Token {
+  accessToken: string
+  refreshToken: string
+}
 
 export default class Storage {
-  private static PRIVATE_KEY = 'PAPER_PRIVATE_KEY'
-
-  private static _privateKey: PrivateKey | null = null
-
-  static async getPrivateKey(): Promise<PrivateKey | null> {
-    if (!this._privateKey) {
+  private static TOKEN_KEY = 'PAPER_ACCESS_TOKEN'
+  private static _token: Token | null = null
+  static get token(): Token | null {
+    if (!this._token) {
       try {
-        const raw = localStorage.getItem(this.PRIVATE_KEY)
-        if (raw) {
-          const bytes = fromString(raw, 'base64')
-          this._privateKey = await keys.unmarshalPrivateKey(bytes)
+        const v = JSON.parse(localStorage.getItem(this.TOKEN_KEY) || '{}')
+        if (typeof v.accessToken === 'string' && typeof v.refreshToken === 'string') {
+          this._token = { accessToken: v.accessToken, refreshToken: v.refreshToken }
         }
       } catch {}
     }
-    return this._privateKey
+    return this._token
   }
-
-  static setPrivateKey(key: PrivateKey | null) {
-    this._privateKey = key
-    if (key) {
-      localStorage.setItem(
-        this.PRIVATE_KEY,
-        uint8arraysToString(new Uint8Array(key.bytes), 'base64')
-      )
+  static set token(token: Token | null) {
+    this._token = token
+    if (token) {
+      localStorage.setItem(this.TOKEN_KEY, JSON.stringify(token))
     } else {
-      localStorage.removeItem(this.PRIVATE_KEY)
+      localStorage.removeItem(this.TOKEN_KEY)
     }
   }
 }

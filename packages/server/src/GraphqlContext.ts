@@ -13,10 +13,9 @@
 // limitations under the License.
 
 export interface GraphqlContext {
-  publickey?: string
-  timestamp?: string
-  signature?: string
+  authorization?: string
   user?: {
     id: string
+    [key: string]: any
   }
 }
