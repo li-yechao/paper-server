@@ -18,6 +18,6 @@ module.exports = {
   },
   ignorePatterns: ['**/dist/**', '**/coverage/**'],
   rules: {
-    '@typescript-eslint/no-explicit-any': false,
+    '@typescript-eslint/no-explicit-any': 'off',
   },
 }
