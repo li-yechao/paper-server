@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.1.0-alpha.0](https://github.com/li-yechao/paper/compare/@paper/web@1.0.0-alpha.42...@paper/web@1.1.0-alpha.0) (2022-07-13)
+
+### Features
+
+- use github auth ([774da2d](https://github.com/li-yechao/paper/commit/774da2daaa73822aec66f85d2d281ca61a91e5ae))
+
 # [1.0.0-alpha.42](https://github.com/li-yechao/paper/compare/@paper/web@1.0.0-alpha.41...@paper/web@1.0.0-alpha.42) (2022-07-06)
 
 **Note:** Version bump only for package @paper/web
