@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.0.0-alpha.15](https://github.com/li-yechao/paper/compare/@paper/lexical@1.0.0-alpha.14...@paper/lexical@1.0.0-alpha.15) (2022-07-18)
+
+### Features
+
+- support check list ([9c90582](https://github.com/li-yechao/paper/commit/9c9058207aec20e17d36a0b4830bf9589358e9f9))
+
 # [1.0.0-alpha.14](https://github.com/li-yechao/paper/compare/@paper/lexical@1.0.0-alpha.13...@paper/lexical@1.0.0-alpha.14) (2022-07-06)
 
 ### Bug Fixes
