@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.1.0-alpha.2](https://github.com/li-yechao/paper/compare/@paper/web@1.1.0-alpha.1...@paper/web@1.1.0-alpha.2) (2022-07-13)
+
+**Note:** Version bump only for package @paper/web
+
 # [1.1.0-alpha.1](https://github.com/li-yechao/paper/compare/@paper/web@1.1.0-alpha.0...@paper/web@1.1.0-alpha.1) (2022-07-13)
 
 **Note:** Version bump only for package @paper/web
