@@ -23,7 +23,6 @@ export default function AuthView() {
     url.searchParams.set('redirect_uri', GITHUB_REDIRECT_URL)
     url.searchParams.set('scope', 'user')
     url.searchParams.set('state', Date.now().toString())
-    console.log(url.toString())
     window.location.href = url.toString()
   }
 

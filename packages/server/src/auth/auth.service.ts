@@ -38,8 +38,6 @@ export class AuthService {
     if (thirdType === 'github') {
       const { id: thirdId, name, user: thirdUser } = await this.authGithub(query)
 
-      console.log(thirdUser)
-
       const user = await this.userService.createOrUpdate({ name, thirdType, thirdId, thirdUser })
 
       return this.createToken(user.id)
