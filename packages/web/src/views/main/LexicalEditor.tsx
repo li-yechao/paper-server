@@ -16,13 +16,15 @@ import styled from '@emotion/styled'
 import { $createCodeNode, CodeHighlightNode, CodeNode } from '@lexical/code'
 import { AutoLinkNode, LinkNode } from '@lexical/link'
 import { $createListItemNode, $createListNode, ListItemNode, ListNode } from '@lexical/list'
-import { TRANSFORMERS } from '@lexical/markdown'
+import { CHECK_LIST, TRANSFORMERS } from '@lexical/markdown'
 import { AutoLinkPlugin } from '@lexical/react/LexicalAutoLinkPlugin'
+import { CheckListPlugin } from '@lexical/react/LexicalCheckListPlugin'
 import { LexicalComposer } from '@lexical/react/LexicalComposer'
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext'
 import { ContentEditable } from '@lexical/react/LexicalContentEditable'
 import { HistoryPlugin } from '@lexical/react/LexicalHistoryPlugin'
 import { LinkPlugin } from '@lexical/react/LexicalLinkPlugin'
+import { ListPlugin } from '@lexical/react/LexicalListPlugin'
 import { MarkdownShortcutPlugin } from '@lexical/react/LexicalMarkdownShortcutPlugin'
 import { OnChangePlugin } from '@lexical/react/LexicalOnChangePlugin'
 import { RichTextPlugin } from '@lexical/react/LexicalRichTextPlugin'
@@ -44,6 +46,7 @@ import Image from '@paper/lexical/src/icons/Image'
 import Math from '@paper/lexical/src/icons/Math'
 import OrderedList from '@paper/lexical/src/icons/OrderedList'
 import Table from '@paper/lexical/src/icons/Table'
+import TodoList from '@paper/lexical/src/icons/TodoList'
 import {
   $createEquationNode,
   $isEquationNode,
@@ -184,6 +187,12 @@ export default function LexicalEditor(props: LexicalEditorProps) {
           replaceWithNode(editor, () => $createListNode('bullet').append($createListItemNode())),
       },
       {
+        icon: <TodoList />,
+        title: 'Todo List',
+        action: editor =>
+          replaceWithNode(editor, () => $createListNode('check').append($createListItemNode())),
+      },
+      {
         icon: <Image />,
         title: 'Image ',
         action: editor => {
@@ -241,6 +250,7 @@ export default function LexicalEditor(props: LexicalEditorProps) {
     }
 
     return [
+      CHECK_LIST,
       ...TRANSFORMERS,
       {
         export: exportEquation,
@@ -283,6 +293,8 @@ export default function LexicalEditor(props: LexicalEditorProps) {
         <LinkPlugin />
         <CodeHighlightPlugin />
         <MarkdownShortcutPlugin transformers={transformers} />
+        <ListPlugin />
+        <CheckListPlugin />
         <HistoryPlugin />
 
         <NoAutoFocusPlugin />

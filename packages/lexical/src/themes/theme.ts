@@ -88,6 +88,81 @@ const theme: EditorThemeClasses = {
     listitem: css`
       margin-left: 32px;
     `,
+    listitemChecked: css`
+      position: relative;
+      margin-left: 8px;
+      margin-right: 8px;
+      padding-left: 24px;
+      padding-right: 24px;
+      list-style-type: none;
+      outline: none;
+
+      &:before {
+        content: '';
+        width: 16px;
+        height: 16px;
+        top: 2px;
+        left: 0;
+        cursor: pointer;
+        display: block;
+        background-size: cover;
+        position: absolute;
+
+        border: 1px solid rgb(61, 135, 245);
+        border-radius: 2px;
+        background-color: #3d87f5;
+        background-repeat: no-repeat;
+      }
+
+      &:after {
+        content: '';
+        cursor: pointer;
+        border-color: #fff;
+        border-style: solid;
+        position: absolute;
+        display: block;
+        top: 5px;
+        width: 4px;
+        left: 6px;
+        height: 8px;
+        transform: rotate(45deg);
+        border-width: 0 2px 2px 0;
+      }
+
+      &:focus:before {
+        box-shadow: 0 0 0 2px #a6cdfe;
+        border-radius: 2px;
+      }
+    `,
+    listitemUnchecked: css`
+      position: relative;
+      margin-left: 8px;
+      margin-right: 8px;
+      padding-left: 24px;
+      padding-right: 24px;
+      list-style-type: none;
+      outline: none;
+
+      &:before {
+        content: '';
+        width: 16px;
+        height: 16px;
+        top: 2px;
+        left: 0;
+        cursor: pointer;
+        display: block;
+        background-size: cover;
+        position: absolute;
+
+        border: 1px solid #999;
+        border-radius: 2px;
+      }
+
+      &:focus:before {
+        box-shadow: 0 0 0 2px #a6cdfe;
+        border-radius: 2px;
+      }
+    `,
     ol: css`
       margin: 8px 0 5px 0;
       padding: 0;
