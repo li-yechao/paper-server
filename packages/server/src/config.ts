@@ -29,12 +29,6 @@ export class Config {
     return this.getBoolean('cors', false)
   }
 
-  get signature() {
-    return {
-      expiresIn: this.getInt('signature.expiresIn', 10),
-    }
-  }
-
   get mongo() {
     return {
       uri: this.getString('mongo.uri'),

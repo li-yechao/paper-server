@@ -23,7 +23,6 @@ program
   .description('Start server')
   .option('--cors', 'Enable cors')
   .option('-p, --port <port>', 'Listening port')
-  .option('--signature-expires-in <number>', 'Signature expires in seconds')
   .option('--mongo-uri <uri>', 'MongoDB uri')
   .option('--ipfs-api <api>', 'Ipfs api url')
   .option('--ipfs-uri <uri>', 'Ipfs url')
@@ -33,7 +32,6 @@ program
       cors,
       port,
       mongoUri,
-      signatureExpiresIn,
       ipfsApi,
       ipfsUri,
       bodyJsonLimit,
@@ -41,7 +39,6 @@ program
       cors?: boolean
       port?: string
       mongoUri?: string
-      signatureExpiresIn?: string
       ipfsApi?: string
       ipfsUri?: string
       bodyJsonLimit?: string
@@ -49,7 +46,6 @@ program
       if (typeof cors === 'boolean') process.env['cors'] = cors.toString()
       if (port) process.env['port'] = port
       if (mongoUri) process.env['mongo.uri'] = mongoUri
-      if (signatureExpiresIn) process.env['signature.expiresIn'] = signatureExpiresIn
       if (ipfsApi) process.env['ipfs.api'] = ipfsApi
       if (ipfsUri) process.env['ipfs.uri'] = ipfsUri
       if (bodyJsonLimit) process.env['body.json.limit'] = bodyJsonLimit
