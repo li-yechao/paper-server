@@ -1,0 +1,17 @@
+{
+  "name": "paper",
+  "version": "0.0.1",
+  "license": "Apache-2.0",
+  "private": true,
+  "author": {
+    "name": "LiYechao",
+    "email": "liyechao@yechao.xyz"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/li-yechao/paper-js.git"
+  },
+  "workspaces": [
+    "packages/*"
+  ]
+}
