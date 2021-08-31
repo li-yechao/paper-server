@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import IpfsCore, { IPFS } from 'ipfs-core'
+import Ipfs from '@paper/ipfs'
 import { PrivateKey } from 'ipfs-core/src/components/ipns'
 import { Base64 } from 'js-base64'
 import WebSockets from 'libp2p-websockets'
@@ -27,10 +27,10 @@ export interface AccountOptions {
 
 export class Account {
   static async signUp(password: string, options: AccountOptions): Promise<Account> {
-    const key = await IpfsCore.crypto.keys.generateKeyPair('RSA', 2048)
+    const key = await Ipfs.crypto.keys.generateKeyPair('RSA', 2048)
     const id = await key.id()
     const encryptedKey = await this.encryptPrivateKey(password, key)
-    const ipfs = await IpfsCore.create({
+    const ipfs = await Ipfs.create({
       repo: await key.id(),
       preload: {
         enabled: false,
@@ -77,7 +77,7 @@ export class Account {
     const buffer = await fetch(url).then(res => res.blob().then(blob => blob.arrayBuffer()))
     const key = await this.decryptPrivateKey(password, buffer)
 
-    const ipfs = await IpfsCore.create({
+    const ipfs = await Ipfs.create({
       repo: await key.id(),
       preload: {
         enabled: false,
@@ -129,8 +129,8 @@ export class Account {
     )
     const k = await crypto.subtle.importKey('raw', rawKey, 'AES-GCM', true, ['decrypt'])
     const buffer = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: iv }, k, key)
-    return IpfsCore.crypto.keys.unmarshalPrivateKey(new Uint8Array(buffer))
+    return Ipfs.crypto.keys.unmarshalPrivateKey(new Uint8Array(buffer))
   }
 
-  constructor(readonly ipfs: IPFS) {}
+  constructor(readonly ipfs: Ipfs.IPFS) {}
 }
