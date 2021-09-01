@@ -12,13 +12,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import * as React from 'react'
-import { render } from 'react-dom'
-import App from './App'
+import { Box, Typography } from '@material-ui/core'
 
-render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>,
-  document.getElementById('root')
-)
+export default function NotFoundView() {
+  return (
+    <Box>
+      <Typography variant="h1" align="center" color="textSecondary">
+        404
+      </Typography>
+
+      <Typography variant="h6" align="center" color="textSecondary">
+        Not Found
+      </Typography>
+    </Box>
+  )
+}

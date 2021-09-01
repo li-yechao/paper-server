@@ -13,12 +13,6 @@
 // limitations under the License.
 
 import * as React from 'react'
-import { render } from 'react-dom'
-import App from './App'
+import LazyView from '../../components/LazyView'
 
-render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>,
-  document.getElementById('root')
-)
+export const HomeViewLazy = LazyView(React.lazy(() => import('./HomeView')))

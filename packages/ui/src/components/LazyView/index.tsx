@@ -12,13 +12,23 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import { Box, LinearProgress } from '@material-ui/core'
 import * as React from 'react'
-import { render } from 'react-dom'
-import App from './App'
 
-render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>,
-  document.getElementById('root')
-)
+export default function LazyView<P>(C: React.LazyExoticComponent<React.ComponentType<P>>) {
+  return (props: P) => {
+    return (
+      <React.Suspense fallback={<Loading />}>
+        <C {...(props as any)} />
+      </React.Suspense>
+    )
+  }
+}
+
+const Loading = () => {
+  return (
+    <Box position="fixed" left={0} top={0} right={0}>
+      <LinearProgress />
+    </Box>
+  )
+}
