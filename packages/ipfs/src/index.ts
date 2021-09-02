@@ -12,4 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-export * as default from 'ipfs'
+import * as Ipfs from 'ipfs'
+
+export default Ipfs as Omit<typeof Ipfs, 'create'> & { create: typeof import('ipfs-core').create }
+
+export type { IPFS } from 'ipfs'

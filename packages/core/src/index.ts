@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import Ipfs from '@paper/ipfs'
+import Ipfs, { IPFS } from '@paper/ipfs'
 import { PrivateKey } from 'ipfs-core/src/components/ipns'
 import { Base64 } from 'js-base64'
 import WebSockets from 'libp2p-websockets'
@@ -132,5 +132,5 @@ export class Account {
     return Ipfs.crypto.keys.unmarshalPrivateKey(new Uint8Array(buffer))
   }
 
-  constructor(readonly ipfs: Ipfs.IPFS) {}
+  constructor(readonly ipfs: IPFS) {}
 }
