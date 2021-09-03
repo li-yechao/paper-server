@@ -18,52 +18,35 @@ import * as crypto from 'crypto'
 import { $, fs, os, path, sleep } from 'zx'
 import { Config } from '../config'
 
-export type IpfsConfig = Pick<
-  Config,
-  'ipfsPath' | 'ipfsApiPort' | 'ipfsGatewayPort' | 'ipfsSwarmPort' | 'ipfsSwarmWsPort'
->
+export type IpfsConfig = Config['ipfs']
 
 @Injectable()
 export class AccountService {
   static async startIpfs(config: IpfsConfig) {
-    if (!fs.existsSync(`${config.ipfsPath}/config`)) {
-      await $`IPFS_PATH=${config.ipfsPath} ipfs init`
+    if (!fs.existsSync(`${config.repo}/config`)) {
+      await $`IPFS_PATH=${config.repo} ipfs init`
     }
 
     const CONFIG_ADDRESSES = {
-      API: config.ipfsApiPort ? `/ip4/127.0.0.1/tcp/${config.ipfsApiPort}` : undefined,
+      API: config.api,
       Announce: [],
-      Gateway: config.ipfsGatewayPort ? `/ip4/0.0.0.0/tcp/${config.ipfsGatewayPort}` : undefined,
+      Gateway: config.gateway,
       NoAnnounce: [],
-      Swarm: (() => {
-        const list: string[] = []
-        if (config.ipfsSwarmWsPort) {
-          list.push(`/ip4/0.0.0.0/tcp/${config.ipfsSwarmWsPort}/ws`)
-        }
-        if (config.ipfsSwarmPort) {
-          list.push(
-            `/ip4/0.0.0.0/tcp/${config.ipfsSwarmPort}`,
-            `/ip6/::/tcp/${config.ipfsSwarmPort}`,
-            `/ip4/0.0.0.0/udp/${config.ipfsSwarmPort}/quic`,
-            `/ip6/::/udp/${config.ipfsSwarmPort}/quic`
-          )
-        }
-        return list.length > 0 ? list : undefined
-      })(),
+      Swarm: config.swarm,
     }
 
-    await $`IPFS_PATH=${config.ipfsPath} ipfs config --json Addresses ${JSON.stringify(
+    await $`IPFS_PATH=${config.repo} ipfs config --json Addresses ${JSON.stringify(
       CONFIG_ADDRESSES
     )}`
 
-    $`IPFS_PATH=${config.ipfsPath} ipfs daemon`.catch(error => {
+    $`IPFS_PATH=${config.repo} ipfs daemon`.catch(error => {
       console.error(error)
       process.exit(1)
     })
 
     while (true) {
       await sleep(500)
-      if (fs.existsSync(`${config.ipfsPath}/api`)) {
+      if (fs.existsSync(`${config.repo}/api`)) {
         break
       }
     }
@@ -72,7 +55,7 @@ export class AccountService {
   constructor(private configService: ConfigService) {}
 
   private get ipfsPath() {
-    return this.configService.get<string>('ipfsPath')
+    return this.configService.get<string>('ipfs.repo')
   }
 
   async publish(cid: string, password: string) {

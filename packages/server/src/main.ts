@@ -21,26 +21,34 @@ import { Config } from './config'
 program
   .command('serve')
   .description('Start server')
-  .option('-p, --port [port]', 'Listening port', '8080')
   .option('--cors', 'Enable cors', false)
-  .requiredOption('--ipfs-path [ipfs root path]', 'Ipfs root path', './ipfs')
-  .option('--ipfs-api-port [port]', 'Ipfs api port', '5001')
-  .option('--ipfs-gateway-port [port]', 'Ipfs gateway port', '8081')
-  .option('--ipfs-swarm-port [port]', 'Ipfs swarm port', '4001')
-  .option('--ipfs-swarm-ws-port [port]', 'Ipfs swarm websocket port', '4002')
+  .requiredOption('-p, --port <port>', 'Listening port', '8080')
+  .requiredOption('--ipfs-repo <ipfs repo path>', 'Ipfs repo path', './ipfs')
+  .option('--ipfs-api <api>', 'Ipfs api address', '/ip4/127.0.0.1/tcp/5001')
+  .option('--ipfs-gateway <gateway>', 'Ipfs gateway address', '/ip4/127.0.0.1/tcp/8081')
+  .requiredOption('--ipfs-swarm <addrs...>', 'Ipfs swarm address', '/ip4/0.0.0.0/tcp/4001')
   .action(
     async ({
-      port,
       cors,
-      ipfsPath,
-      ipfsApiPort,
-      ipfsGatewayPort,
-      ipfsSwarmPort,
-      ipfsSwarmWsPort,
-    }: { cors: boolean } & { [key: string]: string }) => {
-      Config.init({ port, ipfsPath, ipfsApiPort, ipfsGatewayPort, ipfsSwarmPort, ipfsSwarmWsPort })
+      port,
+      ipfsRepo,
+      ipfsApi,
+      ipfsGateway,
+      ipfsSwarm,
+    }: {
+      cors: boolean
+      port: string
+      ipfsRepo: string
+      ipfsApi: string
+      ipfsGateway: string
+      ipfsSwarm: string[]
+    }) => {
+      Config.init({
+        port,
+        ipfs: { repo: ipfsRepo, api: ipfsApi, gateway: ipfsGateway, swarm: ipfsSwarm },
+      })
 
-      await AccountService.startIpfs(Config.shared)
+      await AccountService.startIpfs(Config.shared.ipfs)
 
       const app = await NestFactory.create(AppModule)
 

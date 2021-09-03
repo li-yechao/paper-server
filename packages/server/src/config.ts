@@ -26,22 +26,15 @@ export class Config {
 
   private constructor(options: Config) {
     this.port = options.port
-    this.ipfsPath = options.ipfsPath
-    this.ipfsApiPort = options.ipfsApiPort
-    this.ipfsGatewayPort = options.ipfsGatewayPort
-    this.ipfsSwarmPort = options.ipfsSwarmPort
-    this.ipfsSwarmWsPort = options.ipfsSwarmWsPort
+    this.ipfs = options.ipfs
   }
 
   readonly port: string
 
-  readonly ipfsPath: string
-
-  readonly ipfsApiPort: string
-
-  readonly ipfsGatewayPort: string
-
-  readonly ipfsSwarmPort: string
-
-  readonly ipfsSwarmWsPort: string
+  readonly ipfs: {
+    repo: string
+    api: string
+    gateway: string
+    swarm: string[]
+  }
 }
