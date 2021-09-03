@@ -33,7 +33,7 @@ export class AccountService {
     const CONFIG_ADDRESSES = {
       API: config.ipfsApiPort ? `/ip4/127.0.0.1/tcp/${config.ipfsApiPort}` : undefined,
       Announce: [],
-      Gateway: config.ipfsGatewayPort ? `/ip4/127.0.0.1/tcp/${config.ipfsGatewayPort}` : undefined,
+      Gateway: config.ipfsGatewayPort ? `/ip4/0.0.0.0/tcp/${config.ipfsGatewayPort}` : undefined,
       NoAnnounce: [],
       Swarm: (() => {
         const list: string[] = []
