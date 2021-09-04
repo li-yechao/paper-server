@@ -28,6 +28,7 @@ export interface AccountOptions {
 export class Account {
   static async signUp(password: string, options: AccountOptions): Promise<Account> {
     const key = await Ipfs.crypto.keys.generateKeyPair('RSA', 2048)
+
     const id = await key.id()
     const encryptedKey = await this.encryptPrivateKey(password, key)
     const ipfs = await Ipfs.create({
@@ -64,7 +65,7 @@ export class Account {
       `${options.accountGateway}/account/publish?cid=${cid.toString()}&password=${password}`,
       { method: 'POST' }
     ).then(res => {
-      if (res.status !== 200) {
+      if (res.status !== 200 && res.status !== 201) {
         throw new Error(`publish account return status: ${res.status}`)
       }
     })
