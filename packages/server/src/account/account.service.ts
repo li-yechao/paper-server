@@ -87,10 +87,33 @@ export class AccountService {
         await $`IPFS_PATH=${this.ipfsPath} ipfs key rm ${cid}`
       } catch {}
 
-      await $`IPFS_PATH=${this.ipfsPath} ipfs key import --ipns-base b58mh ${cid} ${tmpDir}/key`
-      await $`IPFS_PATH=${this.ipfsPath} ipfs name publish --ipns-base b58mh --key ${cid} ${cid}`
+      const name = (
+        await $`IPFS_PATH=${this.ipfsPath} ipfs key import --ipns-base b58mh ${cid} ${tmpDir}/key`
+      ).stdout.trim()
+
+      await Promise.race([
+        $`IPFS_PATH=${this.ipfsPath} ipfs name publish --ipns-base b58mh --key ${cid} ${cid}`,
+        this.waitPublish(name, cid),
+      ])
     } finally {
       fs.rmSync(tmpDir, { recursive: true, force: true })
     }
+  }
+
+  private async waitPublish(name: string, cid: string) {
+    let retry = 100
+    while (retry > 0) {
+      retry -= 1
+      await sleep(200)
+      try {
+        const resolved = (
+          await $`IPFS_PATH=${this.ipfsPath} ipfs name resolve --dhtt 500ms ${name}`
+        ).stdout.trim()
+        if (resolved === cid || resolved === `/ipfs/${cid}`) {
+          return
+        }
+      } catch {}
+    }
+    throw new Error(`Wait CID ${cid} publish with name ${name} timeout`)
   }
 }
