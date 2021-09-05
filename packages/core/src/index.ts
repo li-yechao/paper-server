@@ -26,13 +26,23 @@ export interface AccountOptions {
 }
 
 export class Account {
-  static async signUp(password: string, options: AccountOptions): Promise<Account> {
-    const key = await Ipfs.crypto.keys.generateKeyPair('RSA', 2048)
+  static async create(
+    options: AccountOptions,
+    account: { name?: string; password: string } | { key: PrivateKey; password: string }
+  ): Promise<Account> {
+    function isKey(a: typeof account): a is { key: PrivateKey; password: string } {
+      return typeof (a as any).key !== 'undefined'
+    }
+
+    const key = isKey(account)
+      ? account.key
+      : account.name
+      ? await this.getPrivateKeyFromServer(options, account.name, account.password)
+      : await Ipfs.crypto.keys.generateKeyPair('RSA', 2048)
 
     const id = await key.id()
-    const encryptedKey = await this.encryptPrivateKey(password, key)
     const ipfs = await Ipfs.create({
-      repo: await key.id(),
+      repo: id,
       preload: {
         enabled: false,
       },
@@ -53,57 +63,17 @@ export class Account {
         },
       },
     })
-    await ipfs.swarm.connect(options.swarm)
-    await ipfs.files.write(`/${id}/keystore/main`, new Uint8Array(encryptedKey), {
-      parents: true,
-      create: true,
-      truncate: true,
-    })
-    const { cid } = await ipfs.files.stat(`/${id}`)
-
-    await fetch(
-      `${options.accountGateway}/account/publish?cid=${cid.toString()}&password=${password}`,
-      { method: 'POST' }
-    ).then(res => {
-      if (res.status !== 200 && res.status !== 201) {
-        throw new Error(`publish account return status: ${res.status}`)
-      }
-    })
-
-    return new Account(ipfs)
+    return new Account(options, ipfs, account.password)
   }
 
-  static async signIn(name: string, password: string, options: AccountOptions): Promise<Account> {
+  private static async getPrivateKeyFromServer(
+    options: Pick<AccountOptions, 'ipnsGateway'>,
+    name: string,
+    password: string
+  ): Promise<PrivateKey> {
     const url = `${options.ipnsGateway}/ipns/${name}/keystore/main`
     const buffer = await fetch(url).then(res => res.blob().then(blob => blob.arrayBuffer()))
-    const key = await this.decryptPrivateKey(password, buffer)
-
-    const ipfs = await Ipfs.create({
-      repo: await key.id(),
-      preload: {
-        enabled: false,
-      },
-      config: {
-        Bootstrap: [],
-        Identity: {
-          PeerID: await key.id(),
-          PrivKey: Base64.fromUint8Array(key.bytes),
-        },
-      },
-      libp2p: {
-        config: {
-          transport: {
-            [WebSockets.prototype[Symbol.toStringTag]]: {
-              filter: filters[options.libp2pTransportFilter],
-            },
-          },
-        },
-      },
-    })
-
-    await ipfs.swarm.connect(options.swarm)
-
-    return new Account(ipfs)
+    return this.decryptPrivateKey(password, buffer)
   }
 
   private static async encryptPrivateKey(password: string, key: PrivateKey): Promise<ArrayBuffer> {
@@ -133,5 +103,31 @@ export class Account {
     return Ipfs.crypto.keys.unmarshalPrivateKey(new Uint8Array(buffer))
   }
 
-  constructor(readonly ipfs: IPFS) {}
+  private constructor(
+    readonly options: AccountOptions,
+    readonly ipfs: IPFS,
+    readonly password: string
+  ) {}
+
+  async publish() {
+    await this.ipfs.swarm.connect(this.options.swarm)
+    const id = (await this.ipfs.id()).id
+    const pem = await this.ipfs.key.export('self', '123456')
+    const key = await Ipfs.crypto.keys.import(pem, '123456')
+    const encryptedKey = await Account.encryptPrivateKey(this.password, key)
+    await this.ipfs.files.write(`/${id}/keystore/main`, new Uint8Array(encryptedKey), {
+      parents: true,
+      create: true,
+      truncate: true,
+    })
+    const { cid } = await this.ipfs.files.stat(`/${id}`)
+
+    const query = new URLSearchParams({ cid: cid.toString(), password: this.password }).toString()
+    const url = `${this.options.accountGateway}/account/publish?${query}`
+    await fetch(url, { method: 'POST' }).then(res => {
+      if (res.status !== 200 && res.status !== 201) {
+        throw new Error(`publish account return status: ${res.status}`)
+      }
+    })
+  }
 }
