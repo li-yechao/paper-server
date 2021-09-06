@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { StylesProvider } from '@material-ui/core'
+import { StylesProvider } from '@mui/styles'
 import { HashRouter, Route, Switch } from 'react-router-dom'
 import { NotFoundViewLazy } from './views/error'
 import { HomeViewLazy } from './views/home'

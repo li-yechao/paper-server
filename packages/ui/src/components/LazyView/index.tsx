@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { Box, LinearProgress } from '@material-ui/core'
+import { Box, LinearProgress } from '@mui/material'
 import * as React from 'react'
 
 export default function LazyView<P>(C: React.LazyExoticComponent<React.ComponentType<P>>) {
