@@ -12,20 +12,29 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import { ThemeProvider as EmotionThemeProvider } from '@emotion/react'
+import { createTheme, ThemeProvider as MuiThemeProvider } from '@mui/material'
 import { StylesProvider } from '@mui/styles'
+import { useMemo } from 'react'
 import { HashRouter, Route, Switch } from 'react-router-dom'
 import { NotFoundViewLazy } from './views/error'
 import { HomeViewLazy } from './views/home'
 
 export default function App() {
+  const theme = useMemo(() => createTheme(), [])
+
   return (
     <StylesProvider injectFirst>
-      <HashRouter>
-        <Switch>
-          <Route path="/" exact component={HomeViewLazy} />
-          <Route path="*" component={NotFoundViewLazy} />
-        </Switch>
-      </HashRouter>
+      <MuiThemeProvider theme={theme}>
+        <EmotionThemeProvider theme={theme}>
+          <HashRouter>
+            <Switch>
+              <Route path="/" exact component={HomeViewLazy} />
+              <Route path="*" component={NotFoundViewLazy} />
+            </Switch>
+          </HashRouter>
+        </EmotionThemeProvider>
+      </MuiThemeProvider>
     </StylesProvider>
   )
 }
