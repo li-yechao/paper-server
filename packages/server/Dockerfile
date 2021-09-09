@@ -4,7 +4,9 @@ WORKDIR /app/
 
 COPY package.json /app/
 COPY go-ipfs/ /app/go-ipfs/
-RUN yarn install --prod
+
+# Run twice yarn intall --prod to remove devDependencies
+RUN yarn install --prod && yarn install --prod
 
 COPY dist /app/dist
 
