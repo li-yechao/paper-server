@@ -17,6 +17,7 @@ import { createTheme, ThemeProvider as MuiThemeProvider } from '@mui/material'
 import { StylesProvider } from '@mui/styles'
 import { useMemo } from 'react'
 import { HashRouter, Route, Switch } from 'react-router-dom'
+import { RecoilRoot } from 'recoil'
 import { NotFoundViewLazy } from './views/error'
 import { HomeViewLazy } from './views/home'
 
@@ -24,17 +25,19 @@ export default function App() {
   const theme = useMemo(() => createTheme(), [])
 
   return (
-    <StylesProvider injectFirst>
-      <MuiThemeProvider theme={theme}>
-        <EmotionThemeProvider theme={theme}>
-          <HashRouter>
-            <Switch>
-              <Route path="/" exact component={HomeViewLazy} />
-              <Route path="*" component={NotFoundViewLazy} />
-            </Switch>
-          </HashRouter>
-        </EmotionThemeProvider>
-      </MuiThemeProvider>
-    </StylesProvider>
+    <RecoilRoot>
+      <StylesProvider injectFirst>
+        <MuiThemeProvider theme={theme}>
+          <EmotionThemeProvider theme={theme}>
+            <HashRouter>
+              <Switch>
+                <Route path="/" exact component={HomeViewLazy} />
+                <Route path="*" component={NotFoundViewLazy} />
+              </Switch>
+            </HashRouter>
+          </EmotionThemeProvider>
+        </MuiThemeProvider>
+      </StylesProvider>
+    </RecoilRoot>
   )
 }

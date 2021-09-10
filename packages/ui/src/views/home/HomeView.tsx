@@ -14,15 +14,98 @@
 
 import styled from '@emotion/styled'
 import { RefreshOutlined, Visibility, VisibilityOff } from '@mui/icons-material'
-import { Box, Button, IconButton, InputAdornment, TextField, Typography } from '@mui/material'
+import {
+  Box,
+  Button,
+  Fade,
+  IconButton,
+  InputAdornment,
+  LinearProgress,
+  TextField,
+  Typography,
+} from '@mui/material'
+import { Account, AccountOptions } from '@paper/core'
+import { useCallback, useEffect, useState } from 'react'
+import { Redirect } from 'react-router'
 import { useToggle } from 'react-use'
+import { PromiseType } from 'react-use/lib/misc/types'
+import { useRecoilState } from 'recoil'
+import { accountSelector } from '../../state/account'
+
+const accountOptions: AccountOptions = {
+  accountGateway: 'https://paper.yechao.xyz/api',
+  ipnsGateway: 'https://paper.yechao.xyz',
+  libp2pTransportFilter: 'dnsWss',
+  swarm:
+    '/dns4/paper.yechao.xyz/tcp/443/wss/p2p/12D3KooWPewyZYXJvBujaZrkzYKqrAXDxCnfipLewYBppNVcapoK',
+}
 
 export default function HomeView() {
+  const [account, setAccount] = useRecoilState(accountSelector)
   const [pwdVisible, togglePwdVisible] = useToggle(false)
   const [isNewAccount, toggleIsNewAccount] = useToggle(false)
+  const [loading, toggleLoading] = useToggle(false)
+
+  const [key, setKey] = useState<PromiseType<ReturnType<typeof Account.generateKey>>>()
+  const [name, setName] = useState('')
+  const [password, setPassword] = useState('')
+
+  const regenerateKey = useCallback(async () => {
+    setKey(await Account.generateKey())
+  }, [])
+
+  const newAccount = useCallback(async () => {
+    if (loading) {
+      return
+    }
+    toggleLoading(true)
+    try {
+      const account = await Account.create(accountOptions, { key, password })
+      await account.publish()
+      setAccount(account)
+    } finally {
+      toggleLoading(false)
+    }
+  }, [loading, key, password])
+
+  const login = useCallback(async () => {
+    if (loading) {
+      return
+    }
+    toggleLoading(true)
+    try {
+      const account = await Account.create(accountOptions, { name, password })
+      setAccount(account)
+    } finally {
+      toggleLoading(false)
+    }
+  }, [loading, name, password])
+
+  useEffect(() => {
+    if (isNewAccount) {
+      if (!key) {
+        Account.generateKey().then(key => {
+          setKey(key)
+          key.id().then(setName)
+        })
+      } else {
+        key.id().then(setName)
+      }
+    }
+  }, [isNewAccount, key])
+
+  if (account) {
+    return <Redirect to={`/${account.name}`} />
+  }
 
   return (
-    <_Card>
+    <_Card position="relative" overflow="hidden">
+      <Box position="absolute" left={0} top={0} right={0}>
+        <Fade in={loading}>
+          <LinearProgress />
+        </Fade>
+      </Box>
+
       <Typography variant="h5" color="primary" align="center">
         Paper
       </Typography>
@@ -36,14 +119,17 @@ export default function HomeView() {
         <Box my={2}>
           <TextField
             label="Account"
+            value={name}
+            onChange={e => setName(e.currentTarget.value)}
             size="small"
             fullWidth
             autoComplete="username"
             inputProps={{ maxLength: 128 }}
             InputProps={{
+              readOnly: loading,
               endAdornment: isNewAccount ? (
                 <InputAdornment position="end">
-                  <IconButton edge="end">
+                  <IconButton edge="end" onClick={regenerateKey} disabled={loading}>
                     <RefreshOutlined />
                   </IconButton>
                 </InputAdornment>
@@ -55,12 +141,15 @@ export default function HomeView() {
         <Box my={2}>
           <TextField
             label="Password"
+            value={password}
+            onChange={e => setPassword(e.currentTarget.value)}
             size="small"
             fullWidth
             autoComplete="current-password"
             type={pwdVisible ? 'text' : 'password'}
             inputProps={{ maxLength: 128 }}
             InputProps={{
+              readOnly: loading,
               endAdornment: (
                 <InputAdornment position="end">
                   <IconButton edge="end" onClick={togglePwdVisible}>
@@ -75,17 +164,21 @@ export default function HomeView() {
         <Box my={2} display="flex" alignItems="center" justifyContent="space-between">
           {isNewAccount ? (
             <>
-              <Button variant="text" onClick={toggleIsNewAccount} size="small">
+              <Button variant="text" onClick={toggleIsNewAccount} disabled={loading} size="small">
                 Login
               </Button>
-              <Button variant="contained">New Account</Button>
+              <Button variant="contained" onClick={newAccount} disabled={loading}>
+                New Account
+              </Button>
             </>
           ) : (
             <>
-              <Button variant="text" onClick={toggleIsNewAccount} size="small">
+              <Button variant="text" onClick={toggleIsNewAccount} disabled={loading} size="small">
                 New Account
               </Button>
-              <Button variant="contained">Login</Button>
+              <Button variant="contained" onClick={login} disabled={loading}>
+                Login
+              </Button>
             </>
           )}
         </Box>

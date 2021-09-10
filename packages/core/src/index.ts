@@ -26,6 +26,10 @@ export interface AccountOptions {
 }
 
 export class Account {
+  static async generateKey() {
+    return Ipfs.crypto.keys.generateKeyPair('RSA', 2048)
+  }
+
   static async create(
     options: AccountOptions,
     account: { name?: string; password: string } | { key: PrivateKey; password: string }
@@ -38,7 +42,7 @@ export class Account {
       ? account.key
       : account.name
       ? await this.getPrivateKeyFromServer(options, account.name, account.password)
-      : await Ipfs.crypto.keys.generateKeyPair('RSA', 2048)
+      : await this.generateKey()
 
     const id = await key.id()
     const ipfs = await Ipfs.create({
@@ -63,7 +67,7 @@ export class Account {
         },
       },
     })
-    return new Account(options, ipfs, account.password)
+    return new Account(options, ipfs, key, id, account.password)
   }
 
   private static async getPrivateKeyFromServer(
@@ -106,20 +110,21 @@ export class Account {
   private constructor(
     readonly options: AccountOptions,
     readonly ipfs: IPFS,
+    readonly key: PrivateKey,
+    readonly name: string,
     readonly password: string
   ) {}
 
   async publish() {
     await this.ipfs.swarm.connect(this.options.swarm)
     const id = (await this.ipfs.id()).id
-    const pem = await this.ipfs.key.export('self', '123456')
-    const key = await Ipfs.crypto.keys.import(pem, '123456')
-    const encryptedKey = await Account.encryptPrivateKey(this.password, key)
+    const encryptedKey = await Account.encryptPrivateKey(this.password, this.key)
     await this.ipfs.files.write(`/${id}/keystore/main`, new Uint8Array(encryptedKey), {
       parents: true,
       create: true,
       truncate: true,
     })
+
     const { cid } = await this.ipfs.files.stat(`/${id}`)
 
     const query = new URLSearchParams({ cid: cid.toString(), password: this.password }).toString()
