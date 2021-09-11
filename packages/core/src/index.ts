@@ -61,7 +61,7 @@ export class Account {
         config: {
           transport: {
             [WebSockets.prototype[Symbol.toStringTag]]: {
-              filter: filters.all,
+              filter: filters[options.libp2pTransportFilter],
             },
           },
         },
