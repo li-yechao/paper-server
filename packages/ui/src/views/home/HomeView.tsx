@@ -33,11 +33,10 @@ import { useRecoilState } from 'recoil'
 import { accountSelector } from '../../state/account'
 
 const accountOptions: AccountOptions = {
-  accountGateway: 'https://paper.yechao.xyz/api',
-  ipnsGateway: 'https://paper.yechao.xyz',
-  libp2pTransportFilter: 'dnsWss',
-  swarm:
-    '/dns4/paper.yechao.xyz/tcp/443/wss/p2p/12D3KooWPewyZYXJvBujaZrkzYKqrAXDxCnfipLewYBppNVcapoK',
+  accountGateway: import.meta.env.VITE_ACCOUNT_GATEWAY,
+  ipnsGateway: import.meta.env.VITE_IPNS_GATEWAY,
+  libp2pTransportFilter: import.meta.env.VITE_LIBP2P_TRANSPORT_FILTER,
+  swarm: import.meta.env.VITE_SWARM,
 }
 
 export default function HomeView() {
