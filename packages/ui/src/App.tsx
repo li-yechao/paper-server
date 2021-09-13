@@ -15,11 +15,13 @@
 import { ThemeProvider as EmotionThemeProvider } from '@emotion/react'
 import { createTheme, ThemeProvider as MuiThemeProvider } from '@mui/material'
 import { StylesProvider } from '@mui/styles'
-import { useMemo } from 'react'
+import { Suspense, useMemo } from 'react'
 import { HashRouter, Route, Switch } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
+import LazyView from './components/LazyView'
 import { NotFoundViewLazy } from './views/error'
 import { HomeViewLazy } from './views/home'
+import { UserViewLazy } from './views/user'
 
 export default function App() {
   const theme = useMemo(() => createTheme(), [])
@@ -29,15 +31,24 @@ export default function App() {
       <StylesProvider injectFirst>
         <MuiThemeProvider theme={theme}>
           <EmotionThemeProvider theme={theme}>
-            <HashRouter>
-              <Switch>
-                <Route path="/" exact component={HomeViewLazy} />
-                <Route path="*" component={NotFoundViewLazy} />
-              </Switch>
-            </HashRouter>
+            <Suspense fallback={<LazyView.Loading />}>
+              <AppRoutes />
+            </Suspense>
           </EmotionThemeProvider>
         </MuiThemeProvider>
       </StylesProvider>
     </RecoilRoot>
+  )
+}
+
+const AppRoutes = () => {
+  return (
+    <HashRouter>
+      <Switch>
+        <Route path="/" exact component={HomeViewLazy} />
+        <Route path="/:name" render={({ match }) => <UserViewLazy match={match} />} />
+        <Route path="*" component={NotFoundViewLazy} />
+      </Switch>
+    </HashRouter>
   )
 }

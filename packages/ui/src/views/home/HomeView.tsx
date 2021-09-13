@@ -24,20 +24,14 @@ import {
   TextField,
   Typography,
 } from '@mui/material'
-import { Account, AccountOptions } from '@paper/core'
+import { Account } from '@paper/core'
 import { useCallback, useEffect, useState } from 'react'
 import { Redirect } from 'react-router'
 import { useToggle } from 'react-use'
 import { PromiseType } from 'react-use/lib/misc/types'
 import { useRecoilState } from 'recoil'
+import { accountOptions } from '../../constants'
 import { accountSelector } from '../../state/account'
-
-const accountOptions: AccountOptions = {
-  accountGateway: import.meta.env.VITE_ACCOUNT_GATEWAY,
-  ipnsGateway: import.meta.env.VITE_IPNS_GATEWAY,
-  libp2pTransportFilter: import.meta.env.VITE_LIBP2P_TRANSPORT_FILTER,
-  swarm: import.meta.env.VITE_SWARM,
-}
 
 export default function HomeView() {
   const [account, setAccount] = useRecoilState(accountSelector)

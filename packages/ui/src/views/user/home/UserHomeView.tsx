@@ -12,9 +12,23 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import * as React from 'react'
-import LazyView from '../../components/LazyView'
+import { RouteComponentProps } from 'react-router-dom'
+import { useRecoilValue } from 'recoil'
+import { accountSelector } from '../../../state/account'
+import { ForbiddenViewLazy } from '../../error'
 
-export const NotFoundViewLazy = LazyView(React.lazy(() => import('./NotFoundView')))
+export interface UserHomeViewProps extends Pick<RouteComponentProps<{ name: string }>, 'match'> {}
 
-export const ForbiddenViewLazy = LazyView(React.lazy(() => import('./ForbiddenView')))
+export default function UserHomeView(props: UserHomeViewProps) {
+  const account = useRecoilValue(accountSelector)
+
+  if (account?.name !== props.match.params.name) {
+    return <ForbiddenViewLazy />
+  }
+
+  return (
+    <div>
+      <div>Welcome {account.name}</div>
+    </div>
+  )
+}

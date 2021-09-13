@@ -12,9 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import * as React from 'react'
-import LazyView from '../../components/LazyView'
+import { AccountOptions } from '@paper/core'
 
-export const NotFoundViewLazy = LazyView(React.lazy(() => import('./NotFoundView')))
-
-export const ForbiddenViewLazy = LazyView(React.lazy(() => import('./ForbiddenView')))
+export const accountOptions: AccountOptions = {
+  accountGateway: import.meta.env.VITE_ACCOUNT_GATEWAY,
+  ipnsGateway: import.meta.env.VITE_IPNS_GATEWAY,
+  libp2pTransportFilter: import.meta.env.VITE_LIBP2P_TRANSPORT_FILTER,
+  swarm: import.meta.env.VITE_SWARM,
+}

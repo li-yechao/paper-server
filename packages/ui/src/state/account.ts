@@ -14,18 +14,37 @@
 
 import { atom, selector } from 'recoil'
 import { Account } from '../../../core/src'
+import { accountOptions } from '../constants'
+import Storage from '../Storage'
 
 export type AccountState = Account
 
 const accountState = atom<AccountState | null>({
   key: 'accountState',
-  default: null,
+  default: (() => {
+    const account = Storage.account
+    if (account) {
+      const { name, password } = account
+      return Account.create(accountOptions, { name, password })
+    }
+
+    return null
+  })(),
   dangerouslyAllowMutability: true,
 })
 
 export const accountSelector = selector<AccountState | null>({
   key: 'accountSelector',
   get: ({ get }) => get(accountState),
-  set: ({ set }, value) => set(accountState, value),
+  set: ({ get, set }, value) => {
+    set(accountState, value)
+    const account = get(accountState)
+    if (account) {
+      const { name, password } = account
+      Storage.account = { name, password }
+    } else {
+      Storage.account = null
+    }
+  },
   dangerouslyAllowMutability: true,
 })

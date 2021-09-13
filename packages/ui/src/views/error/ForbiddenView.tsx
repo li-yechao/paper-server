@@ -12,9 +12,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import * as React from 'react'
-import LazyView from '../../components/LazyView'
+import { Box, Typography } from '@mui/material'
 
-export const NotFoundViewLazy = LazyView(React.lazy(() => import('./NotFoundView')))
+export default function ForbiddenView() {
+  return (
+    <Box>
+      <Typography variant="h1" align="center" color="textSecondary">
+        403
+      </Typography>
 
-export const ForbiddenViewLazy = LazyView(React.lazy(() => import('./ForbiddenView')))
+      <Typography variant="h6" align="center" color="textSecondary">
+        Forbidden
+      </Typography>
+    </Box>
+  )
+}

@@ -18,14 +18,14 @@ import * as React from 'react'
 export default function LazyView<P>(C: React.LazyExoticComponent<React.ComponentType<P>>) {
   return (props: P) => {
     return (
-      <React.Suspense fallback={<Loading />}>
+      <React.Suspense fallback={<LazyView.Loading />}>
         <C {...(props as any)} />
       </React.Suspense>
     )
   }
 }
 
-const Loading = () => {
+LazyView.Loading = () => {
   return (
     <Box position="fixed" left={0} top={0} right={0}>
       <LinearProgress />

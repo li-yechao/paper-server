@@ -13,8 +13,6 @@
 // limitations under the License.
 
 import * as React from 'react'
-import LazyView from '../../components/LazyView'
+import LazyView from '../../../components/LazyView'
 
-export const NotFoundViewLazy = LazyView(React.lazy(() => import('./NotFoundView')))
-
-export const ForbiddenViewLazy = LazyView(React.lazy(() => import('./ForbiddenView')))
+export const UserHomeViewLazy = LazyView(React.lazy(() => import('./UserHomeView')))
