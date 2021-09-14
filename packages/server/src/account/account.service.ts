@@ -100,6 +100,21 @@ export class AccountService {
     }
   }
 
+  /**
+   * Resolve CID by IPNS name.
+   * @param name Ipns name
+   * @returns Ipfs CID, like: 'QmRnkJQiBA5QLmZ8cM2kPrRdVFw2DxUGpWxFf1Y2qeY1U1'
+   */
+  async resolve(name: string): Promise<string | null> {
+    try {
+      const res = (await $`IPFS_PATH=${this.ipfsPath} ipfs name resolve -rn ${name}`).stdout.trim()
+      const m = res.match(/^\/ipfs\/(?<cid>[a-zA-Z0-9]+)$/)
+      return m?.groups?.['cid'] || null
+    } catch {
+      return null
+    }
+  }
+
   private async waitPublish(name: string, cid: string) {
     let retry = 100
     while (retry > 0) {

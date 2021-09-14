@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { Controller, Post, Query } from '@nestjs/common'
+import { Controller, Get, Post, Query } from '@nestjs/common'
 import { AccountService } from './account.service'
 
 @Controller('account')
@@ -23,5 +23,11 @@ export class AccountController {
   async publish(@Query('cid') cid: string, @Query('password') password: string) {
     await this.accountService.publish(cid, password)
     return {}
+  }
+
+  @Get('resolve')
+  async resolve(@Query('name') name: string) {
+    const cid = await this.accountService.resolve(name)
+    return { name, cid }
   }
 }
