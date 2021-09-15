@@ -67,6 +67,14 @@ export class Account {
         },
       },
     })
+
+    const cid = await this.resolveName(options, id)
+
+    try {
+      await ipfs.files.rm(`/${id}`, { recursive: true })
+    } catch {}
+    await ipfs.files.cp(`/ipfs/${cid}`, `/${id}`)
+
     return new Account(options, ipfs, key, id, account.password)
   }
 
@@ -78,6 +86,18 @@ export class Account {
     const url = `${options.ipnsGateway}/ipns/${name}/keystore/main`
     const buffer = await fetch(url).then(res => res.blob().then(blob => blob.arrayBuffer()))
     return this.decryptPrivateKey(password, buffer)
+  }
+
+  private static async resolveName(
+    options: Pick<AccountOptions, 'accountGateway'>,
+    name: string
+  ): Promise<string> {
+    const url = `${options.accountGateway}/account/resolve?name=${name}`
+    const json = await fetch(url).then(res => res.json())
+    if (typeof json.cid === 'string') {
+      return json.cid
+    }
+    throw new Error(`Resolve ${name} failed`)
   }
 
   private static async encryptPrivateKey(password: string, key: PrivateKey): Promise<ArrayBuffer> {
