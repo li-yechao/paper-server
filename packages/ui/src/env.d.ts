@@ -12,7 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-interface ImportMetaEnv extends Readonly<Record<string, string>> {
+interface ImportMetaEnv extends Readonly<Record<string, string | boolean>> {
+  DEV: boolean
+  PROD: boolean
+
   VITE_ACCOUNT_GATEWAY: string
   VITE_IPNS_GATEWAY: string
   VITE_LIBP2P_TRANSPORT_FILTER: 'all' | 'dnsWss' | 'dnsWsOrWss'

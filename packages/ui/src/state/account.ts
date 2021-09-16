@@ -22,13 +22,25 @@ export type AccountState = Account
 const accountState = atom<AccountState | null>({
   key: 'accountState',
   default: (() => {
-    const account = Storage.account
-    if (account) {
-      const { name, password } = account
-      return Account.create(accountOptions, { name, password })
+    // NOTE: Set account into globalThis at development environment (avoid hot
+    // module replacement recreate account instance).
+    const g: { __ACCOUNT__?: Promise<Account> | null } = import.meta.env.PROD
+      ? {}
+      : (globalThis as any)
+
+    if (!g.__ACCOUNT__) {
+      g.__ACCOUNT__ = (() => {
+        const account = Storage.account
+        if (account) {
+          const { name, password } = account
+          return Account.create(accountOptions, { name, password })
+        }
+
+        return null
+      })()
     }
 
-    return null
+    return g.__ACCOUNT__
   })(),
   dangerouslyAllowMutability: true,
 })
