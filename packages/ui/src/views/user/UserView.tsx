@@ -12,9 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import styled from '@emotion/styled'
+import { AccountCircle } from '@mui/icons-material'
+import { AppBar, Box, Button, IconButton, Menu, MenuItem, Toolbar, Typography } from '@mui/material'
 import Ipfs from '@paper/ipfs'
-import { useMemo } from 'react'
-import { Route, RouteComponentProps, Switch } from 'react-router'
+import * as React from 'react'
+import { useMemo, useState } from 'react'
+import { Route, RouteComponentProps, Switch, useHistory } from 'react-router'
+import { useRecoilState } from 'recoil'
+import { accountSelector } from '../../state/account'
 import { NotFoundViewLazy } from '../error'
 import { UserHomeViewLazy } from './home'
 
@@ -35,13 +41,96 @@ export default function UserView(props: UserViewProps) {
   }
 
   return (
-    <Switch>
-      <Route
-        path={`${props.match.path}`}
-        exact
-        render={() => <UserHomeViewLazy match={props.match} />}
-      />
-      <Route path="*" component={NotFoundViewLazy} />
-    </Switch>
+    <>
+      <_AppBar position="fixed" elevation={0}>
+        <Toolbar>
+          <Typography variant="h5">Paper</Typography>
+
+          <Box flexGrow={1} />
+
+          <AccountButton />
+        </Toolbar>
+      </_AppBar>
+
+      <_Body>
+        <Switch>
+          <Route
+            path={`${props.match.path}`}
+            exact
+            render={() => <UserHomeViewLazy match={props.match} />}
+          />
+          <Route path="*" component={NotFoundViewLazy} />
+        </Switch>
+      </_Body>
+    </>
+  )
+}
+
+const _AppBar = styled(AppBar)`
+  background-color: ${props => props.theme.palette.background.paper};
+  color: ${props => props.theme.palette.text.primary};
+  border-bottom: 1px solid ${props => props.theme.palette.divider};
+  user-select: none;
+
+  .MuiToolbar-root {
+    min-height: ${props => props.theme.spacing(7)};
+  }
+`
+
+const _Body = styled.div`
+  padding-top: ${props => props.theme.spacing(7)};
+`
+
+const AccountButton = () => {
+  const [account, setAccount] = useRecoilState(accountSelector)
+  const [anchorEl, setAnchorEl] = useState<Element>()
+  const history = useHistory()
+
+  const handleMenuOpen = (e: React.MouseEvent<HTMLButtonElement>) => {
+    setAnchorEl(e.currentTarget)
+  }
+
+  const handleMenuClose = () => {
+    setAnchorEl(undefined)
+  }
+
+  const handleSignOut = () => {
+    handleMenuClose()
+    setAccount(null)
+  }
+
+  const handleLogin = () => {
+    history.push(`/`)
+  }
+
+  return (
+    <>
+      {account ? (
+        <IconButton onClick={handleMenuOpen}>
+          <AccountCircle />
+        </IconButton>
+      ) : (
+        <Button variant="text" onClick={handleLogin}>
+          Login
+        </Button>
+      )}
+
+      <Menu
+        anchorEl={anchorEl}
+        open={Boolean(anchorEl)}
+        keepMounted
+        anchorOrigin={{
+          vertical: 'top',
+          horizontal: 'right',
+        }}
+        transformOrigin={{
+          vertical: 'top',
+          horizontal: 'right',
+        }}
+        onClose={handleMenuClose}
+      >
+        <MenuItem onClick={handleSignOut}>Sign out</MenuItem>
+      </Menu>
+    </>
   )
 }

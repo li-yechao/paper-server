@@ -49,12 +49,18 @@ export const accountSelector = selector<AccountState | null>({
   key: 'accountSelector',
   get: ({ get }) => get(accountState),
   set: ({ get, set }, value) => {
+    const old = get(accountState)
+
+    if (old !== value) {
+      old?.stop()
+    }
+
     set(accountState, value)
-    const account = get(accountState)
-    if (account) {
-      const { name, password } = account
+
+    if (value instanceof Account) {
+      const { name, password } = value
       Storage.account = { name, password }
-    } else {
+    } else if (!value) {
       Storage.account = null
     }
   },

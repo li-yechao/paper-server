@@ -155,4 +155,8 @@ export class Account {
       }
     })
   }
+
+  async stop() {
+    await this.ipfs.stop()
+  }
 }
