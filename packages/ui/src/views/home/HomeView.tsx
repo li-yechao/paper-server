@@ -48,13 +48,12 @@ export default function HomeView() {
   }, [])
 
   const newAccount = useCallback(async () => {
-    if (loading) {
+    if (loading || !key) {
       return
     }
     toggleLoading(true)
     try {
       const account = await Account.create(accountOptions, { key, password })
-      await account.publish()
       setAccount(account)
     } finally {
       toggleLoading(false)
