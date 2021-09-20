@@ -14,9 +14,13 @@
 
 import Ipfs, { IPFS } from '@paper/ipfs'
 import { PrivateKey } from 'ipfs-core/src/components/ipns'
+import { MFSEntry } from 'ipfs-core/src/components/files/ls'
+import all from 'it-all'
 import { Base64 } from 'js-base64'
 import WebSockets from 'libp2p-websockets'
 import filters from 'libp2p-websockets/src/filters'
+import { customAlphabet } from 'nanoid'
+import Object from './object'
 
 export interface AccountOptions {
   swarm: string
@@ -67,7 +71,7 @@ export class Account {
       },
     })
 
-    const account = new Account(options, ipfs, name, args.password)
+    const account = new Account(options, ipfs, key, name, args.password)
 
     if (isNewKey) {
       const encryptedKey = await Account.encryptPrivateKey(args.password, key)
@@ -138,9 +142,12 @@ export class Account {
   private constructor(
     readonly options: AccountOptions,
     readonly ipfs: IPFS,
+    readonly key: PrivateKey,
     readonly name: string,
     readonly password: string
   ) {}
+
+  private nonce = customAlphabet('0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ', 5)
 
   async publish() {
     await this.ipfs.swarm.connect(this.options.swarm)
@@ -157,5 +164,60 @@ export class Account {
 
   async stop() {
     await this.ipfs.stop()
+  }
+
+  drafts() {
+    return this.iterateObject(`/${this.name}-draft/objects`)
+  }
+
+  async createDraft(): Promise<Object> {
+    const dir = `/${this.name}-draft/objects`
+    const object = new Object(this.ipfs, dir, new Date(), this.nonce())
+    await object.init()
+    return object
+  }
+
+  private async *iterateObject(dir: string) {
+    let years: MFSEntry[]
+    try {
+      years = (await all(this.ipfs.files.ls(dir)))
+        .filter(i => i.type === 'directory' && /^\d{4}$/.test(i.name))
+        .sort((a, b) => (a.name < b.name ? 1 : -1))
+    } catch (error: any) {
+      if (error.code === 'ERR_NOT_FOUND') {
+        return
+      }
+      throw error
+    }
+
+    for (const year of years) {
+      const months = (await all(this.ipfs.files.ls(`${dir}/${year.name}`)))
+        .filter(i => i.type === 'directory' && /^\d{2}$/.test(i.name))
+        .sort((a, b) => (a.name < b.name ? 1 : -1))
+
+      for (const month of months) {
+        const dates = (await all(this.ipfs.files.ls(`${dir}/${year.name}/${month.name}`)))
+          .filter(i => i.type === 'directory' && /^\d{2}$/.test(i.name))
+          .sort((a, b) => (a.name < b.name ? 1 : -1))
+
+        for (const date of dates) {
+          const objects = (
+            await all(this.ipfs.files.ls(`${dir}/${year.name}/${month.name}/${date.name}`))
+          )
+            .filter(i => i.type === 'directory' && /^(\d+)-(\S+)$/.test(i.name))
+            .sort((a, b) => (a.name < b.name ? 1 : -1))
+
+          for (const object of objects) {
+            const m = object.name.match(/^(?<date>\d+)-(?<nonce>\S+)$/)
+            if (m?.groups?.['date'] && m.groups['nonce']) {
+              const d = new Date(parseInt(m.groups['date']))
+              const nonce = m.groups['nonce']
+
+              yield new Object(this.ipfs, dir, d, nonce)
+            }
+          }
+        }
+      }
+    }
   }
 }

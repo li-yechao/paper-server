@@ -8,8 +8,14 @@
   "type": "module",
   "dependencies": {
     "@paper/ipfs": "0.0.1",
+    "ajv": "^8.6.3",
+    "it-all": "^1.0.6",
     "js-base64": "^3.7.2",
-    "libp2p-websockets": "^0.16.2"
+    "libp2p-websockets": "^0.16.2",
+    "lodash": "^4.17.21",
+    "nanoid": "^3.1.30"
   },
-  "devDependencies": {}
+  "devDependencies": {
+    "@types/lodash": "^4.14.175"
+  }
 }
