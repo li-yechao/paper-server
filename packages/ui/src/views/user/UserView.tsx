@@ -13,7 +13,7 @@
 // limitations under the License.
 
 import styled from '@emotion/styled'
-import { AccountCircle } from '@mui/icons-material'
+import { AccountCircle, Add } from '@mui/icons-material'
 import { AppBar, Box, Button, IconButton, Menu, MenuItem, Toolbar, Typography } from '@mui/material'
 import Ipfs from '@paper/ipfs'
 import * as React from 'react'
@@ -23,6 +23,7 @@ import { useRecoilState } from 'recoil'
 import { accountSelector } from '../../state/account'
 import { NotFoundViewLazy } from '../error'
 import { UserHomeViewLazy } from './home'
+import { useCreateDraft } from './useObjectPagination'
 
 export interface UserViewProps extends Pick<RouteComponentProps<{ name: string }>, 'match'> {}
 
@@ -48,6 +49,7 @@ export default function UserView(props: UserViewProps) {
 
           <Box flexGrow={1} />
 
+          <CreateButton />
           <AccountButton />
         </Toolbar>
       </_AppBar>
@@ -80,6 +82,16 @@ const _AppBar = styled(AppBar)`
 const _Body = styled.div`
   padding-top: ${props => props.theme.spacing(7)};
 `
+
+const CreateButton = () => {
+  const handleCreate = useCreateDraft()
+
+  return (
+    <IconButton onClick={handleCreate}>
+      <Add />
+    </IconButton>
+  )
+}
 
 const AccountButton = () => {
   const [account, setAccount] = useRecoilState(accountSelector)

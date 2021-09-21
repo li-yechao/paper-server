@@ -24,7 +24,17 @@ import { HomeViewLazy } from './views/home'
 import { UserViewLazy } from './views/user'
 
 export default function App() {
-  const theme = useMemo(() => createTheme(), [])
+  const theme = useMemo(
+    () =>
+      createTheme({
+        typography: {
+          button: {
+            textTransform: 'none',
+          },
+        },
+      }),
+    []
+  )
 
   return (
     <RecoilRoot>

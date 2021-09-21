@@ -12,23 +12,73 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import { KeyboardArrowLeft, KeyboardArrowRight } from '@mui/icons-material'
+import { Button, List, ListItemButton, ListItemText, Stack } from '@mui/material'
+import { Box } from '@mui/system'
+import Object from '@paper/core/src/object'
+import { useEffect, useState } from 'react'
 import { RouteComponentProps } from 'react-router-dom'
 import { useRecoilValue } from 'recoil'
 import { accountSelector } from '../../../state/account'
 import { ForbiddenViewLazy } from '../../error'
+import useObjectPagination from '../useObjectPagination'
 
 export interface UserHomeViewProps extends Pick<RouteComponentProps<{ name: string }>, 'match'> {}
 
 export default function UserHomeView(props: UserHomeViewProps) {
   const account = useRecoilValue(accountSelector)
 
-  if (account?.name !== props.match.params.name) {
+  if (!account || account?.name !== props.match.params.name) {
     return <ForbiddenViewLazy />
   }
 
+  return <ObjectList />
+}
+
+const ObjectList = () => {
+  const pagination = useObjectPagination()
+
   return (
-    <div>
-      <div>Welcome {account.name}</div>
-    </div>
+    <Box maxWidth={800} margin="auto">
+      <List>
+        {pagination.list.map(object => (
+          <ObjectItem key={object.path} object={object} />
+        ))}
+      </List>
+
+      <Stack spacing={2} direction="row" justifyContent="center">
+        <Button
+          disabled={!pagination.hasPrevious}
+          onClick={pagination.loadPrevious}
+          startIcon={<KeyboardArrowLeft />}
+        >
+          Previous
+        </Button>
+
+        <Button
+          disabled={!pagination.hasNext}
+          onClick={pagination.loadNext}
+          endIcon={<KeyboardArrowRight />}
+        >
+          Next
+        </Button>
+      </Stack>
+    </Box>
+  )
+}
+
+const ObjectItem = ({ object }: { object: Object }) => {
+  const [title, setTitle] = useState<string | null>()
+
+  useEffect(() => {
+    object.getInfo().then(info => {
+      setTitle(info.title)
+    })
+  }, [object])
+
+  return (
+    <ListItemButton divider>
+      <ListItemText primary={title || 'Untitled'} />
+    </ListItemButton>
   )
 }
