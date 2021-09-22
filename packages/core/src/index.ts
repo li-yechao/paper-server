@@ -84,6 +84,7 @@ export class Account {
       await account.publish()
     } else {
       const cid = await this.resolveName(options, name)
+      await ipfs.swarm.connect(options.swarm)
       await ipfs.files.cp(`/ipfs/${cid}`, `/${name}`)
     }
 
