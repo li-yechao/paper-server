@@ -21,6 +21,7 @@ import WebSockets from 'libp2p-websockets'
 import filters from 'libp2p-websockets/src/filters'
 import { customAlphabet } from 'nanoid'
 import Object from './object'
+import { crypto } from './crypto'
 
 export interface AccountOptions {
   swarm: string
@@ -74,7 +75,7 @@ export class Account {
     const account = new Account(options, ipfs, key, name, args.password)
 
     if (isNewKey) {
-      const encryptedKey = await Account.encryptPrivateKey(args.password, key)
+      const encryptedKey = await crypto.aes.encrypt(args.password, key.bytes)
       await ipfs.files.write(`/${name}/keystore/main`, new Uint8Array(encryptedKey), {
         parents: true,
         create: true,
@@ -98,7 +99,9 @@ export class Account {
   ): Promise<PrivateKey> {
     const url = `${options.ipnsGateway}/ipns/${name}/keystore/main`
     const buffer = await fetch(url).then(res => res.blob().then(blob => blob.arrayBuffer()))
-    return this.decryptPrivateKey(password, buffer)
+    return Ipfs.crypto.keys.unmarshalPrivateKey(
+      new Uint8Array(await crypto.aes.decrypt(password, buffer))
+    )
   }
 
   private static async resolveName(
@@ -113,40 +116,17 @@ export class Account {
     throw new Error(`Resolve ${name} failed`)
   }
 
-  private static async encryptPrivateKey(password: string, key: PrivateKey): Promise<ArrayBuffer> {
-    const rawKey = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(password))
-    const rawKeyHex = [...new Uint8Array(rawKey)]
-      .map(i => i.toString(16).padStart(2, '0'))
-      .join(',')
-    const iv = await crypto.subtle.digest(
-      'SHA-256',
-      new TextEncoder().encode(rawKeyHex.concat(password))
-    )
-    const k = await crypto.subtle.importKey('raw', rawKey, 'AES-GCM', true, ['encrypt'])
-    return crypto.subtle.encrypt({ name: 'AES-GCM', iv: iv }, k, key.bytes)
-  }
-
-  private static async decryptPrivateKey(password: string, key: ArrayBuffer): Promise<PrivateKey> {
-    const rawKey = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(password))
-    const rawKeyHex = [...new Uint8Array(rawKey)]
-      .map(i => i.toString(16).padStart(2, '0'))
-      .join(',')
-    const iv = await crypto.subtle.digest(
-      'SHA-256',
-      new TextEncoder().encode(rawKeyHex.concat(password))
-    )
-    const k = await crypto.subtle.importKey('raw', rawKey, 'AES-GCM', true, ['decrypt'])
-    const buffer = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: iv }, k, key)
-    return Ipfs.crypto.keys.unmarshalPrivateKey(new Uint8Array(buffer))
-  }
-
   private constructor(
     readonly options: AccountOptions,
     readonly ipfs: IPFS,
     readonly key: PrivateKey,
     readonly name: string,
     readonly password: string
-  ) {}
+  ) {
+    this.crypto = new crypto.Crypto(this.password)
+  }
+
+  private crypto: crypto.Crypto
 
   private nonce = customAlphabet('0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ', 5)
 
@@ -173,7 +153,7 @@ export class Account {
 
   async createDraft(): Promise<Object> {
     const dir = `/${this.name}-draft/objects`
-    const object = new Object(this.ipfs, dir, new Date(), this.nonce())
+    const object = new Object(this.ipfs, this.crypto, dir, new Date(), this.nonce())
     await object.init()
     return object
   }
@@ -214,7 +194,7 @@ export class Account {
               const d = new Date(parseInt(m.groups['date']))
               const nonce = m.groups['nonce']
 
-              yield new Object(this.ipfs, dir, d, nonce)
+              yield new Object(this.ipfs, this.crypto, dir, d, nonce)
             }
           }
         }
