@@ -94,7 +94,7 @@ export default class Object {
       try {
         const json = JSON.parse(new TextDecoder().decode(await this.read(this.infoPath)))
         if (infoValidate(json)) {
-          return json
+          this._info = json
         }
       } catch {}
       if (!this._info) {
