@@ -13,13 +13,15 @@
 // limitations under the License.
 
 import { KeyboardArrowLeft, KeyboardArrowRight } from '@mui/icons-material'
-import { Button, List, ListItemButton, ListItemText, Stack } from '@mui/material'
+import { Button, List, ListItemButton, ListItemText, Skeleton, Stack } from '@mui/material'
 import { Box } from '@mui/system'
 import Object from '@paper/core/src/object'
-import { useEffect, useState } from 'react'
+import { Suspense } from 'react'
 import { RouteComponentProps } from 'react-router-dom'
 import { useRecoilValue } from 'recoil'
+import ErrorBoundary from '../../../components/ErrorBoundary'
 import { accountSelector } from '../../../state/account'
+import usePromise from '../../../utils/usePromise'
 import { ForbiddenViewLazy } from '../../error'
 import useObjectPagination from '../useObjectPagination'
 
@@ -42,7 +44,11 @@ const ObjectList = () => {
     <Box maxWidth={800} margin="auto">
       <List>
         {pagination.list.map(object => (
-          <ObjectItem key={object.path} object={object} />
+          <ErrorBoundary key={object.path} fallback={ObjectItem.Skeleton}>
+            <Suspense fallback={<ObjectItem.Skeleton />}>
+              <ObjectItem object={object} />
+            </Suspense>
+          </ErrorBoundary>
         ))}
       </List>
 
@@ -67,18 +73,28 @@ const ObjectList = () => {
   )
 }
 
-const ObjectItem = ({ object }: { object: Object }) => {
-  const [title, setTitle] = useState<string | null>()
-
-  useEffect(() => {
-    object.getInfo().then(info => {
-      setTitle(info.title)
-    })
-  }, [object])
+function ObjectItem({ object }: { object: Object }) {
+  const info = usePromise(() => object.getInfo(), [object, 'getInfo'])
 
   return (
     <ListItemButton divider>
-      <ListItemText primary={title || 'Untitled'} />
+      <ListItemText primary={info.title || 'Untitled'} />
+    </ListItemButton>
+  )
+}
+
+ObjectItem.Skeleton = ({ error }: { error?: Error }) => {
+  if (error) {
+    return (
+      <ListItemButton disabled divider>
+        <ListItemText primary={error.message} primaryTypographyProps={{ color: 'error.main' }} />
+      </ListItemButton>
+    )
+  }
+
+  return (
+    <ListItemButton disabled divider>
+      <ListItemText primary={<Skeleton variant="text" />} />
     </ListItemButton>
   )
 }
