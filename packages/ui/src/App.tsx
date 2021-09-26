@@ -18,8 +18,10 @@ import { StylesProvider } from '@mui/styles'
 import { Suspense, useMemo } from 'react'
 import { HashRouter, Route, Switch } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
+import ErrorBoundary from './components/ErrorBoundary'
 import LazyView from './components/LazyView'
 import { NotFoundViewLazy } from './views/error'
+import ErrorView from './views/error/ErrorView'
 import { HomeViewLazy } from './views/home'
 import { UserViewLazy } from './views/user'
 
@@ -37,17 +39,19 @@ export default function App() {
   )
 
   return (
-    <RecoilRoot>
-      <StylesProvider injectFirst>
-        <MuiThemeProvider theme={theme}>
-          <EmotionThemeProvider theme={theme}>
-            <Suspense fallback={<LazyView.Loading />}>
-              <AppRoutes />
-            </Suspense>
-          </EmotionThemeProvider>
-        </MuiThemeProvider>
-      </StylesProvider>
-    </RecoilRoot>
+    <ErrorBoundary fallback={ErrorView}>
+      <RecoilRoot>
+        <StylesProvider injectFirst>
+          <MuiThemeProvider theme={theme}>
+            <EmotionThemeProvider theme={theme}>
+              <Suspense fallback={<LazyView.Loading />}>
+                <AppRoutes />
+              </Suspense>
+            </EmotionThemeProvider>
+          </MuiThemeProvider>
+        </StylesProvider>
+      </RecoilRoot>
+    </ErrorBoundary>
   )
 }
 

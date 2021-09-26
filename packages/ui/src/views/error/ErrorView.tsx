@@ -12,11 +12,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import * as React from 'react'
-import LazyView from '../../components/LazyView'
+import { Box, Typography } from '@mui/material'
 
-export const ErrorViewLazy = LazyView(React.lazy(() => import('./ErrorView')))
+export default function ErrorView({ error }: { error?: Error }) {
+  return (
+    <Box>
+      <Typography variant="h1" align="center" color="textSecondary">
+        {error?.name || 'Error'}
+      </Typography>
 
-export const NotFoundViewLazy = LazyView(React.lazy(() => import('./NotFoundView')))
-
-export const ForbiddenViewLazy = LazyView(React.lazy(() => import('./ForbiddenView')))
+      <Typography variant="h6" align="center" color="textSecondary">
+        {error?.message || 'Unknown Error'}
+      </Typography>
+    </Box>
+  )
+}
