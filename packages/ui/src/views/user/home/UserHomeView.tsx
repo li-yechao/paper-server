@@ -12,18 +12,31 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { KeyboardArrowLeft, KeyboardArrowRight } from '@mui/icons-material'
-import { Button, List, ListItemButton, ListItemText, Skeleton, Stack } from '@mui/material'
+import styled from '@emotion/styled'
+import { KeyboardArrowLeft, KeyboardArrowRight, MoreVert } from '@mui/icons-material'
+import {
+  Button,
+  IconButton,
+  List,
+  ListItemButton,
+  ListItemSecondaryAction,
+  ListItemText,
+  Menu,
+  MenuItem,
+  Skeleton,
+  Stack,
+} from '@mui/material'
 import { Box } from '@mui/system'
 import Object from '@paper/core/src/object'
-import { Suspense } from 'react'
+import * as React from 'react'
+import { Suspense, useState } from 'react'
 import { RouteComponentProps } from 'react-router-dom'
 import { useRecoilValue } from 'recoil'
 import ErrorBoundary from '../../../components/ErrorBoundary'
 import { accountSelector } from '../../../state/account'
 import usePromise from '../../../utils/usePromise'
 import { ForbiddenViewLazy } from '../../error'
-import useObjectPagination from '../useObjectPagination'
+import useObjectPagination, { useDeleteDraft } from '../useObjectPagination'
 
 export interface UserHomeViewProps extends Pick<RouteComponentProps<{ name: string }>, 'match'> {}
 
@@ -39,6 +52,20 @@ export default function UserHomeView(props: UserHomeViewProps) {
 
 const ObjectList = () => {
   const pagination = useObjectPagination()
+  const [menuState, setMenuState] = useState<{ anchorEl: Element; object: Object }>()
+
+  const handleOpenMenu = (e: React.MouseEvent<Element>, object: Object) => {
+    setMenuState({ anchorEl: e.currentTarget, object })
+  }
+
+  const handleCloseMenu = () => setMenuState(undefined)
+
+  const deleteDraft = useDeleteDraft()
+  const handleDelete = async () => {
+    const object = menuState?.object
+    handleCloseMenu()
+    object && (await deleteDraft(object))
+  }
 
   return (
     <Box maxWidth={800} margin="auto">
@@ -46,7 +73,7 @@ const ObjectList = () => {
         {pagination.list.map(object => (
           <ErrorBoundary key={object.path} fallback={ObjectItem.Skeleton}>
             <Suspense fallback={<ObjectItem.Skeleton />}>
-              <ObjectItem object={object} />
+              <ObjectItem object={object} openMenu={handleOpenMenu} />
             </Suspense>
           </ErrorBoundary>
         ))}
@@ -69,19 +96,53 @@ const ObjectList = () => {
           Next
         </Button>
       </Stack>
+
+      <Menu
+        anchorEl={menuState?.anchorEl}
+        anchorOrigin={{ horizontal: 'right', vertical: 'top' }}
+        transformOrigin={{ horizontal: 'right', vertical: 'top' }}
+        open={Boolean(menuState)}
+        onClose={handleCloseMenu}
+      >
+        <MenuItem onClick={handleDelete}>Delete</MenuItem>
+      </Menu>
     </Box>
   )
 }
 
-function ObjectItem({ object }: { object: Object }) {
+function ObjectItem({
+  object,
+  openMenu,
+}: {
+  object: Object
+  openMenu: (e: React.MouseEvent<Element>, object: Object) => void
+}) {
   const info = usePromise(() => object.getInfo(), [object, 'getInfo'])
 
   return (
-    <ListItemButton divider>
+    <_ListItemButton divider>
       <ListItemText primary={info.title || 'Untitled'} />
-    </ListItemButton>
+
+      <ListItemSecondaryAction>
+        <IconButton edge="end" onClick={e => openMenu(e, object)}>
+          <MoreVert />
+        </IconButton>
+      </ListItemSecondaryAction>
+    </_ListItemButton>
   )
 }
+
+const _ListItemButton = styled(ListItemButton)`
+  > .MuiListItemSecondaryAction-root {
+    display: none;
+  }
+
+  &:hover {
+    > .MuiListItemSecondaryAction-root {
+      display: block;
+    }
+  }
+`
 
 ObjectItem.Skeleton = ({ error }: { error?: Error }) => {
   if (error) {

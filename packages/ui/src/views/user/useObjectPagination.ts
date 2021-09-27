@@ -146,3 +146,21 @@ export function useCreateDraft() {
     []
   )
 }
+
+export function useDeleteDraft() {
+  return useRecoilCallback(
+    ({ set }) =>
+      async (object: Object) => {
+        set(
+          accountObjectsState,
+          v =>
+            v && {
+              ...v,
+              list: v.list.filter(i => i !== object),
+            }
+        )
+        await object.delete()
+      },
+    []
+  )
+}
