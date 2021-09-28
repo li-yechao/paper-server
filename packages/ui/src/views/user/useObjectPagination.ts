@@ -92,7 +92,7 @@ export default function useObjectPagination({
     setState({
       ...state,
       list: newList,
-      page: Math.min(Math.ceil(list.length / limit), newPage),
+      page: Math.max(0, Math.min(Math.ceil(list.length / limit) - 1, newPage)),
       hasNext,
     })
   })
@@ -114,13 +114,14 @@ export default function useObjectPagination({
     }
   }
 
-  const offset = state.page * state.limit
+  const page = Math.max(0, Math.min(Math.ceil(state.list.length / limit) - 1, state.page))
+  const offset = page * state.limit
 
   return {
     list: state.list.slice(offset, offset + state.limit),
-    page: state.page,
-    hasPrevious: state.page > 0,
-    hasNext: state.hasNext || state.page < Math.ceil(state.list.length / state.limit) - 1,
+    page,
+    hasPrevious: page > 0,
+    hasNext: state.hasNext || page < Math.ceil(state.list.length / state.limit) - 1,
     loadPrevious,
     loadNext,
   }
