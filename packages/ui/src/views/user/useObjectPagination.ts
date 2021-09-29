@@ -68,20 +68,20 @@ export default function useObjectPagination({
     }
   })
 
-  const loadNext = withState(async state => {
-    const loadMore = async <T>(iterator: AsyncIterator<T>, limit: number) => {
-      const list: Object[] = []
-      while (list.length < limit) {
-        const next = await iterator.next()
-        if (next.value) {
-          list.push(next.value)
-        } else {
-          break
-        }
+  const loadMore = async <T>(iterator: AsyncIterator<T>, limit: number) => {
+    const list: Object[] = []
+    while (list.length < limit) {
+      const next = await iterator.next()
+      if (next.value) {
+        list.push(next.value)
+      } else {
+        break
       }
-      return list
     }
+    return list
+  }
 
+  const loadNext = withState(async state => {
     const { iterator, page, limit, list } = state
     const newPage = page === 0 && list.length < limit ? 0 : page + 1
     // NOTE: Load one more to determine if there is a next page.
@@ -102,6 +102,21 @@ export default function useObjectPagination({
       loadNext()
     }
   }, [account])
+
+  useEffect(() => {
+    if (state && state.hasNext) {
+      const needLoadCount = (state.page + 1) * state.limit - state.list.length + 1
+      if (needLoadCount > 0) {
+        loadMore(state.iterator, needLoadCount).then(objects => {
+          setState({
+            ...state,
+            list: state.list.concat(objects),
+            hasNext: objects.length >= needLoadCount,
+          })
+        })
+      }
+    }
+  }, [state])
 
   if (!state) {
     return {
