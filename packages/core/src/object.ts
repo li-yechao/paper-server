@@ -13,11 +13,11 @@
 // limitations under the License.
 
 import { IPFS } from '@paper/ipfs'
-import Ajv, { JSONSchemaType } from 'ajv'
+import Ajv, { JTDSchemaType } from 'ajv/dist/jtd'
+import { ReadOptions, WriteOptions } from 'ipfs-core-types/src/files'
 import all from 'it-all'
 import { isEqual } from 'lodash'
 import { nanoid } from 'nanoid'
-import { ReadOptions, WriteOptions } from 'ipfs-core-types/src/files'
 import { crypto } from './crypto'
 
 export default class Object {
@@ -88,12 +88,12 @@ export default class Object {
     return `${this.path}/info.json`
   }
 
-  private _info?: Info
-  async getInfo(): Promise<Info> {
+  private _info?: ObjectInfo
+  async getInfo(): Promise<ObjectInfo> {
     if (!this._info) {
       try {
         const json = JSON.parse(new TextDecoder().decode(await this.read(this.infoPath)))
-        if (infoValidate(json)) {
+        if (validateObjectInfo(json)) {
           this._info = json
         }
       } catch {}
@@ -103,9 +103,9 @@ export default class Object {
     }
     return this._info
   }
-  async setInfo(info: Info) {
-    if (!infoValidate(info)) {
-      throw new Error(`Invalid info schema`)
+  async setInfo(info: ObjectInfo) {
+    if (!validateObjectInfo(info)) {
+      throw new Error(`Invalid object info`)
     }
 
     const old = await this.getInfo()
@@ -137,20 +137,17 @@ export default class Object {
   }
 }
 
-export type JsonPrimitive = string | number | boolean | null
-export type JsonObject = { [x: string]: JsonValue }
-export type JsonValue = JsonPrimitive | JsonObject | JsonValue[]
-
-export interface Info {
-  title?: string | null
-  description?: string | null
-  [key: string]: JsonValue | undefined
+export interface ObjectInfo {
+  title?: string
+  description?: string
 }
 
-const infoValidate = new Ajv().compile<JSONSchemaType<Info>>({
-  type: 'object',
-  properties: {
-    title: { type: 'string', nullable: true },
-    description: { type: 'string', nullable: true },
+export const objectInfoSchema: JTDSchemaType<ObjectInfo> = {
+  properties: {},
+  optionalProperties: {
+    title: { type: 'string' },
+    description: { type: 'string' },
   },
-})
+} as const
+
+const validateObjectInfo = new Ajv().compile(objectInfoSchema)
