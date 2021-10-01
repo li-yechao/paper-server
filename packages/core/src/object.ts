@@ -57,12 +57,12 @@ export default class Object {
     }
     return this.password
   }
-  private async read(ipfsPath: string, options?: ReadOptions): Promise<ArrayBuffer> {
+  async read(ipfsPath: string, options?: ReadOptions): Promise<ArrayBuffer> {
     const key = await this.getPassword()
     const buffer = await Object.readBuffer(this.ipfs.files.read(ipfsPath, options))
     return crypto.aes.decrypt(key, buffer)
   }
-  private async write(ipfsPath: string, content: string | ArrayBuffer, options?: WriteOptions) {
+  async write(ipfsPath: string, content: string | ArrayBuffer, options?: WriteOptions) {
     const key = await this.getPassword()
     if (typeof content === 'string') {
       content = new TextEncoder().encode(content)
