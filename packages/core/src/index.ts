@@ -151,6 +151,21 @@ export class Account {
     return this.iterateObject(`/${this.name}-draft/objects`)
   }
 
+  async draft(id: string): Promise<Object> {
+    const m = id.match(/^(?<time>\d+)-(?<nonce>\S+)$/)
+    if (!m?.groups) {
+      throw new Error(`Invalid object id ${id}`)
+    }
+    const { time, nonce } = m.groups
+    const date = new Date(parseInt(time))
+    const object = new Object(this.ipfs, this.crypto, `/${this.name}-draft/objects`, date, nonce)
+    const stat = await this.ipfs.files.stat(object.path)
+    if (stat.type !== 'directory') {
+      throw new Error(`Invalid object directory`)
+    }
+    return object
+  }
+
   async createDraft(): Promise<Object> {
     const dir = `/${this.name}-draft/objects`
     const object = new Object(this.ipfs, this.crypto, dir, new Date(), this.nonce())
