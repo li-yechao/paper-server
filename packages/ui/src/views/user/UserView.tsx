@@ -23,6 +23,7 @@ import { useRecoilState } from 'recoil'
 import { accountSelector } from '../../state/account'
 import { NotFoundViewLazy } from '../error'
 import { UserHomeViewLazy } from './home'
+import { ObjectViewLazy } from './object'
 import { useCreateDraft } from './useObjectPagination'
 
 export interface UserViewProps extends Pick<RouteComponentProps<{ name: string }>, 'match'> {}
@@ -61,6 +62,7 @@ export default function UserView(props: UserViewProps) {
             exact
             render={() => <UserHomeViewLazy match={props.match} />}
           />
+          <Route path={`${props.match.path}/:objectId`} exact component={ObjectViewLazy} />
           <Route path="*" component={NotFoundViewLazy} />
         </Switch>
       </_Body>

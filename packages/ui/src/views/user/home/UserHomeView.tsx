@@ -27,10 +27,11 @@ import {
   Stack,
 } from '@mui/material'
 import { Box } from '@mui/system'
+import { Account } from '@paper/core'
 import Object from '@paper/core/src/object'
 import * as React from 'react'
 import { Suspense, useState } from 'react'
-import { RouteComponentProps } from 'react-router-dom'
+import { RouteComponentProps, useHistory } from 'react-router-dom'
 import { useRecoilValue } from 'recoil'
 import ErrorBoundary from '../../../components/ErrorBoundary'
 import { accountSelector } from '../../../state/account'
@@ -47,10 +48,10 @@ export default function UserHomeView(props: UserHomeViewProps) {
     return <ForbiddenViewLazy />
   }
 
-  return <ObjectList />
+  return <ObjectList account={account} />
 }
 
-const ObjectList = () => {
+const ObjectList = ({ account }: { account: Account }) => {
   const pagination = useObjectPagination()
   const [menuState, setMenuState] = useState<{ anchorEl: Element; object: Object }>()
 
@@ -73,7 +74,7 @@ const ObjectList = () => {
         {pagination.list.map(object => (
           <ErrorBoundary key={object.path} fallback={ObjectItem.Skeleton}>
             <Suspense fallback={<ObjectItem.Skeleton />}>
-              <ObjectItem object={object} openMenu={handleOpenMenu} />
+              <ObjectItem account={account} object={object} openMenu={handleOpenMenu} />
             </Suspense>
           </ErrorBoundary>
         ))}
@@ -111,16 +112,23 @@ const ObjectList = () => {
 }
 
 function ObjectItem({
+  account,
   object,
   openMenu,
 }: {
+  account: Account
   object: Object
   openMenu: (e: React.MouseEvent<Element>, object: Object) => void
 }) {
+  const history = useHistory()
   const info = usePromise(() => object.getInfo(), [object, 'getInfo'])
 
+  const handleItemClick = () => {
+    history.push(`/${account.name}/${object.path.split('/').slice(-1)[0]}`)
+  }
+
   return (
-    <_ListItemButton divider>
+    <_ListItemButton divider onClick={handleItemClick}>
       <ListItemText primary={info.title || 'Untitled'} />
 
       <ListItemSecondaryAction>
