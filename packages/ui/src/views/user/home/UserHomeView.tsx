@@ -30,12 +30,11 @@ import { Box } from '@mui/system'
 import { Account } from '@paper/core'
 import Object from '@paper/core/src/object'
 import * as React from 'react'
-import { Suspense, useState } from 'react'
+import { useState } from 'react'
 import { RouteComponentProps, useHistory } from 'react-router-dom'
+import { useAsync } from 'react-use'
 import { useRecoilValue } from 'recoil'
-import ErrorBoundary from '../../../components/ErrorBoundary'
 import { accountSelector } from '../../../state/account'
-import usePromise from '../../../utils/usePromise'
 import { ForbiddenViewLazy } from '../../error'
 import useObjectPagination, { useDeleteDraft } from '../useObjectPagination'
 
@@ -72,11 +71,12 @@ const ObjectList = ({ account }: { account: Account }) => {
     <Box maxWidth={800} margin="auto">
       <List>
         {pagination.list.map(object => (
-          <ErrorBoundary key={object.path} fallback={ObjectItem.Skeleton}>
-            <Suspense fallback={<ObjectItem.Skeleton />}>
-              <ObjectItem account={account} object={object} openMenu={handleOpenMenu} />
-            </Suspense>
-          </ErrorBoundary>
+          <ObjectItem
+            key={object.path}
+            account={account}
+            object={object}
+            openMenu={handleOpenMenu}
+          />
         ))}
       </List>
 
@@ -121,23 +121,30 @@ function ObjectItem({
   openMenu: (e: React.MouseEvent<Element>, object: Object) => void
 }) {
   const history = useHistory()
-  const info = usePromise(() => object.getInfo(), [object, 'getInfo'])
+  const info = useAsync(() => object.getInfo(), [object])
 
   const handleItemClick = () => {
     history.push(`/${account.name}/${object.path.split('/').slice(-1)[0]}`)
   }
 
-  return (
-    <_ListItemButton divider onClick={handleItemClick}>
-      <ListItemText primary={info.title || 'Untitled'} />
+  if (info.loading) {
+    return <ObjectItem.Skeleton />
+  } else if (info.error) {
+    return <ObjectItem.Skeleton error={info.error} />
+  } else if (info.value) {
+    return (
+      <_ListItemButton divider onClick={handleItemClick}>
+        <ListItemText primary={info.value.title || 'Untitled'} />
 
-      <ListItemSecondaryAction>
-        <IconButton edge="end" onClick={e => openMenu(e, object)}>
-          <MoreVert />
-        </IconButton>
-      </ListItemSecondaryAction>
-    </_ListItemButton>
-  )
+        <ListItemSecondaryAction>
+          <IconButton edge="end" onClick={e => openMenu(e, object)}>
+            <MoreVert />
+          </IconButton>
+        </ListItemSecondaryAction>
+      </_ListItemButton>
+    )
+  }
+  return null
 }
 
 const _ListItemButton = styled(ListItemButton)`
