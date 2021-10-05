@@ -57,11 +57,7 @@ export default function UserView(props: UserViewProps) {
 
       <_Body>
         <Switch>
-          <Route
-            path={`${props.match.path}`}
-            exact
-            render={() => <UserHomeViewLazy match={props.match} />}
-          />
+          <Route path={`${props.match.path}`} exact component={UserHomeViewLazy} />
           <Route path={`${props.match.path}/:objectId`} exact component={ObjectViewLazy} />
           <Route path="*" component={NotFoundViewLazy} />
         </Switch>
