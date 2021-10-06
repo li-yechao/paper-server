@@ -13,6 +13,7 @@
 // limitations under the License.
 
 import Object, { ObjectInfo, objectInfoSchema } from '@paper/core/src/object'
+import { DocJson } from '@paper/editor/src/Editor/plugins/Value'
 import Ajv, { JTDSchemaType } from 'ajv/dist/jtd'
 
 export class Paper {
@@ -35,20 +36,21 @@ export class Paper {
   get contentPath() {
     return `${this.object.path}/paper.json`
   }
-  async setContent(content: string) {
-    await this.object.write(this.contentPath, content, {
+  async setContent(content: DocJson) {
+    await this.object.write(this.contentPath, JSON.stringify(content), {
       parents: true,
       create: true,
       truncate: true,
     })
   }
-  async getContent(): Promise<string> {
+  async getContent(): Promise<DocJson | undefined> {
     try {
       const buffer = await this.object.read(this.contentPath)
-      return new TextDecoder().decode(buffer)
+      const str = new TextDecoder().decode(buffer)
+      return JSON.parse(str)
     } catch (error: any) {
       if (error.code === 'ERR_NOT_FOUND') {
-        return ''
+        return
       }
       throw error
     }
