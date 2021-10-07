@@ -86,6 +86,12 @@ export default function ObjectView(props: ObjectViewProps) {
   const save = async () => {
     const { state, version, savedVersion } = ref.current
     if (paper && state && version !== savedVersion) {
+      const firstChild = state.doc.firstChild
+      if (firstChild?.type.name === 'title') {
+        const title = firstChild.textContent
+        await paper.setInfo({ title })
+      }
+
       await paper.setContent(state.doc.toJSON())
       ref.current.savedVersion = version
       document.title = document.title.replace(/^\**/, '')
