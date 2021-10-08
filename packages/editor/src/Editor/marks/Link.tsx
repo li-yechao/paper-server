@@ -130,8 +130,6 @@ export default class Link extends Mark {
   }
 }
 
-const _HrefInput = styled(TextField)``
-
 const _Button = styled(Button)`
   min-width: 0;
 `
@@ -140,17 +138,17 @@ const _LinkExpand = styled.div`
   display: flex;
   align-items: center;
   padding: 4px 8px;
+`
 
-  ${_HrefInput} {
-    flex: 1;
-    margin-right: 4px;
+const _HrefInput = styled(TextField)`
+  flex: 1;
+  margin-right: 4px;
 
-    .MuiInputBase-root {
-      color: inherit;
-    }
+  .MuiInputBase-root {
+    color: inherit;
+  }
 
-    input {
-      padding: 4px 8px;
-    }
+  input {
+    padding: 4px 8px;
   }
 `
