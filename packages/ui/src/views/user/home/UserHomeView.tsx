@@ -56,6 +56,7 @@ const ObjectList = ({ account }: { account: Account }) => {
   const [menuState, setMenuState] = useState<{ anchorEl: Element; object: Object }>()
 
   const handleOpenMenu = (e: React.MouseEvent<Element>, object: Object) => {
+    e.stopPropagation()
     setMenuState({ anchorEl: e.currentTarget, object })
   }
 
