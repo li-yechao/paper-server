@@ -88,8 +88,12 @@ export default class Object {
     return `${this.path}/info.json`
   }
 
+  private get createdAt(): number {
+    return this.date.getTime()
+  }
+
   private _info?: ObjectInfo
-  async getInfo(): Promise<ObjectInfo> {
+  async getInfo(): Promise<ObjectInfo & { createdAt: number }> {
     if (!this._info) {
       try {
         const json = JSON.parse(new TextDecoder().decode(await this.read(this.infoPath)))
@@ -101,7 +105,7 @@ export default class Object {
         this._info = {}
       }
     }
-    return this._info
+    return { ...this._info, createdAt: this.createdAt }
   }
   async setInfo(info: ObjectInfo) {
     if (!validateObjectInfo(info)) {
@@ -138,6 +142,7 @@ export default class Object {
 }
 
 export interface ObjectInfo {
+  updatedAt?: number
   title?: string
   description?: string
 }
@@ -145,6 +150,7 @@ export interface ObjectInfo {
 export const objectInfoSchema: JTDSchemaType<ObjectInfo> = {
   properties: {},
   optionalProperties: {
+    updatedAt: { type: 'uint32' },
     title: { type: 'string' },
     description: { type: 'string' },
   },
