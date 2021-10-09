@@ -31,6 +31,7 @@ import { Account } from '@paper/core'
 import Object from '@paper/core/src/object'
 import * as React from 'react'
 import { useState } from 'react'
+import { FormattedDate } from 'react-intl'
 import { RouteComponentProps, useHistory } from 'react-router-dom'
 import { useAsync } from 'react-use'
 import { useRecoilValue } from 'recoil'
@@ -132,9 +133,25 @@ function ObjectItem({
   } else if (info.error) {
     return <ObjectItem.Skeleton error={info.error} />
   } else if (info.value) {
+    const { title, createdAt, updatedAt } = info.value
+    const time = updatedAt ?? createdAt
+
     return (
       <_ListItemButton divider onClick={handleItemClick}>
-        <ListItemText primary={info.value.title || 'Untitled'} />
+        <ListItemText
+          primary={title || 'Untitled'}
+          secondary={
+            <FormattedDate
+              value={time}
+              year="numeric"
+              month="numeric"
+              day="numeric"
+              hour="numeric"
+              hour12={false}
+              minute="numeric"
+            />
+          }
+        />
 
         <ListItemSecondaryAction>
           <IconButton edge="end" onClick={e => openMenu(e, object)}>
@@ -170,7 +187,7 @@ ObjectItem.Skeleton = ({ error }: { error?: Error }) => {
 
   return (
     <ListItemButton disabled divider>
-      <ListItemText primary={<Skeleton variant="text" />} />
+      <ListItemText primary={<Skeleton variant="text" />} secondary={<Skeleton variant="text" />} />
     </ListItemButton>
   )
 }

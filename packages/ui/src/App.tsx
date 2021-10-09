@@ -16,6 +16,7 @@ import { ThemeProvider as EmotionThemeProvider } from '@emotion/react'
 import { createTheme, ThemeProvider as MuiThemeProvider } from '@mui/material'
 import { StylesProvider } from '@mui/styles'
 import { Suspense, useMemo } from 'react'
+import { IntlProvider } from 'react-intl'
 import { HashRouter, Route, Switch } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
 import ErrorBoundary from './components/ErrorBoundary'
@@ -40,17 +41,19 @@ export default function App() {
 
   return (
     <ErrorBoundary fallback={ErrorView}>
-      <RecoilRoot>
-        <StylesProvider injectFirst>
-          <MuiThemeProvider theme={theme}>
-            <EmotionThemeProvider theme={theme}>
-              <Suspense fallback={<LazyView.Loading />}>
-                <AppRoutes />
-              </Suspense>
-            </EmotionThemeProvider>
-          </MuiThemeProvider>
-        </StylesProvider>
-      </RecoilRoot>
+      <IntlProvider locale={navigator.language}>
+        <RecoilRoot>
+          <StylesProvider injectFirst>
+            <MuiThemeProvider theme={theme}>
+              <EmotionThemeProvider theme={theme}>
+                <Suspense fallback={<LazyView.Loading />}>
+                  <AppRoutes />
+                </Suspense>
+              </EmotionThemeProvider>
+            </MuiThemeProvider>
+          </StylesProvider>
+        </RecoilRoot>
+      </IntlProvider>
     </ErrorBoundary>
   )
 }
