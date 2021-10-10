@@ -126,6 +126,8 @@ export class Account {
     this.crypto = new crypto.Crypto(this.password)
   }
 
+  private objectCache: Map<string, Object> = new Map()
+
   private crypto: crypto.Crypto
 
   private nonce = customAlphabet('0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ', 5)
@@ -152,18 +154,23 @@ export class Account {
   }
 
   async draft(id: string): Promise<Object> {
-    const m = id.match(/^(?<time>\d+)-(?<nonce>\S+)$/)
-    if (!m?.groups) {
-      throw new Error(`Invalid object id ${id}`)
+    let obj = this.objectCache.get(id)
+    if (!obj) {
+      const m = id.match(/^(?<time>\d+)-(?<nonce>\S+)$/)
+      if (!m?.groups) {
+        throw new Error(`Invalid object id ${id}`)
+      }
+      const { time, nonce } = m.groups
+      const date = new Date(parseInt(time))
+      obj = new Object(this.ipfs, this.crypto, `/${this.name}-draft/objects`, date, nonce)
+
+      const stat = await this.ipfs.files.stat(obj.path)
+      if (stat.type !== 'directory') {
+        throw new Error(`Invalid object directory`)
+      }
+      this.objectCache.set(id, obj)
     }
-    const { time, nonce } = m.groups
-    const date = new Date(parseInt(time))
-    const object = new Object(this.ipfs, this.crypto, `/${this.name}-draft/objects`, date, nonce)
-    const stat = await this.ipfs.files.stat(object.path)
-    if (stat.type !== 'directory') {
-      throw new Error(`Invalid object directory`)
-    }
-    return object
+    return obj
   }
 
   async createDraft(): Promise<Object> {
@@ -209,7 +216,12 @@ export class Account {
               const d = new Date(parseInt(m.groups['date']))
               const nonce = m.groups['nonce']
 
-              yield new Object(this.ipfs, this.crypto, dir, d, nonce)
+              let obj = this.objectCache.get(object.name)
+              if (!obj) {
+                obj = new Object(this.ipfs, this.crypto, dir, d, nonce)
+                this.objectCache.set(object.name, obj)
+              }
+              yield obj
             }
           }
         }
