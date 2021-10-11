@@ -162,9 +162,13 @@ export class Account {
       }
       const { time, nonce } = m.groups
       const date = new Date(parseInt(time))
-      obj = new Object(this.ipfs, this.crypto, `/${this.name}-draft/objects`, date, nonce)
+      const year = date.getFullYear()
+      const month = (date.getMonth() + 1).toString().padStart(2, '0')
+      const day = date.getDate().toString().padStart(2, '0')
+      const dir = `/${this.name}-draft/objects/${year}/${month}/${day}/${date.getTime()}-${nonce}`
+      obj = new Object(this.ipfs, this.crypto, dir, date.getTime())
 
-      const stat = await this.ipfs.files.stat(obj.path)
+      const stat = await this.ipfs.files.stat(dir)
       if (stat.type !== 'directory') {
         throw new Error(`Invalid object directory`)
       }
@@ -174,8 +178,14 @@ export class Account {
   }
 
   async createDraft(): Promise<Object> {
-    const dir = `/${this.name}-draft/objects`
-    const object = new Object(this.ipfs, this.crypto, dir, new Date(), this.nonce())
+    const date = new Date()
+    const year = date.getFullYear()
+    const month = (date.getMonth() + 1).toString().padStart(2, '0')
+    const day = date.getDate().toString().padStart(2, '0')
+    const dir = `/${
+      this.name
+    }-draft/objects/${year}/${month}/${day}/${date.getTime()}-${this.nonce()}`
+    const object = new Object(this.ipfs, this.crypto, dir, date.getTime())
     await object.init()
     return object
   }
@@ -218,7 +228,12 @@ export class Account {
 
               let obj = this.objectCache.get(object.name)
               if (!obj) {
-                obj = new Object(this.ipfs, this.crypto, dir, d, nonce)
+                obj = new Object(
+                  this.ipfs,
+                  this.crypto,
+                  `${dir}/${year.name}/${month.name}/${date.name}/${d.getTime()}-${nonce}`,
+                  d.getTime()
+                )
                 this.objectCache.set(object.name, obj)
               }
               yield obj

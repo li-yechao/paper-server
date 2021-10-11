@@ -24,9 +24,8 @@ export default class Object {
   constructor(
     private ipfs: IPFS,
     private crypto: crypto.Crypto,
-    private dir: string,
-    private date: Date,
-    private nonce: string
+    readonly path: string,
+    private createdAt: number
   ) {}
 
   private get passwordPath() {
@@ -71,25 +70,12 @@ export default class Object {
     await this.ipfs.files.write(ipfsPath, new Uint8Array(buffer), options)
   }
 
-  get path() {
-    const year = this.date.getFullYear().toString()
-    const month = (this.date.getMonth() + 1).toString().padStart(2, '0')
-    const date = this.date.getDate().toString().padStart(2, '0')
-    const folder = `${this.date.getTime()}-${this.nonce}`
-
-    return `${this.dir}/${year}/${month}/${date}/${folder}`
-  }
-
   async init() {
     await this.ipfs.files.mkdir(this.path, { parents: true })
   }
 
   private get infoPath() {
     return `${this.path}/info.json`
-  }
-
-  private get createdAt(): number {
-    return this.date.getTime()
   }
 
   private _info?: ObjectInfo
