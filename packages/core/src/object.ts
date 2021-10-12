@@ -111,10 +111,6 @@ export default class Object {
     })
   }
 
-  async delete() {
-    await this.ipfs.files.rm(this.path, { recursive: true })
-  }
-
   private static async readBuffer(source: AsyncIterable<Uint8Array>): Promise<Uint8Array> {
     const chunks = await all(source)
     const buffer = new Uint8Array(chunks.reduce((res, i) => res + i.byteLength, 0))

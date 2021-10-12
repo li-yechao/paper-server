@@ -66,7 +66,7 @@ const ObjectList = ({ account }: { account: Account }) => {
   const handleDelete = async () => {
     const object = menuState?.object
     handleCloseMenu()
-    object && (await deleteDraft(object))
+    object && (await deleteDraft(account, object))
   }
 
   return (

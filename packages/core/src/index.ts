@@ -190,6 +190,37 @@ export class Account {
     return object
   }
 
+  async deleteDraft(objectIdOrPath: string) {
+    const { createdAt, objectId } = this.getObjectIdFromPath(objectIdOrPath)
+    const date = new Date(createdAt)
+    const year = date.getFullYear()
+    const month = (date.getMonth() + 1).toString().padStart(2, '0')
+    const day = date.getDate().toString().padStart(2, '0')
+    const path = `/${this.name}-draft/objects/${year}/${month}/${day}/${objectId}`
+    await this.ipfs.files.rm(path, { recursive: true })
+  }
+
+  private getObjectIdFromPath(path: string): {
+    objectId: string
+    createdAt: number
+    nonce: string
+  } {
+    const segments = path.split('/').filter(i => !!i)
+    if (segments.length > 0) {
+      const objectId = segments[segments.length - 1]
+      const m = objectId.match(/^(?<time>\d+)-(?<nonce>\S+)$/)
+      if (m?.groups) {
+        const { time, nonce } = m.groups
+        const date = new Date(parseInt(time))
+        const createdAt = date.getTime()
+        if (!isNaN(createdAt)) {
+          return { objectId: `${createdAt}-${nonce}`, createdAt, nonce }
+        }
+      }
+    }
+    throw new Error(`Invalid object path: ${path}`)
+  }
+
   private async *iterateObject(dir: string) {
     let years: MFSEntry[]
     try {

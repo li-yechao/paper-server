@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import { Account } from '@paper/core'
 import Object from '@paper/core/src/object'
 import { useEffect } from 'react'
 import { atom, useRecoilCallback, useRecoilState, useRecoilValue } from 'recoil'
@@ -166,7 +167,7 @@ export function useCreateDraft() {
 export function useDeleteDraft() {
   return useRecoilCallback(
     ({ set }) =>
-      async (object: Object) => {
+      async (account: Account, object: Object) => {
         set(
           accountObjectsState,
           v =>
@@ -175,7 +176,7 @@ export function useDeleteDraft() {
               list: v.list.filter(i => i !== object),
             }
         )
-        await object.delete()
+        await account.deleteDraft(object.path)
       },
     []
   )
