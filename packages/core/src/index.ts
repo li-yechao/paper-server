@@ -153,51 +153,42 @@ export class Account {
     return this.iterateObject(`/${this.name}-draft/objects`)
   }
 
-  async draft(id: string): Promise<Object> {
-    let obj = this.objectCache.get(id)
+  async draft(objectIdOrPath: string): Promise<Object> {
+    const { createdAt, nonce, objectId } = this.getObjectIdFromPath(objectIdOrPath)
+    let obj = this.objectCache.get(objectId)
     if (!obj) {
-      const m = id.match(/^(?<time>\d+)-(?<nonce>\S+)$/)
-      if (!m?.groups) {
-        throw new Error(`Invalid object id ${id}`)
-      }
-      const { time, nonce } = m.groups
-      const date = new Date(parseInt(time))
-      const year = date.getFullYear()
-      const month = (date.getMonth() + 1).toString().padStart(2, '0')
-      const day = date.getDate().toString().padStart(2, '0')
-      const dir = `/${this.name}-draft/objects/${year}/${month}/${day}/${date.getTime()}-${nonce}`
-      obj = new Object(this.ipfs, this.crypto, dir, date.getTime())
+      const path = this.getDraftPath(createdAt, nonce)
+      obj = new Object(this.ipfs, this.crypto, path, createdAt)
 
-      const stat = await this.ipfs.files.stat(dir)
+      const stat = await this.ipfs.files.stat(path)
       if (stat.type !== 'directory') {
         throw new Error(`Invalid object directory`)
       }
-      this.objectCache.set(id, obj)
+      this.objectCache.set(objectId, obj)
     }
     return obj
   }
 
   async createDraft(): Promise<Object> {
-    const date = new Date()
-    const year = date.getFullYear()
-    const month = (date.getMonth() + 1).toString().padStart(2, '0')
-    const day = date.getDate().toString().padStart(2, '0')
-    const dir = `/${
-      this.name
-    }-draft/objects/${year}/${month}/${day}/${date.getTime()}-${this.nonce()}`
-    const object = new Object(this.ipfs, this.crypto, dir, date.getTime())
+    const createdAt = Date.now()
+    const path = this.getDraftPath(createdAt, this.nonce())
+    const object = new Object(this.ipfs, this.crypto, path, createdAt)
     await object.init()
     return object
   }
 
   async deleteDraft(objectIdOrPath: string) {
-    const { createdAt, objectId } = this.getObjectIdFromPath(objectIdOrPath)
+    const { createdAt, nonce } = this.getObjectIdFromPath(objectIdOrPath)
+    const path = this.getDraftPath(createdAt, nonce)
+    await this.ipfs.files.rm(path, { recursive: true })
+  }
+
+  private getDraftPath(createdAt: number, nonce: string): string {
     const date = new Date(createdAt)
     const year = date.getFullYear()
     const month = (date.getMonth() + 1).toString().padStart(2, '0')
     const day = date.getDate().toString().padStart(2, '0')
-    const path = `/${this.name}-draft/objects/${year}/${month}/${day}/${objectId}`
-    await this.ipfs.files.rm(path, { recursive: true })
+    return `/${this.name}-draft/objects/${year}/${month}/${day}/${createdAt}-${nonce}`
   }
 
   private getObjectIdFromPath(path: string): {
@@ -252,23 +243,19 @@ export class Account {
             .sort((a, b) => (a.name < b.name ? 1 : -1))
 
           for (const object of objects) {
-            const m = object.name.match(/^(?<date>\d+)-(?<nonce>\S+)$/)
-            if (m?.groups?.['date'] && m.groups['nonce']) {
-              const d = new Date(parseInt(m.groups['date']))
-              const nonce = m.groups['nonce']
+            const { createdAt, nonce, objectId } = this.getObjectIdFromPath(object.name)
 
-              let obj = this.objectCache.get(object.name)
-              if (!obj) {
-                obj = new Object(
-                  this.ipfs,
-                  this.crypto,
-                  `${dir}/${year.name}/${month.name}/${date.name}/${d.getTime()}-${nonce}`,
-                  d.getTime()
-                )
-                this.objectCache.set(object.name, obj)
-              }
-              yield obj
+            let obj = this.objectCache.get(object.name)
+            if (!obj) {
+              obj = new Object(
+                this.ipfs,
+                this.crypto,
+                this.getDraftPath(createdAt, nonce),
+                createdAt
+              )
+              this.objectCache.set(objectId, obj)
             }
+            yield obj
           }
         }
       }
