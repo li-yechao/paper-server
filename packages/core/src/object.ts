@@ -16,7 +16,6 @@ import { IPFS } from '@paper/ipfs'
 import Ajv, { JTDSchemaType } from 'ajv/dist/jtd'
 import { ReadOptions, WriteOptions } from 'ipfs-core-types/src/files'
 import all from 'it-all'
-import { isEqual } from 'lodash'
 import { nanoid } from 'nanoid'
 import { crypto } from './crypto'
 
@@ -88,23 +87,19 @@ export default class Object {
         }
       } catch {}
       if (!this._info) {
-        this._info = {}
+        this._info = { version: 0 }
       }
     }
     return this._info
   }
-  async setInfo(info: ObjectInfo) {
-    if (!validateObjectInfo(info)) {
-      throw new Error(`Invalid object info`)
-    }
-
-    const old = await this.getInfo()
-    if (isEqual(old, info)) {
-      return
-    }
-
+  async setInfo({ title, description }: Pick<ObjectInfo, 'title' | 'description'> = {}) {
+    const info = await this.getInfo()
+    if (typeof title !== 'undefined') info.title = title
+    if (typeof description !== 'undefined') info.description = description
+    info.updatedAt = Date.now()
+    info.version += 1
     this._info = info
-    await this.write(this.infoPath, JSON.stringify(info), {
+    await this.write(this.infoPath, JSON.stringify(this._info), {
       parents: true,
       create: true,
       truncate: true,
@@ -124,13 +119,16 @@ export default class Object {
 }
 
 export interface ObjectInfo {
+  version: number
   updatedAt?: number
   title?: string
   description?: string
 }
 
 export const objectInfoSchema: JTDSchemaType<ObjectInfo> = {
-  properties: {},
+  properties: {
+    version: { type: 'uint32' },
+  },
   optionalProperties: {
     updatedAt: { type: 'uint32' },
     title: { type: 'string' },

@@ -26,10 +26,7 @@ export class Paper {
     }
     return info
   }
-  async setInfo(info: PaperInfo) {
-    if (!validatePaperInfo(info)) {
-      throw new Error(`Invalid paper info`)
-    }
+  async setInfo(info: Pick<PaperInfo, 'title' | 'description'> = {}) {
     this.object.setInfo(info)
   }
 
