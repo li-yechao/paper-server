@@ -25,7 +25,7 @@ export default class Object {
     private ipfs: IPFS,
     private crypto: crypto.Crypto,
     readonly path: string,
-    private createdAt: number
+    readonly createdAt: number
   ) {}
 
   private get passwordPath() {
@@ -79,7 +79,7 @@ export default class Object {
   }
 
   private _info?: ObjectInfo
-  async getInfo(): Promise<ObjectInfo & { createdAt: number }> {
+  async getInfo(): Promise<ObjectInfo> {
     if (!this._info) {
       try {
         const json = JSON.parse(new TextDecoder().decode(await this.read(this.infoPath)))
@@ -91,7 +91,7 @@ export default class Object {
         this._info = {}
       }
     }
-    return { ...this._info, createdAt: this.createdAt }
+    return this._info
   }
   async setInfo(info: ObjectInfo) {
     if (!validateObjectInfo(info)) {

@@ -134,8 +134,8 @@ function ObjectItem({
   } else if (info.error) {
     return <ObjectItem.Skeleton error={info.error} />
   } else if (info.value) {
-    const { title, createdAt, updatedAt } = info.value
-    const time = updatedAt ?? createdAt
+    const { title, updatedAt } = info.value
+    const time = updatedAt ?? object.createdAt
 
     return (
       <_ListItemButton divider onClick={handleItemClick}>
