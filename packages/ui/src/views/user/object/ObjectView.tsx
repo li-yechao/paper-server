@@ -42,7 +42,7 @@ import { history, redo, undo } from 'prosemirror-history'
 import { undoInputRule } from 'prosemirror-inputrules'
 import { keymap } from 'prosemirror-keymap'
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { RouteComponentProps } from 'react-router'
+import { Prompt, RouteComponentProps } from 'react-router'
 import { useRecoilValue } from 'recoil'
 import { accountSelector } from '../../../state/account'
 import { Paper } from '../paper'
@@ -155,7 +155,16 @@ export default function ObjectView(props: ObjectViewProps) {
     ]
   }, [content])
 
-  return <_Editor extensions={extensions} />
+  return (
+    <>
+      <Prompt
+        message={() =>
+          ref.current.savedVersion !== ref.current.version ? 'Discard changes' : true
+        }
+      />
+      <_Editor extensions={extensions} />
+    </>
+  )
 }
 
 const _Editor = styled(Editor)`
