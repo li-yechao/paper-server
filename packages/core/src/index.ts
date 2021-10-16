@@ -126,7 +126,7 @@ export class Account {
     this.crypto = new crypto.Crypto(this.password)
   }
 
-  private objectCache: Map<string, Object> = new Map()
+  private draftsCache: Map<string, Object> = new Map()
 
   private crypto: crypto.Crypto
 
@@ -155,7 +155,7 @@ export class Account {
 
   async draft(objectIdOrPath: string): Promise<Object> {
     const { createdAt, nonce, objectId } = this.getObjectIdFromPath(objectIdOrPath)
-    let obj = this.objectCache.get(objectId)
+    let obj = this.draftsCache.get(objectId)
     if (!obj) {
       const path = this.getDraftPath(createdAt, nonce)
       obj = new Object(this.ipfs, this.crypto, path, createdAt)
@@ -164,7 +164,7 @@ export class Account {
       if (stat.type !== 'directory') {
         throw new Error(`Invalid object directory`)
       }
-      this.objectCache.set(objectId, obj)
+      this.draftsCache.set(objectId, obj)
     }
     return obj
   }
@@ -178,9 +178,8 @@ export class Account {
   }
 
   async deleteDraft(objectIdOrPath: string) {
-    const { createdAt, nonce } = this.getObjectIdFromPath(objectIdOrPath)
-    const path = this.getDraftPath(createdAt, nonce)
-    await this.ipfs.files.rm(path, { recursive: true })
+    const draft = await this.draft(objectIdOrPath)
+    await this.ipfs.files.rm(draft.path, { recursive: true })
   }
 
   private getDraftPath(createdAt: number, nonce: string): string {
@@ -243,19 +242,7 @@ export class Account {
             .sort((a, b) => (a.name < b.name ? 1 : -1))
 
           for (const object of objects) {
-            const { createdAt, nonce, objectId } = this.getObjectIdFromPath(object.name)
-
-            let obj = this.objectCache.get(object.name)
-            if (!obj) {
-              obj = new Object(
-                this.ipfs,
-                this.crypto,
-                this.getDraftPath(createdAt, nonce),
-                createdAt
-              )
-              this.objectCache.set(objectId, obj)
-            }
-            yield obj
+            yield await this.draft(object.name)
           }
         }
       }
