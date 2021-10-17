@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { Account } from '@paper/core'
 import Object from '@paper/core/src/object'
 import { useEffect } from 'react'
 import { atom, useRecoilCallback, useRecoilState, useRecoilValue } from 'recoil'
@@ -53,7 +52,7 @@ export default function useObjectPagination({
       const s =
         state ??
         (account && {
-          iterator: account.drafts(),
+          iterator: account.objects(),
           list: [],
           hasNext: true,
           page: 0,
@@ -70,7 +69,7 @@ export default function useObjectPagination({
   })
 
   const loadMore = async <T>(iterator: AsyncIterator<T>, limit: number) => {
-    const list: Object[] = []
+    const list: T[] = []
     while (list.length < limit) {
       const next = await iterator.next()
       if (next.value) {
@@ -143,19 +142,19 @@ export default function useObjectPagination({
   }
 }
 
-export function useCreateDraft() {
+export function useCreateObject() {
   return useRecoilCallback(
     ({ snapshot, set }) =>
       async () => {
         const account = await snapshot.getPromise(accountSelector)
         if (account) {
-          const draft = await account.createDraft()
+          const object = await account.createObject()
           set(
             accountObjectsState,
             v =>
               v && {
                 ...v,
-                list: [draft].concat(v.list),
+                list: [object].concat(v.list),
               }
           )
         }
@@ -164,10 +163,10 @@ export function useCreateDraft() {
   )
 }
 
-export function useDeleteDraft() {
+export function useDeleteObject() {
   return useRecoilCallback(
     ({ set }) =>
-      async (account: Account, object: Object) => {
+      async (object: Object) => {
         set(
           accountObjectsState,
           v =>
@@ -176,7 +175,7 @@ export function useDeleteDraft() {
               list: v.list.filter(i => i !== object),
             }
         )
-        await account.deleteDraft(object.path)
+        await object.delete()
       },
     []
   )

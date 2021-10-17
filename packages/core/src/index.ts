@@ -16,7 +16,6 @@ import Ipfs, { IPFS } from '@paper/ipfs'
 import { PrivateKey } from 'ipfs-core/src/components/ipns'
 import { MFSEntry } from 'ipfs-core/src/components/files/ls'
 import all from 'it-all'
-import { Base64 } from 'js-base64'
 import WebSockets from 'libp2p-websockets'
 import filters from 'libp2p-websockets/src/filters'
 import { customAlphabet } from 'nanoid'
@@ -56,10 +55,6 @@ export class Account {
       },
       config: {
         Bootstrap: [],
-        Identity: {
-          PeerID: name,
-          PrivKey: Base64.fromUint8Array(key.bytes),
-        },
       },
       libp2p: {
         config: {
@@ -71,6 +66,11 @@ export class Account {
         },
       },
     })
+
+    try {
+      await ipfs.key.rm(name)
+    } catch {}
+    await ipfs.key.import(name, await key.export('123456'), '123456')
 
     const account = new Account(options, ipfs, key, name, args.password)
 
@@ -86,6 +86,9 @@ export class Account {
     } else {
       const cid = await this.resolveName(options, name)
       await ipfs.swarm.connect(options.swarm)
+      try {
+        await ipfs.files.rm(`/${name}`, { recursive: true })
+      } catch {}
       await ipfs.files.cp(`/ipfs/${cid}`, `/${name}`)
     }
 
@@ -126,9 +129,17 @@ export class Account {
     this.crypto = new crypto.Crypto(this.password)
   }
 
-  private draftsCache: Map<string, Object> = new Map()
+  private get objectPath() {
+    return `/${this.name}/objects`
+  }
 
-  private crypto: crypto.Crypto
+  private get draftPath() {
+    return `/${this.name}-draft/objects`
+  }
+
+  private objectsCache: Map<string, Object> = new Map()
+
+  readonly crypto: crypto.Crypto
 
   private nonce = customAlphabet('0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ', 5)
 
@@ -149,66 +160,97 @@ export class Account {
     await this.ipfs.stop()
   }
 
-  drafts() {
-    return this.iterateObject(`/${this.name}-draft/objects`)
-  }
+  async *objects(): AsyncGenerator<Object> {
+    const draftIter = this.iterateObject(this.draftPath)
+    const objectIter = this.iterateObject(this.objectPath)
 
-  async draft(objectIdOrPath: string): Promise<Object> {
-    const { createdAt, nonce, objectId } = this.getObjectIdFromPath(objectIdOrPath)
-    let obj = this.draftsCache.get(objectId)
-    if (!obj) {
-      const path = this.getDraftPath(createdAt, nonce)
-      obj = new Object(this.ipfs, this.crypto, path, createdAt)
+    let drafts: string[] = []
+    let objects: string[] = []
 
-      const stat = await this.ipfs.files.stat(path)
-      if (stat.type !== 'directory') {
-        throw new Error(`Invalid object directory`)
+    while (true) {
+      if (!drafts.length) {
+        const object = (await draftIter.next()).value
+        if (object) {
+          drafts.push(object)
+        }
       }
-      this.draftsCache.set(objectId, obj)
+      if (!objects.length) {
+        const object = (await objectIter.next()).value
+        if (object) {
+          objects.push(object)
+        }
+      }
+      const draftId = drafts.shift()
+      const objectId = objects.shift()
+
+      let id: string
+
+      if (draftId && objectId) {
+        if (draftId === objectId) {
+          id = draftId
+        } else if (draftId > objectId) {
+          objects.unshift(objectId)
+          id = draftId
+        } else {
+          drafts.unshift(draftId)
+          id = objectId
+        }
+      } else if (draftId) {
+        id = draftId
+      } else if (objectId) {
+        id = objectId
+      } else {
+        break
+      }
+
+      yield this.object(id)
     }
-    return obj
   }
 
-  async createDraft(): Promise<Object> {
-    const createdAt = Date.now()
-    const path = this.getDraftPath(createdAt, this.nonce())
-    const object = new Object(this.ipfs, this.crypto, path, createdAt)
-    await object.init()
+  async object(objectId: string): Promise<Object> {
+    const { createdAt, nonce } = this.checkObjectId(objectId)
+    let object = this.objectsCache.get(objectId)
+    if (!object) {
+      const { draftPath, objectPath } = this.getObjectPath(createdAt, nonce)
+      object = new Object(this, objectPath, draftPath, objectId, createdAt)
+      this.objectsCache.set(objectId, object)
+    }
     return object
   }
 
-  async deleteDraft(objectIdOrPath: string) {
-    const draft = await this.draft(objectIdOrPath)
-    await this.ipfs.files.rm(draft.path, { recursive: true })
+  async createObject(): Promise<Object> {
+    const createdAt = Date.now()
+    const { objectId, draftPath, objectPath } = this.getObjectPath(createdAt, this.nonce())
+    const object = new Object(this, objectPath, draftPath, objectId, createdAt)
+    return object
   }
 
-  private getDraftPath(createdAt: number, nonce: string): string {
+  private getObjectPath(
+    createdAt: number,
+    nonce: string
+  ): { objectId: string; draftPath: string; objectPath: string } {
     const date = new Date(createdAt)
     const year = date.getFullYear()
     const month = (date.getMonth() + 1).toString().padStart(2, '0')
     const day = date.getDate().toString().padStart(2, '0')
-    return `/${this.name}-draft/objects/${year}/${month}/${day}/${createdAt}-${nonce}`
+    return {
+      objectId: `${createdAt}-${nonce}`,
+      draftPath: `${this.draftPath}/${year}/${month}/${day}/${createdAt}-${nonce}`,
+      objectPath: `${this.objectPath}/${year}/${month}/${day}/${createdAt}-${nonce}`,
+    }
   }
 
-  private getObjectIdFromPath(path: string): {
-    objectId: string
-    createdAt: number
-    nonce: string
-  } {
-    const segments = path.split('/').filter(i => !!i)
-    if (segments.length > 0) {
-      const objectId = segments[segments.length - 1]
-      const m = objectId.match(/^(?<time>\d+)-(?<nonce>\S+)$/)
-      if (m?.groups) {
-        const { time, nonce } = m.groups
-        const date = new Date(parseInt(time))
-        const createdAt = date.getTime()
-        if (!isNaN(createdAt)) {
-          return { objectId: `${createdAt}-${nonce}`, createdAt, nonce }
-        }
+  private checkObjectId(objectId: string): { createdAt: number; nonce: string } {
+    const m = objectId.match(/^(?<time>\d+)-(?<nonce>[A-Z|0-9]{5})$/)
+    if (m?.groups) {
+      const { time, nonce } = m.groups
+      const date = new Date(parseInt(time))
+      const createdAt = date.getTime()
+      if (!isNaN(createdAt)) {
+        return { createdAt, nonce }
       }
     }
-    throw new Error(`Invalid object path: ${path}`)
+    throw new Error(`Invalid object path: ${objectId}`)
   }
 
   private async *iterateObject(dir: string) {
@@ -242,7 +284,7 @@ export class Account {
             .sort((a, b) => (a.name < b.name ? 1 : -1))
 
           for (const object of objects) {
-            yield await this.draft(object.name)
+            yield object.name
           }
         }
       }

@@ -13,9 +13,10 @@
 // limitations under the License.
 
 import styled from '@emotion/styled'
-import { KeyboardArrowLeft, KeyboardArrowRight, MoreVert } from '@mui/icons-material'
+import { KeyboardArrowLeft, KeyboardArrowRight, MoreVert, Publish } from '@mui/icons-material'
 import {
   Button,
+  Chip,
   IconButton,
   List,
   ListItemButton,
@@ -25,6 +26,7 @@ import {
   MenuItem,
   Skeleton,
   Stack,
+  Typography,
 } from '@mui/material'
 import { Box } from '@mui/system'
 import { Account } from '@paper/core'
@@ -37,7 +39,7 @@ import { useAsync } from 'react-use'
 import { useRecoilValue } from 'recoil'
 import { accountSelector } from '../../../state/account'
 import { ForbiddenViewLazy } from '../../error'
-import useObjectPagination, { useDeleteDraft } from '../useObjectPagination'
+import useObjectPagination, { useDeleteObject } from '../useObjectPagination'
 
 export interface UserHomeViewProps extends Pick<RouteComponentProps<{ name: string }>, 'match'> {}
 
@@ -62,23 +64,18 @@ const ObjectList = ({ account }: { account: Account }) => {
 
   const handleCloseMenu = () => setMenuState(undefined)
 
-  const deleteDraft = useDeleteDraft()
+  const deleteObject = useDeleteObject()
   const handleDelete = async () => {
     const object = menuState?.object
     handleCloseMenu()
-    object && (await deleteDraft(account, object))
+    object && (await deleteObject(object))
   }
 
   return (
     <Box maxWidth={800} margin="auto">
       <List>
         {pagination.list.map(object => (
-          <ObjectItem
-            key={object.path}
-            account={account}
-            object={object}
-            openMenu={handleOpenMenu}
-          />
+          <ObjectItem key={object.id} account={account} object={object} openMenu={handleOpenMenu} />
         ))}
       </List>
 
@@ -123,10 +120,15 @@ function ObjectItem({
   openMenu: (e: React.MouseEvent<Element>, object: Object) => void
 }) {
   const history = useHistory()
-  const info = useAsync(() => object.getInfo(), [object])
+  const info = useAsync(() => object.info, [object])
 
   const handleItemClick = () => {
-    history.push(`/${account.name}/${object.path.split('/').slice(-1)[0]}`)
+    history.push(`/${account.name}/${object.id}`)
+  }
+
+  const handlePublish = async (e: React.MouseEvent) => {
+    e.stopPropagation()
+    await object.publish()
   }
 
   if (info.loading) {
@@ -142,19 +144,32 @@ function ObjectItem({
         <ListItemText
           primary={title || 'Untitled'}
           secondary={
-            <FormattedDate
-              value={time}
-              year="numeric"
-              month="numeric"
-              day="numeric"
-              hour="numeric"
-              hour12={false}
-              minute="numeric"
-            />
+            <>
+              {info.value.isDraft && (
+                <Chip label="unpublished" component="span" size="small" variant="outlined" />
+              )}
+              <br />
+              <Typography variant="caption">
+                <FormattedDate
+                  value={time}
+                  year="numeric"
+                  month="numeric"
+                  day="numeric"
+                  hour="numeric"
+                  hour12={false}
+                  minute="numeric"
+                />
+              </Typography>
+            </>
           }
         />
 
         <ListItemSecondaryAction>
+          {info.value.isDraft && (
+            <IconButton onClick={e => handlePublish(e)}>
+              <Publish />
+            </IconButton>
+          )}
           <IconButton edge="end" onClick={e => openMenu(e, object)}>
             <MoreVert />
           </IconButton>

@@ -12,101 +12,198 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { IPFS } from '@paper/ipfs'
 import Ajv, { JTDSchemaType } from 'ajv/dist/jtd'
 import { ReadOptions, WriteOptions } from 'ipfs-core-types/src/files'
 import all from 'it-all'
 import { nanoid } from 'nanoid'
+import { Account } from '.'
 import { crypto } from './crypto'
 
 export default class Object {
-  constructor(
-    private ipfs: IPFS,
-    private crypto: crypto.Crypto,
-    readonly path: string,
-    readonly createdAt: number
-  ) {}
-
-  private get passwordPath() {
-    return `${this.path}/password`
+  constructor(account: Account, path: string, draftPath: string, id: string, createdAt: number) {
+    this.#_account = account
+    this.#path = path
+    this.#draftPath = draftPath
+    this.id = id
+    this.createdAt = createdAt
   }
-  private password?: string
-  private async getPassword(): Promise<string> {
-    if (!this.password) {
-      const textEncoder = new TextEncoder()
-      const textDecoder = new TextDecoder()
+  #_account?: Account
 
-      try {
-        const raw = await Object.readBuffer(this.ipfs.files.read(this.passwordPath))
-        this.password = textDecoder.decode(await this.crypto.aes.decrypt(raw))
-      } catch (error: any) {
-        if (error.code === 'ERR_NOT_FOUND') {
-          this.password = nanoid(32)
-          const raw = await this.crypto.aes.encrypt(textEncoder.encode(this.password))
-          await this.ipfs.files.write(this.passwordPath, new Uint8Array(raw), {
-            parents: true,
-            create: true,
-            truncate: true,
-          })
-        } else {
+  get #account(): Account {
+    if (!this.#_account) {
+      throw new Error(`account is undefined, maybe object has been destroy`)
+    }
+    return this.#_account
+  }
+
+  #path: string
+  #draftPath: string
+
+  readonly id: string
+  readonly createdAt: number
+
+  #_init?: Promise<void>
+
+  get #init(): Promise<void> {
+    if (!this.#_init) {
+      this.#_init = (async () => {
+        const getInfo = async (path: string) => {
+          try {
+            const json = JSON.parse(new TextDecoder().decode(await this.#read(path)))
+            if (validateObjectInfo(json)) {
+              return json
+            }
+          } catch {}
+        }
+
+        this.#objectInfo = await getInfo(`${this.#path}/${this.#infoFilename}`)
+        this.#draftInfo = await getInfo(`${this.#draftPath}/${this.#infoFilename}`)
+
+        if (
+          this.#objectInfo &&
+          (!this.#draftInfo || this.#objectInfo.version > this.#draftInfo.version)
+        ) {
+          try {
+            await this.#account.ipfs.files.rm(this.#draftPath, { recursive: true })
+          } catch (error: any) {
+            if (error.code !== 'ERR_NOT_FOUND') {
+              throw error
+            }
+          }
+          await this.#account.ipfs.files.cp(this.#path, this.#draftPath, { parents: true })
+
+          this.#draftInfo = await getInfo(`${this.#draftPath}/${this.#infoFilename}`)
+        }
+
+        if (!this.#draftInfo) {
+          this.#draftInfo = { version: 0 }
+        }
+        if (!this.#objectInfo) {
+          this.#objectInfo = { version: 0 }
+        }
+      })()
+    }
+    return this.#_init
+  }
+
+  readonly #passwordFilename = 'password'
+
+  #_password?: Promise<string>
+
+  get #password(): Promise<string> {
+    if (!this.#_password) {
+      const getPassword = async (path: string) => {
+        try {
+          const raw = await Object.#readBuffer(this.#account.ipfs.files.read(path))
+          return new TextDecoder().decode(await this.#account.crypto.aes.decrypt(raw))
+        } catch (error: any) {
+          if (error.code === 'ERR_NOT_FOUND') {
+            return
+          }
           throw error
         }
       }
+
+      this.#_password = (async () => {
+        return (
+          (await getPassword(`${this.#path}/${this.#passwordFilename}`)) ||
+          (await getPassword(`${this.#draftPath}/${this.#passwordFilename}`)) ||
+          (await (async () => {
+            const password = nanoid(32)
+            const raw = await this.#account.crypto.aes.encrypt(new TextEncoder().encode(password))
+            await this.#account.ipfs.files.write(
+              `${this.#draftPath}/${this.#passwordFilename}`,
+              new Uint8Array(raw),
+              {
+                parents: true,
+                create: true,
+                truncate: true,
+              }
+            )
+            return password
+          })())
+        )
+      })()
     }
-    return this.password
-  }
-  async read(ipfsPath: string, options?: ReadOptions): Promise<ArrayBuffer> {
-    const key = await this.getPassword()
-    const buffer = await Object.readBuffer(this.ipfs.files.read(ipfsPath, options))
-    return crypto.aes.decrypt(key, buffer)
-  }
-  async write(ipfsPath: string, content: string | ArrayBuffer, options?: WriteOptions) {
-    const key = await this.getPassword()
-    if (typeof content === 'string') {
-      content = new TextEncoder().encode(content)
-    }
-    const buffer = await crypto.aes.encrypt(key, content)
-    await this.ipfs.files.write(ipfsPath, new Uint8Array(buffer), options)
+    return this.#_password
   }
 
-  async init() {
-    await this.ipfs.files.mkdir(this.path, { parents: true })
-  }
+  readonly #infoFilename = `info.json`
 
-  private get infoPath() {
-    return `${this.path}/info.json`
-  }
+  #objectInfo?: ObjectInfo
 
-  private _info?: ObjectInfo
-  async getInfo(): Promise<ObjectInfo> {
-    if (!this._info) {
-      try {
-        const json = JSON.parse(new TextDecoder().decode(await this.read(this.infoPath)))
-        if (validateObjectInfo(json)) {
-          this._info = json
-        }
-      } catch {}
-      if (!this._info) {
-        this._info = { version: 0 }
+  #draftInfo?: ObjectInfo
+
+  get info(): Promise<ObjectInfo & { isDraft: boolean }> {
+    return this.#init.then(() => {
+      if (!this.#draftInfo || !this.#objectInfo) {
+        throw new Error('object is not initialized')
       }
-    }
-    return this._info
+      const isDraft = this.#draftInfo.version > this.#objectInfo.version
+      return { ...this.#draftInfo, isDraft }
+    })
   }
+
   async setInfo({ title, description }: Pick<ObjectInfo, 'title' | 'description'> = {}) {
-    const info = await this.getInfo()
-    if (typeof title !== 'undefined') info.title = title
-    if (typeof description !== 'undefined') info.description = description
-    info.updatedAt = Date.now()
-    info.version += 1
-    this._info = info
-    await this.write(this.infoPath, JSON.stringify(this._info), {
+    if (!this.#draftInfo) {
+      throw new Error('object is not initialized')
+    }
+    if (typeof title !== 'undefined') this.#draftInfo.title = title
+    if (typeof description !== 'undefined') this.#draftInfo.description = description
+    this.#draftInfo.updatedAt = Date.now()
+    this.#draftInfo.version += 1
+    await this.write(this.#infoFilename, JSON.stringify(this.#draftInfo), {
       parents: true,
       create: true,
       truncate: true,
     })
   }
 
-  private static async readBuffer(source: AsyncIterable<Uint8Array>): Promise<Uint8Array> {
+  async #read(path: string, options?: ReadOptions): Promise<ArrayBuffer> {
+    const buffer = await Object.#readBuffer(this.#account.ipfs.files.read(path, options))
+    return crypto.aes.decrypt(await this.#password, buffer)
+  }
+
+  async read(filename: string, options?: ReadOptions): Promise<ArrayBuffer> {
+    return this.#read(`${this.#draftPath}/${filename}`, options)
+  }
+
+  async #write(path: string, content: string | ArrayBuffer, options?: WriteOptions) {
+    if (typeof content === 'string') {
+      content = new TextEncoder().encode(content)
+    }
+    const buffer = await crypto.aes.encrypt(await this.#password, content)
+    await this.#account.ipfs.files.write(path, new Uint8Array(buffer), options)
+  }
+
+  async write(filename: string, content: string | ArrayBuffer, options?: WriteOptions) {
+    return this.#write(`${this.#draftPath}/${filename}`, content, options)
+  }
+
+  async delete() {
+    await this.#account.ipfs.files.rm(this.#path, { recursive: true })
+    await this.#account.ipfs.files.rm(this.#draftPath, { recursive: true })
+    await this.#account.publish()
+    this.destroy()
+  }
+
+  async publish() {
+    await this.#init
+    try {
+      await this.#account.ipfs.files.rm(this.#path, { recursive: true })
+    } catch (error: any) {
+      if (error.code !== 'ERR_NOT_FOUND') {
+        throw error
+      }
+    }
+    await this.#account.ipfs.files.cp(this.#draftPath, this.#path, { parents: true })
+    await this.#account.publish()
+
+    // Update objectInfo
+    this.#objectInfo = this.#draftInfo
+  }
+
+  static async #readBuffer(source: AsyncIterable<Uint8Array>): Promise<Uint8Array> {
     const chunks = await all(source)
     const buffer = new Uint8Array(chunks.reduce((res, i) => res + i.byteLength, 0))
     let offset = 0
@@ -115,6 +212,10 @@ export default class Object {
       offset += chunk.byteLength
     }
     return buffer
+  }
+
+  private destroy() {
+    this.#_account = undefined
   }
 }
 
@@ -130,7 +231,7 @@ export const objectInfoSchema: JTDSchemaType<ObjectInfo> = {
     version: { type: 'uint32' },
   },
   optionalProperties: {
-    updatedAt: { type: 'uint32' },
+    updatedAt: { type: 'float64' },
     title: { type: 'string' },
     description: { type: 'string' },
   },

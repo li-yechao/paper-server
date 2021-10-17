@@ -19,30 +19,32 @@ import Ajv, { JTDSchemaType } from 'ajv/dist/jtd'
 export class Paper {
   constructor(readonly object: Object) {}
 
-  async getInfo(): Promise<PaperInfo> {
-    const info = await this.object.getInfo()
-    if (!validatePaperInfo(info)) {
-      throw new Error(`Invalid paper info`)
-    }
-    return info
+  get info(): Promise<PaperInfo> {
+    return this.object.info.then(info => {
+      if (!validatePaperInfo(info)) {
+        throw new Error(`Invalid paper info`)
+      }
+      return info
+    })
   }
+
   async setInfo(info: Pick<PaperInfo, 'title' | 'description'> = {}) {
     this.object.setInfo(info)
   }
 
-  get contentPath() {
-    return `${this.object.path}/paper.json`
-  }
+  private readonly contentFilename = 'paper.json'
+
   async setContent(content: DocJson) {
-    await this.object.write(this.contentPath, JSON.stringify(content), {
+    await this.object.write(this.contentFilename, JSON.stringify(content), {
       parents: true,
       create: true,
       truncate: true,
     })
   }
+
   async getContent(): Promise<DocJson | undefined> {
     try {
-      const buffer = await this.object.read(this.contentPath)
+      const buffer = await this.object.read(this.contentFilename)
       const str = new TextDecoder().decode(buffer)
       return JSON.parse(str)
     } catch (error: any) {

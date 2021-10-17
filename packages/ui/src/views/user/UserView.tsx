@@ -24,7 +24,7 @@ import { accountSelector } from '../../state/account'
 import { NotFoundViewLazy } from '../error'
 import { UserHomeViewLazy } from './home'
 import { ObjectViewLazy } from './object'
-import { useCreateDraft } from './useObjectPagination'
+import { useCreateObject } from './useObjectPagination'
 
 export interface UserViewProps extends Pick<RouteComponentProps<{ name: string }>, 'match'> {}
 
@@ -82,7 +82,7 @@ const _Body = styled.div`
 `
 
 const CreateButton = () => {
-  const handleCreate = useCreateDraft()
+  const handleCreate = useCreateObject()
 
   return (
     <IconButton onClick={handleCreate}>
