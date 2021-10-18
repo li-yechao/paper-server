@@ -12,23 +12,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { Box, LinearProgress } from '@mui/material'
 import * as React from 'react'
+import NetworkIndicator from '../NetworkIndicator'
 
 export default function LazyView<P>(C: React.LazyExoticComponent<React.ComponentType<P>>) {
   return (props: P) => {
     return (
-      <React.Suspense fallback={<LazyView.Loading />}>
+      <React.Suspense fallback={<Loading />}>
         <C {...(props as any)} />
       </React.Suspense>
     )
   }
 }
 
-LazyView.Loading = () => {
-  return (
-    <Box position="fixed" left={0} top={0} right={0}>
-      <LinearProgress />
-    </Box>
-  )
+const Loading = () => {
+  return <NetworkIndicator in />
 }

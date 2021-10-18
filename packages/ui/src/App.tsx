@@ -13,14 +13,14 @@
 // limitations under the License.
 
 import { ThemeProvider as EmotionThemeProvider } from '@emotion/react'
-import { createTheme, ThemeProvider as MuiThemeProvider } from '@mui/material'
+import { Box, createTheme, LinearProgress, ThemeProvider as MuiThemeProvider } from '@mui/material'
 import { StylesProvider } from '@mui/styles'
 import { Suspense, useMemo } from 'react'
 import { IntlProvider } from 'react-intl'
 import { HashRouter, Route, Switch } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
 import ErrorBoundary from './components/ErrorBoundary'
-import LazyView from './components/LazyView'
+import NetworkIndicator from './components/NetworkIndicator'
 import { NotFoundViewLazy } from './views/error'
 import ErrorView from './views/error/ErrorView'
 import { HomeViewLazy } from './views/home'
@@ -41,19 +41,27 @@ export default function App() {
 
   return (
     <ErrorBoundary fallback={ErrorView}>
-      <IntlProvider locale={navigator.language}>
-        <RecoilRoot>
-          <StylesProvider injectFirst>
-            <MuiThemeProvider theme={theme}>
-              <EmotionThemeProvider theme={theme}>
-                <Suspense fallback={<LazyView.Loading />}>
-                  <AppRoutes />
-                </Suspense>
-              </EmotionThemeProvider>
-            </MuiThemeProvider>
-          </StylesProvider>
-        </RecoilRoot>
-      </IntlProvider>
+      <NetworkIndicator.Provider>
+        <NetworkIndicator.Renderer>
+          <Box position="fixed" left={0} top={0} right={0} zIndex={t => t.zIndex.tooltip + 1}>
+            <LinearProgress />
+          </Box>
+        </NetworkIndicator.Renderer>
+
+        <IntlProvider locale={navigator.language}>
+          <RecoilRoot>
+            <StylesProvider injectFirst>
+              <MuiThemeProvider theme={theme}>
+                <EmotionThemeProvider theme={theme}>
+                  <Suspense fallback={<NetworkIndicator in />}>
+                    <AppRoutes />
+                  </Suspense>
+                </EmotionThemeProvider>
+              </MuiThemeProvider>
+            </StylesProvider>
+          </RecoilRoot>
+        </IntlProvider>
+      </NetworkIndicator.Provider>
     </ErrorBoundary>
   )
 }
