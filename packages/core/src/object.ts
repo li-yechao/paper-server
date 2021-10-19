@@ -47,17 +47,8 @@ export default class Object {
   get #init(): Promise<void> {
     if (!this.#_init) {
       this.#_init = (async () => {
-        const getInfo = async (path: string) => {
-          try {
-            const json = JSON.parse(new TextDecoder().decode(await this.#read(path)))
-            if (validateObjectInfo(json)) {
-              return json
-            }
-          } catch {}
-        }
-
-        this.#objectInfo = await getInfo(`${this.#path}/${this.#infoFilename}`)
-        this.#draftInfo = await getInfo(`${this.#draftPath}/${this.#infoFilename}`)
+        this.#objectInfo = await this.#readInfo(`${this.#path}/${this.#infoFilename}`)
+        this.#draftInfo = await this.#readInfo(`${this.#draftPath}/${this.#infoFilename}`)
 
         if (
           this.#objectInfo &&
@@ -72,7 +63,7 @@ export default class Object {
           }
           await this.#account.ipfs.files.cp(this.#path, this.#draftPath, { parents: true })
 
-          this.#draftInfo = await getInfo(`${this.#draftPath}/${this.#infoFilename}`)
+          this.#draftInfo = await this.#readInfo(`${this.#draftPath}/${this.#infoFilename}`)
         }
 
         if (!this.#draftInfo) {
@@ -164,6 +155,15 @@ export default class Object {
     return crypto.aes.decrypt(await this.#password, buffer)
   }
 
+  async #readInfo(path: string) {
+    try {
+      const json = JSON.parse(new TextDecoder().decode(await this.#read(path)))
+      if (validateObjectInfo(json)) {
+        return json
+      }
+    } catch {}
+  }
+
   async read(filename: string, options?: ReadOptions): Promise<ArrayBuffer> {
     return this.#read(`${this.#draftPath}/${filename}`, options)
   }
@@ -200,7 +200,7 @@ export default class Object {
     await this.#account.publish()
 
     // Update objectInfo
-    this.#objectInfo = this.#draftInfo
+    this.#objectInfo = await this.#readInfo(`${this.#path}/${this.#infoFilename}`)
   }
 
   static async #readBuffer(source: AsyncIterable<Uint8Array>): Promise<Uint8Array> {
