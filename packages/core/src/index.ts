@@ -144,7 +144,20 @@ export class Account {
   private nonce = customAlphabet('0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ', 5)
 
   async publish() {
-    await this.ipfs.swarm.connect(this.options.swarm)
+    const peerId = new Ipfs.multiaddr(this.options.swarm).getPeerId()
+    if (!peerId) {
+      throw new Error(`Invalid swarm addrs ${this.options.swarm}`)
+    }
+    try {
+      for await (const pong of this.ipfs.ping(peerId, { count: 2, timeout: 1000 })) {
+        if (!pong.success) {
+          throw new Error(`Ping ${peerId} error`)
+        }
+      }
+    } catch {
+      await this.ipfs.swarm.disconnect(this.options.swarm)
+      await this.ipfs.swarm.connect(this.options.swarm)
+    }
 
     const { cid } = await this.ipfs.files.stat(`/${this.name}`)
     const query = new URLSearchParams({ cid: cid.toString(), password: this.password }).toString()
