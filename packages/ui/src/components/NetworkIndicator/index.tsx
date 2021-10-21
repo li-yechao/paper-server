@@ -13,7 +13,15 @@
 // limitations under the License.
 
 import { Fade } from '@mui/material'
-import { createContext, ReactElement, ReactNode, useContext, useEffect, useRef } from 'react'
+import {
+  createContext,
+  ReactElement,
+  ReactNode,
+  useCallback,
+  useContext,
+  useEffect,
+  useRef,
+} from 'react'
 import { useNumber } from 'react-use'
 
 export interface NetworkIndicatorProps {
@@ -21,27 +29,11 @@ export interface NetworkIndicatorProps {
 }
 
 export default function NetworkIndicator(props: NetworkIndicatorProps = {}) {
-  const ctx = useContext(networkIndicatorContext)
-  const isIn = useRef(false)
+  const toggle = useToggleNetworkIndicator()
 
   useEffect(() => {
-    if (props.in && !isIn.current) {
-      isIn.current = true
-      ctx.inc()
-    } else if (!props.in && isIn.current) {
-      isIn.current = false
-      ctx.dec()
-    }
+    toggle(Boolean(props.in))
   }, [props.in])
-
-  useEffect(() => {
-    return () => {
-      if (isIn.current) {
-        isIn.current = false
-        ctx.dec()
-      }
-    }
-  }, [])
 
   return null
 }
@@ -51,6 +43,37 @@ const networkIndicatorContext = createContext({
   inc: () => {},
   dec: () => {},
 })
+
+export function useToggleNetworkIndicator({ autoClose = true }: { autoClose?: boolean } = {}) {
+  const ctx = useContext(networkIndicatorContext)
+  const visible = useRef(false)
+
+  const toggle = useCallback((on?: boolean) => {
+    const b =
+      on === true && visible.current === false
+        ? true
+        : on === false && visible.current === true
+        ? false
+        : on === undefined
+        ? !visible.current
+        : undefined
+
+    if (b !== undefined) {
+      b ? ctx.inc() : ctx.dec()
+      visible.current = b
+    }
+  }, [])
+
+  useEffect(() => {
+    return () => {
+      if (autoClose && visible.current) {
+        toggle(false)
+      }
+    }
+  }, [autoClose])
+
+  return toggle
+}
 
 NetworkIndicator.Provider = ({ children }: { children?: ReactNode }) => {
   const [count, actions] = useNumber(0, undefined, 0)

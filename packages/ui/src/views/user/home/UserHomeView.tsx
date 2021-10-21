@@ -35,9 +35,9 @@ import * as React from 'react'
 import { useState } from 'react'
 import { FormattedDate } from 'react-intl'
 import { RouteComponentProps, useHistory } from 'react-router-dom'
-import { useAsync, useToggle } from 'react-use'
+import { useAsync } from 'react-use'
 import { useRecoilValue } from 'recoil'
-import NetworkIndicator from '../../../components/NetworkIndicator'
+import { useToggleNetworkIndicator } from '../../../components/NetworkIndicator'
 import { accountSelector } from '../../../state/account'
 import { ForbiddenViewLazy } from '../../error'
 import useObjectPagination, { useDeleteObject } from '../useObjectPagination'
@@ -122,7 +122,7 @@ function ObjectItem({
 }) {
   const history = useHistory()
   const info = useAsync(() => object.info, [object])
-  const [publishing, togglePublishing] = useToggle(false)
+  const toggleNetworkIndicator = useToggleNetworkIndicator({ autoClose: false })
 
   const handleItemClick = () => {
     history.push(`/${account.name}/${object.id}`)
@@ -131,10 +131,10 @@ function ObjectItem({
   const handlePublish = async (e: React.MouseEvent) => {
     e.stopPropagation()
     try {
-      togglePublishing(true)
+      toggleNetworkIndicator(true)
       await object.publish()
     } finally {
-      togglePublishing(false)
+      toggleNetworkIndicator(false)
     }
   }
 
@@ -148,7 +148,6 @@ function ObjectItem({
 
     return (
       <_ListItemButton divider onClick={handleItemClick}>
-        <NetworkIndicator in={publishing} />
         <ListItemText
           primary={title || 'Untitled'}
           secondary={
