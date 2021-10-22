@@ -235,6 +235,7 @@ export class Account {
     const createdAt = Date.now()
     const { objectId, draftPath, objectPath } = this.getObjectPath(createdAt, this.nonce())
     const object = new Object(this, objectPath, draftPath, objectId, createdAt)
+    this.objectsCache.set(objectId, object)
     return object
   }
 
