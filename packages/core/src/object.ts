@@ -181,9 +181,21 @@ export default class Object {
   }
 
   async delete() {
-    await this.#account.ipfs.files.rm(this.#path, { recursive: true })
-    await this.#account.ipfs.files.rm(this.#draftPath, { recursive: true })
-    await this.#account.publish()
+    try {
+      await this.#account.ipfs.files.rm(this.#path, { recursive: true })
+      await this.#account.publish()
+    } catch (error: any) {
+      if (error.code !== 'ERR_NOT_FOUND') {
+        throw error
+      }
+    }
+    try {
+      await this.#account.ipfs.files.rm(this.#draftPath, { recursive: true })
+    } catch (error: any) {
+      if (error.code !== 'ERR_NOT_FOUND') {
+        throw error
+      }
+    }
     this.destroy()
   }
 
