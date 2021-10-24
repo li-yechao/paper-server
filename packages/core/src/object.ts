@@ -18,6 +18,7 @@ import all from 'it-all'
 import { nanoid } from 'nanoid'
 import { Account } from '.'
 import { crypto } from './crypto'
+import { fileUtils } from './utils/files'
 
 export default class Object {
   constructor(account: Account, path: string, draftPath: string, id: string, createdAt: number) {
@@ -54,13 +55,7 @@ export default class Object {
           this.#objectInfo &&
           (!this.#draftInfo || this.#objectInfo.version > this.#draftInfo.version)
         ) {
-          try {
-            await this.#account.ipfs.files.rm(this.#draftPath, { recursive: true })
-          } catch (error: any) {
-            if (error.code !== 'ERR_NOT_FOUND') {
-              throw error
-            }
-          }
+          await fileUtils.rmIfExists(this.#account.ipfs, this.#draftPath, { recursive: true })
           await this.#account.ipfs.files.cp(this.#path, this.#draftPath, { parents: true })
 
           this.#draftInfo = await this.#readInfo(`${this.#draftPath}/${this.#infoFilename}`)
@@ -87,11 +82,10 @@ export default class Object {
         try {
           const raw = await Object.#readBuffer(this.#account.ipfs.files.read(path))
           return new TextDecoder().decode(await this.#account.crypto.aes.decrypt(raw))
-        } catch (error: any) {
-          if (error.code === 'ERR_NOT_FOUND') {
-            return
+        } catch (error) {
+          if (!fileUtils.isErrNotFound(error)) {
+            throw error
           }
-          throw error
         }
       }
 
@@ -181,33 +175,16 @@ export default class Object {
   }
 
   async delete() {
-    try {
-      await this.#account.ipfs.files.rm(this.#path, { recursive: true })
+    if (await fileUtils.rmIfExists(this.#account.ipfs, this.#path, { recursive: true })) {
       await this.#account.publish()
-    } catch (error: any) {
-      if (error.code !== 'ERR_NOT_FOUND') {
-        throw error
-      }
     }
-    try {
-      await this.#account.ipfs.files.rm(this.#draftPath, { recursive: true })
-    } catch (error: any) {
-      if (error.code !== 'ERR_NOT_FOUND') {
-        throw error
-      }
-    }
+    await fileUtils.rmIfExists(this.#account.ipfs, this.#draftPath, { recursive: true })
     this.destroy()
   }
 
   async publish() {
     await this.#init
-    try {
-      await this.#account.ipfs.files.rm(this.#path, { recursive: true })
-    } catch (error: any) {
-      if (error.code !== 'ERR_NOT_FOUND') {
-        throw error
-      }
-    }
+    await fileUtils.rmIfExists(this.#account.ipfs, this.#path, { recursive: true })
     await this.#account.ipfs.files.cp(this.#draftPath, this.#path, { parents: true })
     await this.#account.publish()
 

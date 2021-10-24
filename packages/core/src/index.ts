@@ -21,6 +21,7 @@ import filters from 'libp2p-websockets/src/filters'
 import { customAlphabet } from 'nanoid'
 import Object from './object'
 import { crypto } from './crypto'
+import { fileUtils } from './utils/files'
 
 export interface AccountOptions {
   swarm: string
@@ -274,7 +275,7 @@ export class Account {
         .filter(i => i.type === 'directory' && /^\d{4}$/.test(i.name))
         .sort((a, b) => (a.name < b.name ? 1 : -1))
     } catch (error: any) {
-      if (error.code === 'ERR_NOT_FOUND') {
+      if (fileUtils.isErrNotFound(error)) {
         return
       }
       throw error
