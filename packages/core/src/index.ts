@@ -16,7 +16,9 @@ import Ipfs, { IPFS } from '@paper/ipfs'
 import { PrivateKey } from 'ipfs-core/src/components/ipns'
 import { MFSEntry } from 'ipfs-core/src/components/files/ls'
 import all from 'it-all'
+// @ts-ignore
 import WebSockets from 'libp2p-websockets'
+// @ts-ignore
 import filters from 'libp2p-websockets/src/filters'
 import { customAlphabet } from 'nanoid'
 import Object from './object'
