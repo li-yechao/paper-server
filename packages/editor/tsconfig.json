@@ -10,6 +10,7 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "moduleResolution": "Node",
+    "allowSyntheticDefaultImports": true,
     "skipLibCheck": true
   }
 }

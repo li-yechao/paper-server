@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-declare type RemoveIndex<T> = {
+export type RemoveIndex<T> = {
   [K in keyof T as string extends K ? never : number extends K ? never : K]: T[K]
 }
 
-declare type PromiseOr<T> = T | Promise<T>
+export type PromiseOr<T> = T | Promise<T>

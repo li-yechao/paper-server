@@ -26,6 +26,7 @@ import {
 import { Decoration, EditorView, NodeView as ProsemirrorNodeView } from 'prosemirror-view'
 import React from 'react'
 import ReactDOM from 'react-dom'
+import { RemoveIndex } from '../../utils/type'
 import Extension from '../lib/Extension'
 
 export { Node as ProsemirrorNode } from 'prosemirror-model'

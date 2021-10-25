@@ -14,6 +14,7 @@
 
 import { Plugin, Transaction } from 'prosemirror-state'
 import { EditorView } from 'prosemirror-view'
+import { PromiseOr } from '../../utils/type'
 
 export default abstract class Extension {
   abstract get name(): string
