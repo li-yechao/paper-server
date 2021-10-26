@@ -85,8 +85,8 @@ const AppRoutes = () => {
       g.__ACCOUNT__ = (() => {
         const account = Storage.account
         if (account) {
-          const { name, password } = account
-          return Account.create(accountOptions, { name, password })
+          const { userId, password } = account
+          return Account.create(accountOptions, { userId, password })
         }
 
         return null
@@ -110,7 +110,7 @@ const AppRoutes = () => {
       <HashRouter>
         <Switch>
           <Route path="/" exact component={HomeViewLazy} />
-          <Route path="/:name" component={UserViewLazy} />
+          <Route path="/:userId" component={UserViewLazy} />
           <Route path="*" component={NotFoundViewLazy} />
         </Switch>
       </HashRouter>

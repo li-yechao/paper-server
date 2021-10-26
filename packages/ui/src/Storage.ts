@@ -13,7 +13,7 @@
 // limitations under the License.
 
 export interface Account {
-  name: string
+  userId: string
   password: string
 }
 
@@ -22,9 +22,9 @@ export default class Storage {
   static get account(): Account | null {
     try {
       const v = JSON.parse(localStorage.getItem(this.ACCOUNT_KEY) || '{}')
-      if (typeof v.name === 'string' && typeof v.password === 'string') {
+      if (typeof v.userId === 'string' && typeof v.password === 'string') {
         return {
-          name: v.name,
+          userId: v.userId,
           password: v.password,
         }
       }
@@ -35,7 +35,7 @@ export default class Storage {
     if (value) {
       localStorage.setItem(
         this.ACCOUNT_KEY,
-        JSON.stringify({ name: value.name, password: value.password })
+        JSON.stringify({ userId: value.userId, password: value.password })
       )
     } else {
       localStorage.removeItem(this.ACCOUNT_KEY)

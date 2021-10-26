@@ -53,14 +53,14 @@ import { useBeforeUnload } from 'react-use'
 export interface ObjectViewProps
   extends Pick<
     RouteComponentProps<{
-      name: string
+      userId: string
       objectId: string
     }>,
     'match'
   > {}
 
 export default function ObjectView(props: ObjectViewProps) {
-  const { name: userId, objectId } = props.match.params
+  const { userId, objectId } = props.match.params
   const account = useRecoilValue(accountSelector)
   const [paper, setPaper] = useState<Paper>()
   const [content, setContent] = useState<DocJson>()

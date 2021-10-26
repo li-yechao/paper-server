@@ -41,8 +41,8 @@ export const accountSelector = selector<AccountState>({
     if (value instanceof DefaultValue) {
       Storage.account = null
     } else {
-      const { name, password } = value
-      Storage.account = { name, password }
+      const { userId, password } = value
+      Storage.account = { userId, password }
     }
 
     const old = get(accountState)

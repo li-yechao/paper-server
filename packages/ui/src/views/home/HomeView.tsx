@@ -19,5 +19,5 @@ import { accountSelector } from '../../state/account'
 export default function HomeView() {
   const account = useRecoilValue(accountSelector)
 
-  return <Redirect to={`/${account.name}`} />
+  return <Redirect to={`/${account.userId}`} />
 }

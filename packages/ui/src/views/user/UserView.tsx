@@ -26,17 +26,17 @@ import { UserHomeViewLazy } from './home'
 import { ObjectViewLazy } from './object'
 import { useCreateObject } from './useObjectPagination'
 
-export interface UserViewProps extends Pick<RouteComponentProps<{ name: string }>, 'match'> {}
+export interface UserViewProps extends Pick<RouteComponentProps<{ userId: string }>, 'match'> {}
 
 export default function UserView(props: UserViewProps) {
-  const { name } = props.match.params
+  const { userId } = props.match.params
   const id = useMemo(() => {
     try {
-      return Ipfs.PeerId.parse(name)
+      return Ipfs.PeerId.parse(userId)
     } catch {
       return null
     }
-  }, [name])
+  }, [userId])
 
   if (!id) {
     return <NotFoundViewLazy />

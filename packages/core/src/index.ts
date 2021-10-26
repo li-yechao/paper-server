@@ -39,7 +39,7 @@ export class Account {
 
   static async create(
     options: AccountOptions,
-    args: { name: string; password: string } | { key: PrivateKey; password: string }
+    args: { userId: string; password: string } | { key: PrivateKey; password: string }
   ): Promise<Account> {
     function isKey(a: typeof args): a is { key: PrivateKey; password: string } {
       return typeof (a as any).key !== 'undefined'
@@ -48,11 +48,11 @@ export class Account {
     const isNewKey = isKey(args)
     const key = isKey(args)
       ? args.key
-      : await this.getPrivateKeyFromServer(options, args.name, args.password)
+      : await this.getPrivateKeyFromServer(options, args.userId, args.password)
 
-    const name = await key.id()
+    const userId = await key.id()
     const ipfs = await Ipfs.create({
-      repo: name,
+      repo: userId,
       preload: {
         enabled: false,
       },
@@ -71,15 +71,15 @@ export class Account {
     })
 
     try {
-      await ipfs.key.rm(name)
+      await ipfs.key.rm(userId)
     } catch {}
-    await ipfs.key.import(name, await key.export('123456'), '123456')
+    await ipfs.key.import(userId, await key.export('123456'), '123456')
 
-    const account = new Account(options, ipfs, key, name, args.password)
+    const account = new Account(options, ipfs, key, userId, args.password)
 
     if (isNewKey) {
       const encryptedKey = await crypto.aes.encrypt(args.password, key.bytes)
-      await ipfs.files.write(`/${name}/keystore/main`, new Uint8Array(encryptedKey), {
+      await ipfs.files.write(`/${userId}/keystore/main`, new Uint8Array(encryptedKey), {
         parents: true,
         create: true,
         truncate: true,
@@ -87,12 +87,12 @@ export class Account {
 
       await account.publish()
     } else {
-      const cid = await this.resolveName(options, name)
+      const cid = await this.resolveName(options, userId)
       await ipfs.swarm.connect(options.swarm)
       try {
-        await ipfs.files.rm(`/${name}`, { recursive: true })
+        await ipfs.files.rm(`/${userId}`, { recursive: true })
       } catch {}
-      await ipfs.files.cp(`/ipfs/${cid}`, `/${name}`)
+      await ipfs.files.cp(`/ipfs/${cid}`, `/${userId}`)
     }
 
     return account
@@ -100,10 +100,10 @@ export class Account {
 
   private static async getPrivateKeyFromServer(
     options: Pick<AccountOptions, 'ipnsGateway'>,
-    name: string,
+    userId: string,
     password: string
   ): Promise<PrivateKey> {
-    const url = `${options.ipnsGateway}/ipns/${name}/keystore/main`
+    const url = `${options.ipnsGateway}/ipns/${userId}/keystore/main`
     const buffer = await fetch(url).then(res => res.blob().then(blob => blob.arrayBuffer()))
     return Ipfs.crypto.keys.unmarshalPrivateKey(
       new Uint8Array(await crypto.aes.decrypt(password, buffer))
@@ -112,32 +112,32 @@ export class Account {
 
   private static async resolveName(
     options: Pick<AccountOptions, 'accountGateway'>,
-    name: string
+    userId: string
   ): Promise<string> {
-    const url = `${options.accountGateway}/account/resolve?name=${name}`
+    const url = `${options.accountGateway}/account/resolve?name=${userId}`
     const json = await fetch(url).then(res => res.json())
     if (typeof json.cid === 'string') {
       return json.cid
     }
-    throw new Error(`Resolve ${name} failed`)
+    throw new Error(`Resolve ${userId} failed`)
   }
 
   private constructor(
     readonly options: AccountOptions,
     readonly ipfs: IPFS,
     readonly key: PrivateKey,
-    readonly name: string,
+    readonly userId: string,
     readonly password: string
   ) {
     this.crypto = new crypto.Crypto(this.password)
   }
 
   private get objectPath() {
-    return `/${this.name}/objects`
+    return `/${this.userId}/objects`
   }
 
   private get draftPath() {
-    return `/${this.name}-draft/objects`
+    return `/${this.userId}-draft/objects`
   }
 
   private objectsCache: Map<string, Object> = new Map()
@@ -162,7 +162,7 @@ export class Account {
       await this.ipfs.swarm.connect(this.options.swarm)
     }
 
-    const { cid } = await this.ipfs.files.stat(`/${this.name}`)
+    const { cid } = await this.ipfs.files.stat(`/${this.userId}`)
     const query = new URLSearchParams({ cid: cid.toString(), password: this.password }).toString()
     const url = `${this.options.accountGateway}/account/publish?${query}`
     await fetch(url, { method: 'POST' }).then(res => {

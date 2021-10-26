@@ -39,7 +39,7 @@ export default function AuthView() {
   const [loading, toggleLoading] = useToggle(false)
 
   const [key, setKey] = useState<PromiseType<ReturnType<typeof Account.generateKey>>>()
-  const [name, setName] = useState('')
+  const [userId, setUserId] = useState('')
   const [password, setPassword] = useState('')
 
   const regenerateKey = useCallback(async () => {
@@ -65,22 +65,22 @@ export default function AuthView() {
     }
     toggleLoading(true)
     try {
-      const account = await Account.create(accountOptions, { name, password })
+      const account = await Account.create(accountOptions, { userId, password })
       setAccount(account)
     } finally {
       toggleLoading(false)
     }
-  }, [loading, name, password])
+  }, [loading, userId, password])
 
   useEffect(() => {
     if (isNewAccount) {
       if (!key) {
         Account.generateKey().then(key => {
           setKey(key)
-          key.id().then(setName)
+          key.id().then(setUserId)
         })
       } else {
-        key.id().then(setName)
+        key.id().then(setUserId)
       }
     }
   }, [isNewAccount, key])
@@ -106,8 +106,8 @@ export default function AuthView() {
         <Box my={2}>
           <TextField
             label="Account"
-            value={name}
-            onChange={e => setName(e.currentTarget.value)}
+            value={userId}
+            onChange={e => setUserId(e.currentTarget.value)}
             size="small"
             fullWidth
             autoComplete="username"

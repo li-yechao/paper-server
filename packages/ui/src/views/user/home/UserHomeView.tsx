@@ -42,12 +42,12 @@ import { accountSelector } from '../../../state/account'
 import { ForbiddenViewLazy } from '../../error'
 import useObjectPagination, { useDeleteObject } from '../useObjectPagination'
 
-export interface UserHomeViewProps extends Pick<RouteComponentProps<{ name: string }>, 'match'> {}
+export interface UserHomeViewProps extends Pick<RouteComponentProps<{ userId: string }>, 'match'> {}
 
 export default function UserHomeView(props: UserHomeViewProps) {
   const account = useRecoilValue(accountSelector)
 
-  if (account.name !== props.match.params.name) {
+  if (account.userId !== props.match.params.userId) {
     return <ForbiddenViewLazy />
   }
 
@@ -126,7 +126,7 @@ function ObjectItem({
   const toggleNetworkIndicator = useToggleNetworkIndicator({ autoClose: false })
 
   const handleItemClick = () => {
-    history.push(`/${account.name}/${object.id}`)
+    history.push(`/${account.userId}/${object.id}`)
   }
 
   const handlePublish = async (e: React.MouseEvent) => {
