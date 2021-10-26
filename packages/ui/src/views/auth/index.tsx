@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import React from 'react'
+import * as React from 'react'
 import LazyView from '../../components/LazyView'
 
-export const HomeViewLazy = LazyView(React.lazy(() => import('./HomeView')))
+export const AuthViewLazy = LazyView(React.lazy(() => import('./AuthView')))

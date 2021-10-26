@@ -49,15 +49,13 @@ export default function useObjectPagination({
 
   const withState = (cb: (s: AccountObjectsState) => Promise<void>) => {
     return async () => {
-      const s =
-        state ??
-        (account && {
-          iterator: account.objects(),
-          list: [],
-          hasNext: true,
-          page: 0,
-          limit,
-        })
+      const s = state ?? {
+        iterator: account.objects(),
+        list: [],
+        hasNext: true,
+        page: 0,
+        limit,
+      }
       s && (await cb(s))
     }
   }
@@ -147,17 +145,15 @@ export function useCreateObject() {
     ({ snapshot, set }) =>
       async () => {
         const account = await snapshot.getPromise(accountSelector)
-        if (account) {
-          const object = await account.createObject()
-          set(
-            accountObjectsState,
-            v =>
-              v && {
-                ...v,
-                list: [object].concat(v.list),
-              }
-          )
-        }
+        const object = await account.createObject()
+        set(
+          accountObjectsState,
+          v =>
+            v && {
+              ...v,
+              list: [object].concat(v.list),
+            }
+        )
       },
     []
   )

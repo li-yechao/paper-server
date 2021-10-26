@@ -47,14 +47,15 @@ export interface UserHomeViewProps extends Pick<RouteComponentProps<{ name: stri
 export default function UserHomeView(props: UserHomeViewProps) {
   const account = useRecoilValue(accountSelector)
 
-  if (!account || account?.name !== props.match.params.name) {
+  if (account.name !== props.match.params.name) {
     return <ForbiddenViewLazy />
   }
 
-  return <ObjectList account={account} />
+  return <ObjectList />
 }
 
-const ObjectList = ({ account }: { account: Account }) => {
+const ObjectList = () => {
+  const account = useRecoilValue(accountSelector)
   const pagination = useObjectPagination()
   const [menuState, setMenuState] = useState<{ anchorEl: Element; object: Object }>()
 

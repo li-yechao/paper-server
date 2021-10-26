@@ -15,7 +15,7 @@
 import * as React from 'react'
 
 export default class ErrorBoundary extends React.PureComponent<
-  { fallback: React.ComponentType<{ error: Error }> },
+  { fallback: React.ComponentType<{ error: Error; reset: () => void }> },
   { error?: Error }
 > {
   state = {
@@ -26,9 +26,11 @@ export default class ErrorBoundary extends React.PureComponent<
     return { error }
   }
 
+  reset = () => this.setState({ error: undefined })
+
   render() {
     const { error } = this.state
     const { fallback: Fallback } = this.props
-    return error ? <Fallback error={error} /> : this.props.children
+    return error ? <Fallback error={error} reset={this.reset} /> : this.props.children
   }
 }

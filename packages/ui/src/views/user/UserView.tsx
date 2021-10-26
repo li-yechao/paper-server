@@ -19,7 +19,7 @@ import Ipfs from '@paper/ipfs'
 import * as React from 'react'
 import { useMemo, useState } from 'react'
 import { Route, RouteComponentProps, Switch, useHistory } from 'react-router'
-import { useRecoilState } from 'recoil'
+import { useRecoilValue, useResetRecoilState } from 'recoil'
 import { accountSelector } from '../../state/account'
 import { NotFoundViewLazy } from '../error'
 import { UserHomeViewLazy } from './home'
@@ -92,7 +92,8 @@ const CreateButton = () => {
 }
 
 const AccountButton = () => {
-  const [account, setAccount] = useRecoilState(accountSelector)
+  const account = useRecoilValue(accountSelector)
+  const resetAccount = useResetRecoilState(accountSelector)
   const [anchorEl, setAnchorEl] = useState<Element>()
   const history = useHistory()
 
@@ -106,7 +107,7 @@ const AccountButton = () => {
 
   const handleSignOut = () => {
     handleMenuClose()
-    setAccount(null)
+    resetAccount()
   }
 
   const handleLogin = () => {

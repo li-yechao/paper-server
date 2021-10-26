@@ -15,16 +15,22 @@
 import { ThemeProvider as EmotionThemeProvider } from '@emotion/react'
 import { Box, createTheme, LinearProgress, ThemeProvider as MuiThemeProvider } from '@mui/material'
 import { StylesProvider } from '@mui/styles'
-import { Suspense, useMemo } from 'react'
+import { Account } from '@paper/core'
+import { Suspense, useEffect, useMemo } from 'react'
 import { IntlProvider } from 'react-intl'
 import { HashRouter, Route, Switch } from 'react-router-dom'
-import { RecoilRoot } from 'recoil'
+import { useAsync } from 'react-use'
+import { RecoilRoot, useSetRecoilState } from 'recoil'
 import ErrorBoundary from './components/ErrorBoundary'
 import NetworkIndicator from './components/NetworkIndicator'
+import { accountOptions } from './constants'
+import { accountSelector, isUnauthorizedError, useAccountOrNull } from './state/account'
+import Storage from './Storage'
 import { NotFoundViewLazy } from './views/error'
 import ErrorView from './views/error/ErrorView'
-import { HomeViewLazy } from './views/home'
+import { AuthViewLazy } from './views/auth'
 import { UserViewLazy } from './views/user'
+import { HomeViewLazy } from './views/home'
 
 export default function App() {
   const theme = useMemo(
@@ -67,13 +73,63 @@ export default function App() {
 }
 
 const AppRoutes = () => {
+  const setAccount = useSetRecoilState(accountSelector)
+  const accountState = useAsync(async () => {
+    // NOTE: Set account into globalThis at development environment (avoid hot
+    // module replacement recreate account instance).
+    const g: { __ACCOUNT__?: Promise<Account> | null } = import.meta.env.PROD
+      ? {}
+      : (globalThis as any)
+
+    if (!g.__ACCOUNT__) {
+      g.__ACCOUNT__ = (() => {
+        const account = Storage.account
+        if (account) {
+          const { name, password } = account
+          return Account.create(accountOptions, { name, password })
+        }
+
+        return null
+      })()
+    }
+
+    const account = await g.__ACCOUNT__
+    if (account) {
+      setAccount(account)
+    }
+  }, [])
+
+  if (accountState.loading) {
+    return <NetworkIndicator in />
+  } else if (accountState.error) {
+    throw accountState.error
+  }
+
   return (
-    <HashRouter>
-      <Switch>
-        <Route path="/" exact component={HomeViewLazy} />
-        <Route path="/:name" render={({ match }) => <UserViewLazy match={match} />} />
-        <Route path="*" component={NotFoundViewLazy} />
-      </Switch>
-    </HashRouter>
+    <ErrorBoundary fallback={UnauthorizedErrorBoundary}>
+      <HashRouter>
+        <Switch>
+          <Route path="/" exact component={HomeViewLazy} />
+          <Route path="/:name" component={UserViewLazy} />
+          <Route path="*" component={NotFoundViewLazy} />
+        </Switch>
+      </HashRouter>
+    </ErrorBoundary>
   )
+}
+
+function UnauthorizedErrorBoundary({ error, reset }: { error: Error; reset: () => void }) {
+  const account = useAccountOrNull()
+
+  useEffect(() => {
+    if (account) {
+      reset()
+    }
+  }, [account, reset])
+
+  if (isUnauthorizedError(error)) {
+    return <AuthViewLazy />
+  }
+
+  throw error
 }

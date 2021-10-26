@@ -73,7 +73,7 @@ export default function ObjectView(props: ObjectViewProps) {
 
   useEffect(() => {
     ;(async () => {
-      const object = await account?.object(objectId)
+      const object = await account.object(objectId)
       if (object) {
         const paper = new Paper(object)
         setPaper(paper)

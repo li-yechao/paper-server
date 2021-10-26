@@ -12,43 +12,39 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { atom, selector } from 'recoil'
+import { atom, DefaultValue, selector, useRecoilValue } from 'recoil'
 import { Account } from '../../../core/src'
-import { accountOptions } from '../constants'
 import Storage from '../Storage'
 
 export type AccountState = Account
 
 const accountState = atom<AccountState | null>({
   key: 'accountState',
-  default: (() => {
-    // NOTE: Set account into globalThis at development environment (avoid hot
-    // module replacement recreate account instance).
-    const g: { __ACCOUNT__?: Promise<Account> | null } = import.meta.env.PROD
-      ? {}
-      : (globalThis as any)
-
-    if (!g.__ACCOUNT__) {
-      g.__ACCOUNT__ = (() => {
-        const account = Storage.account
-        if (account) {
-          const { name, password } = account
-          return Account.create(accountOptions, { name, password })
-        }
-
-        return null
-      })()
-    }
-
-    return g.__ACCOUNT__
-  })(),
+  default: null,
   dangerouslyAllowMutability: true,
 })
 
-export const accountSelector = selector<AccountState | null>({
+export function useAccountOrNull(): Account | null {
+  return useRecoilValue(accountState)
+}
+
+export const accountSelector = selector<AccountState>({
   key: 'accountSelector',
-  get: ({ get }) => get(accountState),
+  get: ({ get }) => {
+    const account = get(accountState)
+    if (!account) {
+      throw unauthorizedError('Unauthorized')
+    }
+    return account
+  },
   set: ({ get, set }, value) => {
+    if (value instanceof DefaultValue) {
+      Storage.account = null
+    } else {
+      const { name, password } = value
+      Storage.account = { name, password }
+    }
+
     const old = get(accountState)
 
     if (old !== value) {
@@ -56,13 +52,21 @@ export const accountSelector = selector<AccountState | null>({
     }
 
     set(accountState, value)
-
-    if (value instanceof Account) {
-      const { name, password } = value
-      Storage.account = { name, password }
-    } else if (!value) {
-      Storage.account = null
-    }
   },
   dangerouslyAllowMutability: true,
 })
+
+export const ERR_UNAUTHORIZED = 'ERR_UNAUTHORIZED'
+export interface UnauthorizedError extends Error {
+  code: typeof ERR_UNAUTHORIZED
+}
+
+function unauthorizedError(message?: string): UnauthorizedError {
+  const e: UnauthorizedError = new Error(message) as any
+  e.code = ERR_UNAUTHORIZED
+  return e
+}
+
+export function isUnauthorizedError(e: any): e is UnauthorizedError {
+  return e.code === ERR_UNAUTHORIZED
+}
