@@ -28,6 +28,10 @@ export default class Object {
     this.id = id
     this.createdAt = createdAt
   }
+  get version() {
+    return this.#objectInfo?.version
+  }
+
   #_account?: Account
 
   get #account(): Account {

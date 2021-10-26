@@ -34,30 +34,30 @@ import Object from '@paper/core/src/object'
 import * as React from 'react'
 import { useState } from 'react'
 import { FormattedDate } from 'react-intl'
-import { RouteComponentProps, useHistory } from 'react-router-dom'
-import { useAsync } from 'react-use'
+import { RouteComponentProps } from 'react-router-dom'
 import { useRecoilValue } from 'recoil'
 import { useToggleNetworkIndicator } from '../../../components/NetworkIndicator'
 import { accountSelector } from '../../../state/account'
-import { ForbiddenViewLazy } from '../../error'
-import useObjectPagination, { useDeleteObject } from '../useObjectPagination'
+import { useDeleteObject, useObject, useObjectPagination } from '../../../state/object'
+import useAsync from '../../../utils/useAsync'
 
-export interface UserHomeViewProps extends Pick<RouteComponentProps<{ userId: string }>, 'match'> {}
+export interface UserHomeViewProps extends RouteComponentProps<{ userId: string }> {}
 
 export default function UserHomeView(props: UserHomeViewProps) {
-  const account = useRecoilValue(accountSelector)
+  const { userId } = props.match.params
+  const toggleNetworkIndicator = useToggleNetworkIndicator({ autoClose: false })
 
-  if (account.userId !== props.match.params.userId) {
-    return <ForbiddenViewLazy />
+  const account = useRecoilValue(accountSelector)
+  if (account.userId !== userId) {
+    throw new Error('Forbidden')
   }
 
-  return <ObjectList />
-}
-
-const ObjectList = () => {
-  const account = useRecoilValue(accountSelector)
-  const pagination = useObjectPagination()
+  const pagination = useObjectPagination({ account, limit: 10 })
   const [menuState, setMenuState] = useState<{ anchorEl: Element; object: Object }>()
+
+  const handleToDetail = (_: React.MouseEvent<Element>, object: Object) => {
+    props.history.push(`/${userId}/${object.id}`)
+  }
 
   const handleOpenMenu = (e: React.MouseEvent<Element>, object: Object) => {
     e.stopPropagation()
@@ -66,18 +66,29 @@ const ObjectList = () => {
 
   const handleCloseMenu = () => setMenuState(undefined)
 
-  const deleteObject = useDeleteObject()
+  const deleteObject = useDeleteObject({ account })
   const handleDelete = async () => {
-    const object = menuState?.object
-    handleCloseMenu()
-    object && (await deleteObject(object))
+    try {
+      toggleNetworkIndicator(true)
+      const object = menuState?.object
+      handleCloseMenu()
+      object && (await deleteObject(object))
+    } finally {
+      toggleNetworkIndicator(false)
+    }
   }
 
   return (
     <Box maxWidth={800} margin="auto">
       <List>
-        {pagination.list.map(object => (
-          <ObjectItem key={object.id} account={account} object={object} openMenu={handleOpenMenu} />
+        {pagination.list.map(objectId => (
+          <ObjectItem
+            key={objectId}
+            account={account}
+            objectId={objectId}
+            onClick={handleToDetail}
+            onMenuClick={handleOpenMenu}
+          />
         ))}
       </List>
 
@@ -114,26 +125,24 @@ const ObjectList = () => {
 
 function ObjectItem({
   account,
-  object,
-  openMenu,
+  objectId,
+  onClick,
+  onMenuClick,
 }: {
   account: Account
-  object: Object
-  openMenu: (e: React.MouseEvent<Element>, object: Object) => void
+  objectId: string
+  onClick: (e: React.MouseEvent<Element>, object: Object) => void
+  onMenuClick: (e: React.MouseEvent<Element>, object: Object) => void
 }) {
-  const history = useHistory()
-  const info = useAsync(() => object.info, [object])
+  const { object, publish } = useObject({ account, objectId })
+  const info = useAsync(() => object.info, [object.version])
   const toggleNetworkIndicator = useToggleNetworkIndicator({ autoClose: false })
-
-  const handleItemClick = () => {
-    history.push(`/${account.userId}/${object.id}`)
-  }
 
   const handlePublish = async (e: React.MouseEvent) => {
     e.stopPropagation()
     try {
       toggleNetworkIndicator(true)
-      await object.publish()
+      await publish()
     } finally {
       toggleNetworkIndicator(false)
     }
@@ -143,12 +152,12 @@ function ObjectItem({
     return <ObjectItem.Skeleton />
   } else if (info.error) {
     return <ObjectItem.Skeleton error={info.error} />
-  } else if (info.value) {
+  } else {
     const { title, updatedAt } = info.value
     const time = updatedAt ?? object.createdAt
 
     return (
-      <_ListItemButton divider onClick={handleItemClick}>
+      <_ListItemButton divider onClick={e => onClick(e, object)}>
         <ListItemText
           primary={title || 'Untitled'}
           secondary={
@@ -174,18 +183,17 @@ function ObjectItem({
 
         <ListItemSecondaryAction>
           {info.value.isDraft && (
-            <IconButton onClick={e => handlePublish(e)}>
+            <IconButton onClick={handlePublish}>
               <Publish />
             </IconButton>
           )}
-          <IconButton edge="end" onClick={e => openMenu(e, object)}>
+          <IconButton edge="end" onClick={e => onMenuClick(e, object)}>
             <MoreVert />
           </IconButton>
         </ListItemSecondaryAction>
       </_ListItemButton>
     )
   }
-  return null
 }
 
 const _ListItemButton = styled(ListItemButton)`

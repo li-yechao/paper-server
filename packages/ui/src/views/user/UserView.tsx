@@ -15,16 +15,18 @@
 import styled from '@emotion/styled'
 import { AccountCircle, Add } from '@mui/icons-material'
 import { AppBar, Box, Button, IconButton, Menu, MenuItem, Toolbar, Typography } from '@mui/material'
+import { Account } from '@paper/core'
 import Ipfs from '@paper/ipfs'
 import * as React from 'react'
 import { useMemo, useState } from 'react'
 import { Route, RouteComponentProps, Switch, useHistory } from 'react-router'
 import { useRecoilValue, useResetRecoilState } from 'recoil'
-import { accountSelector } from '../../state/account'
+import { useToggleNetworkIndicator } from '../../components/NetworkIndicator'
+import { accountSelector, useAccountOrNull } from '../../state/account'
+import { useCreateObject } from '../../state/object'
 import { NotFoundViewLazy } from '../error'
 import { UserHomeViewLazy } from './home'
 import { ObjectViewLazy } from './object'
-import { useCreateObject } from './useObjectPagination'
 
 export interface UserViewProps extends Pick<RouteComponentProps<{ userId: string }>, 'match'> {}
 
@@ -82,10 +84,27 @@ const _Body = styled.div`
 `
 
 const CreateButton = () => {
-  const handleCreate = useCreateObject()
+  const account = useAccountOrNull()
+  return account ? <_CreateButton account={account} /> : null
+}
+
+const _CreateButton = ({ account }: { account: Account }) => {
+  const history = useHistory()
+  const toggleNetworkIndicator = useToggleNetworkIndicator()
+  const createObject = useCreateObject({ account })
+
+  const handleClick = React.useCallback(async () => {
+    try {
+      toggleNetworkIndicator(true)
+      const object = await createObject()
+      history.push(`/${account.userId}/${object.id}`)
+    } finally {
+      toggleNetworkIndicator(false)
+    }
+  }, [createObject])
 
   return (
-    <IconButton onClick={handleCreate}>
+    <IconButton onClick={handleClick}>
       <Add />
     </IconButton>
   )
