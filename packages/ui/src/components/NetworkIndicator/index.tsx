@@ -38,14 +38,12 @@ export default function NetworkIndicator(props: NetworkIndicatorProps = {}) {
   return null
 }
 
-const networkIndicatorContext = createContext({
-  count: 0,
-  inc: () => {},
-  dec: () => {},
-})
+const networkIndicatorContext = createContext({ count: 0 })
+
+const networkIndicatorActionsContext = createContext({ inc: () => {}, dec: () => {} })
 
 export function useToggleNetworkIndicator({ autoClose = true }: { autoClose?: boolean } = {}) {
-  const ctx = useContext(networkIndicatorContext)
+  const actions = useContext(networkIndicatorActionsContext)
   const visible = useRef(false)
 
   const toggle = useCallback((on?: boolean) => {
@@ -59,7 +57,7 @@ export function useToggleNetworkIndicator({ autoClose = true }: { autoClose?: bo
         : undefined
 
     if (b !== undefined) {
-      b ? ctx.inc() : ctx.dec()
+      b ? actions.inc() : actions.dec()
       visible.current = b
     }
   }, [])
@@ -79,10 +77,9 @@ NetworkIndicator.Provider = ({ children }: { children?: ReactNode }) => {
   const [count, actions] = useNumber(0, undefined, 0)
 
   return (
-    <networkIndicatorContext.Provider
-      value={{ count, inc: actions.inc, dec: actions.dec }}
-      children={children}
-    />
+    <networkIndicatorActionsContext.Provider value={actions}>
+      <networkIndicatorContext.Provider value={{ count }} children={children} />
+    </networkIndicatorActionsContext.Provider>
   )
 }
 
