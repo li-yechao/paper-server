@@ -49,7 +49,7 @@ export default function App() {
   return (
     <ErrorBoundary fallback={ErrorView}>
       <NetworkIndicator.Provider>
-        <SnackbarProvider maxSnack={3}>
+        <SnackbarProvider maxSnack={3} anchorOrigin={{ vertical: 'top', horizontal: 'center' }}>
           <NetworkIndicator.Renderer>
             <Box position="fixed" left={0} top={0} right={0} zIndex={t => t.zIndex.tooltip + 1}>
               <LinearProgress />
