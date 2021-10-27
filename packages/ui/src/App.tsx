@@ -31,6 +31,7 @@ import ErrorView from './views/error/ErrorView'
 import { AuthViewLazy } from './views/auth'
 import { UserViewLazy } from './views/user'
 import { HomeViewLazy } from './views/home'
+import { SnackbarProvider } from 'notistack'
 
 export default function App() {
   const theme = useMemo(
@@ -48,25 +49,27 @@ export default function App() {
   return (
     <ErrorBoundary fallback={ErrorView}>
       <NetworkIndicator.Provider>
-        <NetworkIndicator.Renderer>
-          <Box position="fixed" left={0} top={0} right={0} zIndex={t => t.zIndex.tooltip + 1}>
-            <LinearProgress />
-          </Box>
-        </NetworkIndicator.Renderer>
+        <SnackbarProvider maxSnack={3}>
+          <NetworkIndicator.Renderer>
+            <Box position="fixed" left={0} top={0} right={0} zIndex={t => t.zIndex.tooltip + 1}>
+              <LinearProgress />
+            </Box>
+          </NetworkIndicator.Renderer>
 
-        <IntlProvider locale={navigator.language}>
-          <RecoilRoot>
-            <StylesProvider injectFirst>
-              <MuiThemeProvider theme={theme}>
-                <EmotionThemeProvider theme={theme}>
-                  <Suspense fallback={<NetworkIndicator in />}>
-                    <AppRoutes />
-                  </Suspense>
-                </EmotionThemeProvider>
-              </MuiThemeProvider>
-            </StylesProvider>
-          </RecoilRoot>
-        </IntlProvider>
+          <IntlProvider locale={navigator.language}>
+            <RecoilRoot>
+              <StylesProvider injectFirst>
+                <MuiThemeProvider theme={theme}>
+                  <EmotionThemeProvider theme={theme}>
+                    <Suspense fallback={<NetworkIndicator in />}>
+                      <AppRoutes />
+                    </Suspense>
+                  </EmotionThemeProvider>
+                </MuiThemeProvider>
+              </StylesProvider>
+            </RecoilRoot>
+          </IntlProvider>
+        </SnackbarProvider>
       </NetworkIndicator.Provider>
     </ErrorBoundary>
   )

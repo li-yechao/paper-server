@@ -31,6 +31,7 @@ import {
 import { Box } from '@mui/system'
 import { Account } from '@paper/core'
 import Object from '@paper/core/src/object'
+import { useSnackbar } from 'notistack'
 import * as React from 'react'
 import { useState } from 'react'
 import { FormattedDate } from 'react-intl'
@@ -134,6 +135,7 @@ function ObjectItem({
   onClick: (e: React.MouseEvent<Element>, object: Object) => void
   onMenuClick: (e: React.MouseEvent<Element>, object: Object) => void
 }) {
+  const snackbar = useSnackbar()
   const { object, publish } = useObject({ account, objectId })
   const info = useAsync(() => object.info, [object.version])
   const toggleNetworkIndicator = useToggleNetworkIndicator({ autoClose: false })
@@ -143,6 +145,10 @@ function ObjectItem({
     try {
       toggleNetworkIndicator(true)
       await publish()
+      snackbar.enqueueSnackbar('Publish Success', { variant: 'success' })
+    } catch (error) {
+      snackbar.enqueueSnackbar(`Publish Failed: ${error.message}`, { variant: 'error' })
+      throw error
     } finally {
       toggleNetworkIndicator(false)
     }
