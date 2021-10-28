@@ -169,7 +169,14 @@ function ObjectItem({
           secondary={
             <>
               {info.value.isDraft && (
-                <Chip label="unpublished" component="span" size="small" variant="outlined" />
+                <Chip
+                  label="unpublished"
+                  component="span"
+                  size="small"
+                  variant="outlined"
+                  deleteIcon={<Publish />}
+                  onDelete={handlePublish}
+                />
               )}
               <br />
               <Typography variant="caption">
@@ -188,11 +195,6 @@ function ObjectItem({
         />
 
         <ListItemSecondaryAction>
-          {info.value.isDraft && (
-            <IconButton onClick={handlePublish}>
-              <Publish />
-            </IconButton>
-          )}
           <IconButton edge="end" onClick={e => onMenuClick(e, object)}>
             <MoreVert />
           </IconButton>
