@@ -20,9 +20,12 @@ import { useEffect } from 'react'
 
 const objectState = memoize(
   (account: Account, objectId: string) => {
-    return atom<{ object: Object }>({
+    return atom({
       key: `objectState-${account.userId}-${objectId}`,
-      default: account.object(objectId).then(object => ({ object })),
+      default: account.object(objectId).then(object => ({
+        object,
+        isPublishing: false,
+      })),
     })
   },
   (account, objectId) => `objectState-${account.userId}-${objectId}`
@@ -30,19 +33,24 @@ const objectState = memoize(
 
 export function useObject({ account, objectId }: { account: Account; objectId: string }) {
   const state = objectState(account, objectId)
-  const object = useRecoilValue(state).object
+  const { object, isPublishing } = useRecoilValue(state)
 
   const publish = useRecoilCallback(
     ({ set, snapshot }) => {
       return async () => {
-        await (await snapshot.getPromise(state)).object.publish()
-        set(state, value => ({ ...value }))
+        const { object, isPublishing } = await snapshot.getPromise(state)
+        if (isPublishing) {
+          return
+        }
+        set(state, value => ({ ...value, isPublishing: true }))
+        await object.publish()
+        set(state, value => ({ ...value, isPublishing: false }))
       }
     },
     [state]
   )
 
-  return { object, publish }
+  return { object, publish, isPublishing }
 }
 
 const objectPaginationState = memoize(

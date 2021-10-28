@@ -17,6 +17,7 @@ import { KeyboardArrowLeft, KeyboardArrowRight, MoreVert, Publish } from '@mui/i
 import {
   Button,
   Chip,
+  CircularProgress,
   IconButton,
   List,
   ListItemButton,
@@ -136,12 +137,16 @@ function ObjectItem({
   onMenuClick: (e: React.MouseEvent<Element>, object: Object) => void
 }) {
   const snackbar = useSnackbar()
-  const { object, publish } = useObject({ account, objectId })
+  const { object, publish, isPublishing } = useObject({ account, objectId })
   const info = useAsync(() => object.info, [object.version])
   const toggleNetworkIndicator = useToggleNetworkIndicator({ autoClose: false })
 
   const handlePublish = async (e: React.MouseEvent) => {
     e.stopPropagation()
+    if (isPublishing) {
+      return
+    }
+
     try {
       toggleNetworkIndicator(true)
       await publish()
@@ -174,7 +179,7 @@ function ObjectItem({
                   component="span"
                   size="small"
                   variant="outlined"
-                  deleteIcon={<Publish />}
+                  deleteIcon={isPublishing ? <CircularProgress size={14} /> : <Publish />}
                   onDelete={handlePublish}
                 />
               )}
