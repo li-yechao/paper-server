@@ -34,14 +34,14 @@ import Title from '@paper/editor/src/Editor/nodes/Title'
 import TodoList from '@paper/editor/src/Editor/nodes/TodoList'
 import Placeholder from '@paper/editor/src/Editor/plugins/Placeholder'
 import Plugins from '@paper/editor/src/Editor/plugins/Plugins'
-import Value, { DocJson } from '@paper/editor/src/Editor/plugins/Value'
+import Value from '@paper/editor/src/Editor/plugins/Value'
 import { baseKeymap } from 'prosemirror-commands'
 import { dropCursor } from 'prosemirror-dropcursor'
 import { gapCursor } from 'prosemirror-gapcursor'
 import { history, redo, undo } from 'prosemirror-history'
 import { undoInputRule } from 'prosemirror-inputrules'
 import { keymap } from 'prosemirror-keymap'
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useMemo, useRef } from 'react'
 import { Prompt, RouteComponentProps } from 'react-router'
 import { useRecoilValue } from 'recoil'
 import { accountSelector } from '../../../state/account'
@@ -49,21 +49,24 @@ import { Paper } from '../paper'
 import useOnSave from '../../../utils/useOnSave'
 import styled from '@emotion/styled'
 import { useBeforeUnload } from 'react-use'
+import { useObject } from '../../../state/object'
+import useAsync from '../../../utils/useAsync'
+import NetworkIndicator from '../../../components/NetworkIndicator'
 
 export interface ObjectViewProps
-  extends Pick<
-    RouteComponentProps<{
-      userId: string
-      objectId: string
-    }>,
-    'match'
-  > {}
+  extends RouteComponentProps<{
+    userId: string
+    objectId: string
+  }> {}
 
 export default function ObjectView(props: ObjectViewProps) {
   const { userId, objectId } = props.match.params
   const account = useRecoilValue(accountSelector)
-  const [paper, setPaper] = useState<Paper>()
-  const [content, setContent] = useState<DocJson>()
+  if (account.userId !== userId) {
+    throw new Error('Forbidden')
+  }
+  const { object } = useObject({ account, objectId })
+  const paper = useMemo(() => new Paper(object), [object])
 
   const ref = useRef<{ state?: EditorState; version: number; savedVersion: number }>({
     state: undefined,
@@ -71,40 +74,8 @@ export default function ObjectView(props: ObjectViewProps) {
     savedVersion: 0,
   })
 
-  useEffect(() => {
-    ;(async () => {
-      const object = await account.object(objectId)
-      if (object) {
-        const paper = new Paper(object)
-        setPaper(paper)
-        const content = await paper.getContent()
-        setContent(content)
-      }
-    })()
-  }, [userId, objectId])
-
-  const save = async () => {
-    const { state, version, savedVersion } = ref.current
-    if (paper && state && version !== savedVersion) {
-      const firstChild = state.doc.firstChild
-      if (firstChild?.type.name === 'title') {
-        const title = firstChild.textContent
-        await paper.setInfo({ title })
-      }
-
-      await paper.setContent(state.doc.toJSON())
-      ref.current.savedVersion = version
-      document.title = document.title.replace(/^\**/, '')
-    }
-  }
-
-  useOnSave(save, [paper, content])
-
-  useBeforeUnload(() => {
-    return ref.current.version !== ref.current.savedVersion
-  }, 'Discard changes?')
-
-  const extensions = useMemo(() => {
+  const extensions = useAsync(async () => {
+    const content = await paper.getContent()
     return [
       new Value({
         defaultValue: content,
@@ -153,7 +124,32 @@ export default function ObjectView(props: ObjectViewProps) {
         dropCursor({ color: 'currentColor' }),
       ]),
     ]
-  }, [content])
+  }, [paper])
+
+  const save = async () => {
+    const { state, version, savedVersion } = ref.current
+    if (paper && state && version !== savedVersion) {
+      const firstChild = state.doc.firstChild
+      if (firstChild?.type.name === 'title') {
+        const title = firstChild.textContent
+        await paper.setInfo({ title })
+      }
+
+      await paper.setContent(state.doc.toJSON())
+      ref.current.savedVersion = version
+      document.title = document.title.replace(/^\**/, '')
+    }
+  }
+
+  useOnSave(save, [save])
+
+  useBeforeUnload(() => {
+    return ref.current.version !== ref.current.savedVersion
+  }, 'Discard changes?')
+
+  if (extensions.error) {
+    throw extensions.error
+  }
 
   return (
     <>
@@ -162,7 +158,7 @@ export default function ObjectView(props: ObjectViewProps) {
           ref.current.savedVersion !== ref.current.version ? 'Discard changes' : true
         }
       />
-      <_Editor extensions={extensions} />
+      {extensions.loading ? <NetworkIndicator in /> : <_Editor extensions={extensions.value} />}
     </>
   )
 }
