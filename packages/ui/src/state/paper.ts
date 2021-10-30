@@ -12,9 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import { Account } from '@paper/core'
 import Object, { ObjectInfo, objectInfoSchema } from '@paper/core/src/object'
 import { DocJson } from '@paper/editor/src/Editor/plugins/Value'
 import Ajv, { JTDSchemaType } from 'ajv/dist/jtd'
+import { useMemo } from 'react'
+import { useObject } from './object'
 
 export class Paper {
   constructor(readonly object: Object) {}
@@ -68,3 +71,9 @@ const paperInfoSchema: JTDSchemaType<PaperInfo> = {
 }
 
 const validatePaperInfo = new Ajv().compile(paperInfoSchema)
+
+export function usePaper({ account, objectId }: { account: Account; objectId: string }) {
+  const { object, ...other } = useObject({ account, objectId })
+  const paper = useMemo(() => new Paper(object), [object])
+  return { ...other, object, paper }
+}

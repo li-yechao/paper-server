@@ -41,15 +41,14 @@ import { gapCursor } from 'prosemirror-gapcursor'
 import { history, redo, undo } from 'prosemirror-history'
 import { undoInputRule } from 'prosemirror-inputrules'
 import { keymap } from 'prosemirror-keymap'
-import { useMemo, useRef } from 'react'
+import { useRef } from 'react'
 import { Prompt, RouteComponentProps } from 'react-router'
 import { useRecoilValue } from 'recoil'
 import { accountSelector } from '../../../state/account'
-import { Paper } from '../paper'
+import { usePaper } from '../../../state/paper'
 import useOnSave from '../../../utils/useOnSave'
 import styled from '@emotion/styled'
 import { useBeforeUnload } from 'react-use'
-import { useObject } from '../../../state/object'
 import useAsync from '../../../utils/useAsync'
 import NetworkIndicator from '../../../components/NetworkIndicator'
 
@@ -65,8 +64,7 @@ export default function ObjectView(props: ObjectViewProps) {
   if (account.userId !== userId) {
     throw new Error('Forbidden')
   }
-  const { object } = useObject({ account, objectId })
-  const paper = useMemo(() => new Paper(object), [object])
+  const { paper } = usePaper({ account, objectId })
 
   const ref = useRef<{ state?: EditorState; version: number; savedVersion: number }>({
     state: undefined,
