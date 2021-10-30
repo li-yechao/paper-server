@@ -16,6 +16,7 @@ import { Account } from '@paper/core'
 import Object, { ObjectInfo, objectInfoSchema } from '@paper/core/src/object'
 import { DocJson } from '@paper/editor/src/Editor/plugins/Value'
 import Ajv, { JTDSchemaType } from 'ajv/dist/jtd'
+import { customAlphabet } from 'nanoid'
 import { useMemo } from 'react'
 import { PromiseType } from 'react-use/lib/misc/types'
 import { useObject } from './object'
@@ -57,6 +58,24 @@ export class Paper {
       }
       throw error
     }
+  }
+
+  static fileId = customAlphabet('0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ', 32)
+
+  async addFile(file: File): Promise<string> {
+    const id = Paper.fileId()
+    const buffer = await file.arrayBuffer()
+    await this.object.write(`files/${id}`, buffer, {
+      parents: true,
+      create: true,
+      truncate: true,
+    })
+    return id
+  }
+
+  async getFile(id: string): Promise<File> {
+    const buffer = await this.object.read(`files/${id}`)
+    return new File([new Blob([buffer])], id)
   }
 }
 

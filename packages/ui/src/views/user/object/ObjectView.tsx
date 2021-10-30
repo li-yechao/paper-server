@@ -24,6 +24,7 @@ import Blockquote from '@paper/editor/src/Editor/nodes/Blockquote'
 import BulletList from '@paper/editor/src/Editor/nodes/BulletList'
 import CodeBlock from '@paper/editor/src/Editor/nodes/CodeBlock'
 import Doc from '@paper/editor/src/Editor/nodes/Doc'
+import ImageBlock, { ImageBlockOptions } from '@paper/editor/src/Editor/nodes/ImageBlock'
 import Heading from '@paper/editor/src/Editor/nodes/Heading'
 import Math from '@paper/editor/src/Editor/nodes/Math'
 import OrderedList from '@paper/editor/src/Editor/nodes/OrderedList'
@@ -32,6 +33,7 @@ import TagList from '@paper/editor/src/Editor/nodes/TagList'
 import Text from '@paper/editor/src/Editor/nodes/Text'
 import Title from '@paper/editor/src/Editor/nodes/Title'
 import TodoList from '@paper/editor/src/Editor/nodes/TodoList'
+import DropPasteFile from '@paper/editor/src/Editor/plugins/DropPasteFile'
 import Placeholder from '@paper/editor/src/Editor/plugins/Placeholder'
 import Plugins from '@paper/editor/src/Editor/plugins/Plugins'
 import Value from '@paper/editor/src/Editor/plugins/Value'
@@ -74,6 +76,22 @@ export default function ObjectView(props: ObjectViewProps) {
 
   const extensions = useAsync(async () => {
     const content = await paper.getContent()
+
+    const uploadOptions: ImageBlockOptions = {
+      upload: async (file: File) => {
+        return paper.addFile(file)
+      },
+      getSrc: async id => {
+        const file = await paper.getFile(id)
+        return URL.createObjectURL(file)
+      },
+      thumbnail: {
+        maxSize: 1024,
+      },
+    }
+
+    const imageBlock = new ImageBlock(uploadOptions)
+
     return [
       new Value({
         defaultValue: content,
@@ -121,6 +139,16 @@ export default function ObjectView(props: ObjectViewProps) {
         gapCursor(),
         dropCursor({ color: 'currentColor' }),
       ]),
+
+      imageBlock,
+
+      new DropPasteFile({
+        fileToNode: (view, file) => {
+          if (imageBlock && file.type.startsWith('image/')) {
+            return imageBlock.create(view.state.schema, file)
+          }
+        },
+      }),
     ]
   }, [paper])
 
