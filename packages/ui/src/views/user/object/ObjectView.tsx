@@ -79,10 +79,11 @@ export default function ObjectView(props: ObjectViewProps) {
 
     const uploadOptions: ImageBlockOptions = {
       upload: async (file: File) => {
-        return paper.addFile(file)
+        const files = [new File([file], 'image'), new File([file], `original/${file.name}`)]
+        return paper.addResource(files)
       },
-      getSrc: async id => {
-        const file = await paper.getFile(id)
+      getSrc: async cid => {
+        const file = await paper.getResource(cid, 'image')
         return URL.createObjectURL(file)
       },
       thumbnail: {

@@ -13,7 +13,7 @@
 // limitations under the License.
 
 import Ajv, { JTDSchemaType } from 'ajv/dist/jtd'
-import { ReadOptions, WriteOptions } from 'ipfs-core-types/src/files'
+import { MvOptions, ReadOptions, StatOptions, WriteOptions } from 'ipfs-core-types/src/files'
 import all from 'it-all'
 import { nanoid } from 'nanoid'
 import { Account } from '.'
@@ -28,6 +28,7 @@ export default class Object {
     this.id = id
     this.createdAt = createdAt
   }
+
   get version() {
     return this.#objectInfo?.version
   }
@@ -150,6 +151,20 @@ export default class Object {
       create: true,
       truncate: true,
     })
+  }
+
+  async stat(filename: string, options?: StatOptions) {
+    await this.#init
+    return this.#account.ipfs.files.stat(`${this.#draftPath}/${filename}`, options)
+  }
+
+  async mv(filename: string, to: string, options?: MvOptions) {
+    await this.#init
+    return this.#account.ipfs.files.mv(
+      `${this.#draftPath}/${filename}`,
+      `${this.#draftPath}/${to}`,
+      options
+    )
   }
 
   async #read(path: string, options?: ReadOptions): Promise<ArrayBuffer> {

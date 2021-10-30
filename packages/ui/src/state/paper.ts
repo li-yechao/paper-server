@@ -62,20 +62,24 @@ export class Paper {
 
   static fileId = customAlphabet('0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ', 32)
 
-  async addFile(file: File): Promise<string> {
-    const id = Paper.fileId()
-    const buffer = await file.arrayBuffer()
-    await this.object.write(`files/${id}`, buffer, {
-      parents: true,
-      create: true,
-      truncate: true,
-    })
-    return id
+  async addResource(files: File[]): Promise<string> {
+    const tmp = `files/${Paper.fileId()}`
+    for (const file of files) {
+      const buffer = await file.arrayBuffer()
+      await this.object.write(`${tmp}/${file.name}`, buffer, {
+        parents: true,
+        create: true,
+        truncate: true,
+      })
+    }
+    const cid = (await this.object.stat(tmp)).cid.toString()
+    await this.object.mv(tmp, `files/${cid}`)
+    return cid
   }
 
-  async getFile(id: string): Promise<File> {
-    const buffer = await this.object.read(`files/${id}`)
-    return new File([new Blob([buffer])], id)
+  async getResource(cid: string, filename: string): Promise<File> {
+    const buffer = await this.object.read(`files/${cid}/${filename}`)
+    return new File([new Blob([buffer])], filename)
   }
 }
 
