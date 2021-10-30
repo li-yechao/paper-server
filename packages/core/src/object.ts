@@ -134,6 +134,7 @@ export default class Object {
   }
 
   async setInfo(info: Partial<Omit<ObjectInfo, 'version' | 'updatedAt'>> = {}) {
+    await this.#init
     if (!this.#draftInfo) {
       throw new Error('object is not initialized')
     }
@@ -166,6 +167,7 @@ export default class Object {
   }
 
   async read(filename: string, options?: ReadOptions): Promise<ArrayBuffer> {
+    await this.#init
     return this.#read(`${this.#draftPath}/${filename}`, options)
   }
 
@@ -178,10 +180,12 @@ export default class Object {
   }
 
   async write(filename: string, content: string | ArrayBuffer, options?: WriteOptions) {
+    await this.#init
     return this.#write(`${this.#draftPath}/${filename}`, content, options)
   }
 
   async delete() {
+    await this.#init
     if (await fileUtils.rmIfExists(this.#account.ipfs, this.#path, { recursive: true })) {
       await this.#account.publish()
     }
