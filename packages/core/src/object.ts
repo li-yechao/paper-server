@@ -133,12 +133,15 @@ export default class Object {
     })
   }
 
-  async setInfo({ title, description }: Pick<ObjectInfo, 'title' | 'description'> = {}) {
+  async setInfo(info: Partial<Omit<ObjectInfo, 'version' | 'updatedAt'>> = {}) {
     if (!this.#draftInfo) {
       throw new Error('object is not initialized')
     }
-    if (typeof title !== 'undefined') this.#draftInfo.title = title
-    if (typeof description !== 'undefined') this.#draftInfo.description = description
+    for (const i in info) {
+      if (i !== 'version' && i !== 'updatedAt' && (info as any)[i] !== undefined) {
+        ;(this.#draftInfo as any)[i] = (info as any)[i]
+      }
+    }
     this.#draftInfo.updatedAt = Date.now()
     this.#draftInfo.version += 1
     await this.write(this.#infoFilename, JSON.stringify(this.#draftInfo), {
@@ -228,6 +231,7 @@ export const objectInfoSchema: JTDSchemaType<ObjectInfo> = {
     title: { type: 'string' },
     description: { type: 'string' },
   },
+  additionalProperties: true,
 } as const
 
 const validateObjectInfo = new Ajv().compile(objectInfoSchema)

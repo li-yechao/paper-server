@@ -40,7 +40,8 @@ import { RouteComponentProps } from 'react-router-dom'
 import { useRecoilValue } from 'recoil'
 import { useToggleNetworkIndicator } from '../../../components/NetworkIndicator'
 import { accountSelector } from '../../../state/account'
-import { useDeleteObject, useObject, useObjectPagination } from '../../../state/object'
+import { useDeleteObject, useObjectPagination } from '../../../state/object'
+import { usePaper } from '../../../state/paper'
 import useAsync from '../../../utils/useAsync'
 
 export interface UserHomeViewProps extends RouteComponentProps<{ userId: string }> {}
@@ -137,8 +138,8 @@ function ObjectItem({
   onMenuClick: (e: React.MouseEvent<Element>, object: Object) => void
 }) {
   const snackbar = useSnackbar()
-  const { object, publish, isPublishing } = useObject({ account, objectId })
-  const info = useAsync(() => object.info, [object.version])
+  const { paper, publish, isPublishing } = usePaper({ account, objectId })
+  const info = useAsync(() => paper.info, [paper.object.version])
   const toggleNetworkIndicator = useToggleNetworkIndicator({ autoClose: false })
 
   const handlePublish = async (e: React.MouseEvent) => {
@@ -165,24 +166,37 @@ function ObjectItem({
     return <ObjectItem.Skeleton error={info.error} />
   } else {
     const { title, updatedAt } = info.value
-    const time = updatedAt ?? object.createdAt
+    const time = updatedAt ?? paper.object.createdAt
 
     return (
-      <_ListItemButton divider onClick={e => onClick(e, object)}>
+      <_ListItemButton divider onClick={e => onClick(e, paper.object)}>
         <ListItemText
           primary={title || 'Untitled'}
           secondary={
             <>
-              {info.value.isDraft && (
-                <Chip
-                  label="unpublished"
-                  component="span"
-                  size="small"
-                  variant="outlined"
-                  deleteIcon={isPublishing ? <CircularProgress size={14} /> : <Publish />}
-                  onDelete={handlePublish}
-                />
-              )}
+              <Box component="span" mx={-0.5}>
+                {info.value.isDraft && (
+                  <Chip
+                    sx={{ m: 0.5 }}
+                    label="unpublished"
+                    component="span"
+                    size="small"
+                    variant="outlined"
+                    deleteIcon={isPublishing ? <CircularProgress size={14} /> : <Publish />}
+                    onDelete={handlePublish}
+                  />
+                )}
+                {info.value.tags?.map((tag, index) => (
+                  <Chip
+                    sx={{ m: 0.5 }}
+                    key={index}
+                    label={tag}
+                    component="span"
+                    size="small"
+                    variant="outlined"
+                  />
+                ))}
+              </Box>
               <br />
               <Typography variant="caption">
                 <FormattedDate
@@ -200,7 +214,7 @@ function ObjectItem({
         />
 
         <ListItemSecondaryAction>
-          <IconButton edge="end" onClick={e => onMenuClick(e, object)}>
+          <IconButton edge="end" onClick={e => onMenuClick(e, paper.object)}>
             <MoreVert />
           </IconButton>
         </ListItemSecondaryAction>

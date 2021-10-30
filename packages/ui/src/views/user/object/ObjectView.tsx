@@ -127,13 +127,24 @@ export default function ObjectView(props: ObjectViewProps) {
   const save = async () => {
     const { state, version, savedVersion } = ref.current
     if (paper && state && version !== savedVersion) {
+      let title: string | undefined
       const firstChild = state.doc.firstChild
       if (firstChild?.type.name === 'title') {
-        const title = firstChild.textContent
-        await paper.setInfo({ title })
+        title = firstChild.textContent
+      }
+
+      const tags: string[] = []
+      const tagList = state.doc.maybeChild(1)
+      if (tagList?.type.name === 'tag_list') {
+        tagList.forEach(node => {
+          const tag = node.textContent.trim()
+          tag && tags.push(tag)
+        })
       }
 
       await paper.setContent(state.doc.toJSON())
+      await paper.setInfo({ title, tags })
+
       ref.current.savedVersion = version
       document.title = document.title.replace(/^\**/, '')
     }

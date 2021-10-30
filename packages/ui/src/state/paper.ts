@@ -17,12 +17,13 @@ import Object, { ObjectInfo, objectInfoSchema } from '@paper/core/src/object'
 import { DocJson } from '@paper/editor/src/Editor/plugins/Value'
 import Ajv, { JTDSchemaType } from 'ajv/dist/jtd'
 import { useMemo } from 'react'
+import { PromiseType } from 'react-use/lib/misc/types'
 import { useObject } from './object'
 
 export class Paper {
   constructor(readonly object: Object) {}
 
-  get info(): Promise<PaperInfo> {
+  get info(): Promise<PaperInfo & PromiseType<Object['info']>> {
     return this.object.info.then(info => {
       if (!validatePaperInfo(info)) {
         throw new Error(`Invalid paper info`)
@@ -31,7 +32,7 @@ export class Paper {
     })
   }
 
-  async setInfo(info: Pick<PaperInfo, 'title' | 'description'> = {}) {
+  async setInfo(info: Partial<Omit<PaperInfo, 'version' | 'updatedAt'>> = {}) {
     this.object.setInfo(info)
   }
 
@@ -59,7 +60,9 @@ export class Paper {
   }
 }
 
-export interface PaperInfo extends ObjectInfo {}
+export interface PaperInfo extends ObjectInfo {
+  tags?: string[]
+}
 
 const paperInfoSchema: JTDSchemaType<PaperInfo> = {
   properties: {
@@ -67,8 +70,10 @@ const paperInfoSchema: JTDSchemaType<PaperInfo> = {
   },
   optionalProperties: {
     ...objectInfoSchema.optionalProperties,
+    tags: { elements: { type: 'string' } },
   },
-}
+  additionalProperties: true,
+} as const
 
 const validatePaperInfo = new Ajv().compile(paperInfoSchema)
 
