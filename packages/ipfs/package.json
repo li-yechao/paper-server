@@ -10,5 +10,7 @@
   "dependencies": {
     "ipfs": "^0.59.1"
   },
-  "devDependencies": {}
+  "devDependencies": {
+    "typescript": "^4.4.4"
+  }
 }
