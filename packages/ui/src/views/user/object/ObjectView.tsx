@@ -43,17 +43,20 @@ import { gapCursor } from 'prosemirror-gapcursor'
 import { history, redo, undo } from 'prosemirror-history'
 import { undoInputRule } from 'prosemirror-inputrules'
 import { keymap } from 'prosemirror-keymap'
-import { useCallback, useRef } from 'react'
+import React, { MouseEventHandler, useCallback, useEffect, useRef } from 'react'
 import { Prompt, RouteComponentProps } from 'react-router'
 import { useRecoilValue } from 'recoil'
 import { accountSelector } from '../../../state/account'
 import { usePaper } from '../../../state/paper'
 import useOnSave from '../../../utils/useOnSave'
 import styled from '@emotion/styled'
-import { useBeforeUnload } from 'react-use'
+import { useBeforeUnload, useToggle } from 'react-use'
 import useAsync from '../../../utils/useAsync'
-import NetworkIndicator from '../../../components/NetworkIndicator'
+import NetworkIndicator, { useToggleNetworkIndicator } from '../../../components/NetworkIndicator'
 import { debounce } from 'lodash'
+import { HeaderAction, useHeaderActionsCtrl } from '../../../state/header'
+import { LoadingButton } from '@mui/lab'
+import { Save } from '@mui/icons-material'
 
 const AUTO_SAVE_WAIT_MS = 5 * 1000
 const AUTO_SAVE_MAX_WAIT_MS = 30 * 1000
@@ -78,31 +81,68 @@ export default function ObjectView(props: ObjectViewProps) {
     savedVersion: 0,
   })
 
+  const toggleNetworkIndicator = useToggleNetworkIndicator()
+  const [saving, toggleSaving] = useToggle(false)
+  const [changed, toggleChanged] = useToggle(false)
+
   const save = useCallback(async () => {
     const { state, version, savedVersion } = ref.current
     if (paper && state && version !== savedVersion) {
-      let title: string | undefined
-      const firstChild = state.doc.firstChild
-      if (firstChild?.type.name === 'title') {
-        title = firstChild.textContent
+      try {
+        toggleNetworkIndicator(true)
+        toggleSaving(true)
+        let title: string | undefined
+        const firstChild = state.doc.firstChild
+        if (firstChild?.type.name === 'title') {
+          title = firstChild.textContent
+        }
+
+        const tags: string[] = []
+        const tagList = state.doc.maybeChild(1)
+        if (tagList?.type.name === 'tag_list') {
+          tagList.forEach(node => {
+            const tag = node.textContent.trim()
+            tag && tags.push(tag)
+          })
+        }
+
+        await paper.setContent(state.doc.toJSON())
+        await paper.setInfo({ title, tags })
+
+        ref.current.savedVersion = version
+        await new Promise(r => setTimeout(r, 3000))
+        toggleChanged(false)
+      } finally {
+        toggleNetworkIndicator(false)
+        toggleSaving(false)
       }
-
-      const tags: string[] = []
-      const tagList = state.doc.maybeChild(1)
-      if (tagList?.type.name === 'tag_list') {
-        tagList.forEach(node => {
-          const tag = node.textContent.trim()
-          tag && tags.push(tag)
-        })
-      }
-
-      await paper.setContent(state.doc.toJSON())
-      await paper.setInfo({ title, tags })
-
-      ref.current.savedVersion = version
-      document.title = document.title.replace(/^\**/, '')
     }
   }, [paper])
+
+  useEffect(() => {
+    if (changed) {
+      document.title = document.title.replace(/^\**/, '*')
+    } else {
+      document.title = document.title.replace(/^\**/, '')
+    }
+  }, [changed])
+
+  const headerActionsCtrl = useHeaderActionsCtrl()
+
+  useEffect(() => {
+    const saveAction: HeaderAction<React.ComponentProps<typeof SaveAction>> = {
+      key: 'ObjectView-saveAction',
+      component: SaveAction,
+      props: {
+        disabled: !changed,
+        loading: saving,
+        onClick: save,
+      },
+    }
+    headerActionsCtrl.set(saveAction)
+
+    return () => headerActionsCtrl.remove(saveAction)
+  }, [changed, saving, save])
 
   const extensions = useAsync(async () => {
     const autoSave = debounce(save, AUTO_SAVE_WAIT_MS, { maxWait: AUTO_SAVE_MAX_WAIT_MS })
@@ -133,7 +173,7 @@ export default function ObjectView(props: ObjectViewProps) {
           if (tr.docChanged) {
             ref.current.version += 1
             ref.current.state = view.state
-            document.title = document.title.replace(/^\**/, '*')
+            toggleChanged(true)
             autoSave()
           }
         },
@@ -215,3 +255,26 @@ const _Editor = styled(Editor)`
   max-width: 800px;
   margin: auto;
 `
+
+const SaveAction = ({
+  disabled,
+  loading,
+  onClick,
+}: {
+  disabled: boolean
+  loading: boolean
+  onClick: MouseEventHandler<HTMLButtonElement>
+}) => (
+  <LoadingButton
+    disabled={disabled}
+    loading={loading}
+    loadingPosition="start"
+    color="success"
+    onClick={onClick}
+    startIcon={<Save />}
+    variant="contained"
+    disableElevation
+  >
+    {disabled ? 'Saved' : loading ? 'Saving' : 'Save'}
+  </LoadingButton>
+)

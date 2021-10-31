@@ -23,6 +23,7 @@ import { Route, RouteComponentProps, Switch, useHistory } from 'react-router'
 import { useRecoilValue, useResetRecoilState } from 'recoil'
 import { useToggleNetworkIndicator } from '../../components/NetworkIndicator'
 import { accountSelector, useAccountOrNull } from '../../state/account'
+import { useHeaderActions } from '../../state/header'
 import { useCreateObject } from '../../state/object'
 import { NotFoundViewLazy } from '../error'
 import { UserHomeViewLazy } from './home'
@@ -40,6 +41,8 @@ export default function UserView(props: UserViewProps) {
     }
   }, [userId])
 
+  const headerActions = useHeaderActions()
+
   if (!id) {
     return <NotFoundViewLazy />
   }
@@ -52,6 +55,9 @@ export default function UserView(props: UserViewProps) {
 
           <Box flexGrow={1} />
 
+          {headerActions.map(i => (
+            <i.component {...i.props} key={i.key} />
+          ))}
           <CreateButton />
           <AccountButton />
         </Toolbar>
