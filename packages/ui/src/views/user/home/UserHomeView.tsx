@@ -82,14 +82,25 @@ export default function UserHomeView(props: UserHomeViewProps) {
   }
 
   return (
-    <Box maxWidth={800} margin="auto">
+    <Box maxWidth={800} pb={8} margin="auto">
       <List>
-        {!pagination.list.length && pagination.loading ? (
-          <>
-            <ObjectItem.Skeleton />
-            <ObjectItem.Skeleton />
-            <ObjectItem.Skeleton />
-          </>
+        {!pagination.list.length ? (
+          pagination.loading ? (
+            <>
+              <ObjectItem.Skeleton />
+              <ObjectItem.Skeleton />
+              <ObjectItem.Skeleton />
+            </>
+          ) : (
+            <Typography
+              component="p"
+              variant="h6"
+              textAlign="center"
+              sx={{ py: 10, color: 'text.secondary' }}
+            >
+              Nothing...
+            </Typography>
+          )
         ) : (
           pagination.list.map(objectId => (
             <ObjectItem
@@ -103,23 +114,25 @@ export default function UserHomeView(props: UserHomeViewProps) {
         )}
       </List>
 
-      <Stack spacing={2} direction="row" justifyContent="center">
-        <Button
-          disabled={!pagination.hasPrevious}
-          onClick={pagination.loadPrevious}
-          startIcon={<KeyboardArrowLeft />}
-        >
-          Previous
-        </Button>
+      {pagination.list.length > 0 && (
+        <Stack spacing={2} direction="row" justifyContent="center">
+          <Button
+            disabled={!pagination.hasPrevious}
+            onClick={pagination.loadPrevious}
+            startIcon={<KeyboardArrowLeft />}
+          >
+            Previous
+          </Button>
 
-        <Button
-          disabled={!pagination.hasNext}
-          onClick={pagination.loadNext}
-          endIcon={<KeyboardArrowRight />}
-        >
-          Next
-        </Button>
-      </Stack>
+          <Button
+            disabled={!pagination.hasNext}
+            onClick={pagination.loadNext}
+            endIcon={<KeyboardArrowRight />}
+          >
+            Next
+          </Button>
+        </Stack>
+      )}
 
       <Menu
         anchorEl={menuState?.anchorEl}
