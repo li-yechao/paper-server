@@ -16,7 +16,7 @@ import { css } from '@emotion/css'
 import { Keymap } from 'prosemirror-commands'
 import { InputRule, wrappingInputRule } from 'prosemirror-inputrules'
 import { NodeType } from 'prosemirror-model'
-import { splitListItem } from 'prosemirror-schema-list'
+import { liftListItem, sinkListItem, splitListItem } from 'prosemirror-schema-list'
 import Node, { NodeView, NodeViewCreator, StrictNodeSpec } from './Node'
 
 export interface OrderedListAttrs {}
@@ -33,12 +33,6 @@ export default class OrderedList extends Node<OrderedListAttrs> {
       group: 'block',
       parseDOM: [{ tag: 'ol' }],
       toDOM: () => ['ol', 0],
-    }
-  }
-
-  keymap({ type }: { type: NodeType }): Keymap {
-    return {
-      Enter: splitListItem(type.schema.nodes['ordered_item']),
     }
   }
 
@@ -70,6 +64,8 @@ class OrderedItem extends Node<OrderedItemAttrs> {
   keymap({ type }: { type: NodeType }): Keymap {
     return {
       Enter: splitListItem(type),
+      'Mod-[': liftListItem(type),
+      'Mod-]': sinkListItem(type),
     }
   }
 

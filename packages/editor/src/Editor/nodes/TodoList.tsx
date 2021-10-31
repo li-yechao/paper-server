@@ -18,7 +18,7 @@ import { Checkbox } from '@mui/material'
 import { Keymap } from 'prosemirror-commands'
 import { InputRule, wrappingInputRule } from 'prosemirror-inputrules'
 import { NodeType } from 'prosemirror-model'
-import { splitListItem } from 'prosemirror-schema-list'
+import { liftListItem, sinkListItem, splitListItem } from 'prosemirror-schema-list'
 import { EditorView } from 'prosemirror-view'
 import Node, { NodeViewCreator, NodeViewReact, StrictNodeSpec, StrictProsemirrorNode } from './Node'
 
@@ -89,6 +89,8 @@ class TodoItem extends Node<TodoItemAttrs> {
   keymap({ type }: { type: NodeType }): Keymap {
     return {
       Enter: splitListItem(type),
+      'Mod-[': liftListItem(type),
+      'Mod-]': sinkListItem(type),
     }
   }
 
