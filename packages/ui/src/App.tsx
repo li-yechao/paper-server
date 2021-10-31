@@ -13,7 +13,13 @@
 // limitations under the License.
 
 import { ThemeProvider as EmotionThemeProvider } from '@emotion/react'
-import { Box, createTheme, LinearProgress, ThemeProvider as MuiThemeProvider } from '@mui/material'
+import {
+  Box,
+  createTheme,
+  CssBaseline,
+  LinearProgress,
+  ThemeProvider as MuiThemeProvider,
+} from '@mui/material'
 import { StylesProvider } from '@mui/styles'
 import { Account } from '@paper/core'
 import { Suspense, useEffect, useMemo } from 'react'
@@ -50,25 +56,27 @@ export default function App() {
     <ErrorBoundary fallback={ErrorView}>
       <NetworkIndicator.Provider>
         <SnackbarProvider maxSnack={3} anchorOrigin={{ vertical: 'top', horizontal: 'center' }}>
-          <NetworkIndicator.Renderer>
-            <Box position="fixed" left={0} top={0} right={0} zIndex={t => t.zIndex.tooltip + 1}>
-              <LinearProgress />
-            </Box>
-          </NetworkIndicator.Renderer>
+          <CssBaseline>
+            <NetworkIndicator.Renderer>
+              <Box position="fixed" left={0} top={0} right={0} zIndex={t => t.zIndex.tooltip + 1}>
+                <LinearProgress />
+              </Box>
+            </NetworkIndicator.Renderer>
 
-          <IntlProvider locale={navigator.language}>
-            <RecoilRoot>
-              <StylesProvider injectFirst>
-                <MuiThemeProvider theme={theme}>
-                  <EmotionThemeProvider theme={theme}>
-                    <Suspense fallback={<NetworkIndicator in />}>
-                      <AppRoutes />
-                    </Suspense>
-                  </EmotionThemeProvider>
-                </MuiThemeProvider>
-              </StylesProvider>
-            </RecoilRoot>
-          </IntlProvider>
+            <IntlProvider locale={navigator.language}>
+              <RecoilRoot>
+                <StylesProvider injectFirst>
+                  <MuiThemeProvider theme={theme}>
+                    <EmotionThemeProvider theme={theme}>
+                      <Suspense fallback={<NetworkIndicator in />}>
+                        <AppRoutes />
+                      </Suspense>
+                    </EmotionThemeProvider>
+                  </MuiThemeProvider>
+                </StylesProvider>
+              </RecoilRoot>
+            </IntlProvider>
+          </CssBaseline>
         </SnackbarProvider>
       </NetworkIndicator.Provider>
     </ErrorBoundary>
