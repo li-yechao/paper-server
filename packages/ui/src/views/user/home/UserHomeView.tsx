@@ -84,15 +84,23 @@ export default function UserHomeView(props: UserHomeViewProps) {
   return (
     <Box maxWidth={800} margin="auto">
       <List>
-        {pagination.list.map(objectId => (
-          <ObjectItem
-            key={objectId}
-            account={account}
-            objectId={objectId}
-            onClick={handleToDetail}
-            onMenuClick={handleOpenMenu}
-          />
-        ))}
+        {!pagination.list.length && pagination.loading ? (
+          <>
+            <ObjectItem.Skeleton />
+            <ObjectItem.Skeleton />
+            <ObjectItem.Skeleton />
+          </>
+        ) : (
+          pagination.list.map(objectId => (
+            <ObjectItem
+              key={objectId}
+              account={account}
+              objectId={objectId}
+              onClick={handleToDetail}
+              onMenuClick={handleOpenMenu}
+            />
+          ))
+        )}
       </List>
 
       <Stack spacing={2} direction="row" justifyContent="center">

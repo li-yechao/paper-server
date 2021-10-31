@@ -17,6 +17,7 @@ import Object from '@paper/core/src/object'
 import { atom, useRecoilCallback, useRecoilState, useRecoilValue } from 'recoil'
 import { memoize } from 'lodash'
 import { useEffect } from 'react'
+import { useToggle } from 'react-use'
 
 const objectState = memoize(
   (account: Account, objectId: string) => {
@@ -70,6 +71,7 @@ const objectPaginationState = memoize(
 )
 
 export interface ObjectPagination {
+  loading: boolean
   list: string[]
   page: number
   hasPrevious: boolean
@@ -86,6 +88,7 @@ export function useObjectPagination({
   limit?: number
 }): ObjectPagination {
   const [pagination, setPagination] = useRecoilState(objectPaginationState(account))
+  const [loading, toggleLoading] = useToggle(false)
 
   const withState = (cb: (s: NonNullable<typeof pagination>) => Promise<void>) => {
     return async () => {
@@ -119,21 +122,29 @@ export function useObjectPagination({
     return list
   }
 
-  const loadNext = withState(async state => {
-    const { iterator, page, limit, list } = state
-    const newPage = page === 0 && list.length < limit ? 0 : page + 1
-    // NOTE: Load one more to determine if there is a next page.
-    const needLoadCount = (newPage + 1) * limit - list.length + 1
-    const newList = needLoadCount > 0 ? list.concat(await loadMore(iterator, needLoadCount)) : list
-    const hasNext = newList.length - list.length >= needLoadCount
+  const loadNext = async () => {
+    try {
+      toggleLoading(true)
+      await withState(async state => {
+        const { iterator, page, limit, list } = state
+        const newPage = page === 0 && list.length < limit ? 0 : page + 1
+        // NOTE: Load one more to determine if there is a next page.
+        const needLoadCount = (newPage + 1) * limit - list.length + 1
+        const newList =
+          needLoadCount > 0 ? list.concat(await loadMore(iterator, needLoadCount)) : list
+        const hasNext = newList.length - list.length >= needLoadCount
 
-    setPagination({
-      ...state,
-      list: newList,
-      page: Math.max(0, Math.min(Math.ceil(list.length / limit) - 1, newPage)),
-      hasNext,
-    })
-  })
+        setPagination({
+          ...state,
+          list: newList,
+          page: Math.max(0, Math.min(Math.ceil(list.length / limit) - 1, newPage)),
+          hasNext,
+        })
+      })()
+    } finally {
+      toggleLoading(false)
+    }
+  }
 
   useEffect(() => {
     if (!pagination || pagination.list.length === 0) {
@@ -158,6 +169,7 @@ export function useObjectPagination({
 
   if (!pagination) {
     return {
+      loading,
       list: [],
       page: 0,
       hasPrevious: false,
@@ -171,6 +183,7 @@ export function useObjectPagination({
   const offset = page * pagination.limit
 
   return {
+    loading,
     list: pagination.list.slice(offset, offset + pagination.limit),
     page,
     hasPrevious: page > 0,
