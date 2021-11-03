@@ -24,7 +24,7 @@ import { StylesProvider } from '@mui/styles'
 import { Account } from '@paper/core'
 import { Suspense, useEffect, useMemo } from 'react'
 import { IntlProvider } from 'react-intl'
-import { HashRouter, Route, Switch } from 'react-router-dom'
+import { HashRouter, Route, Routes } from 'react-router-dom'
 import { useAsync } from 'react-use'
 import { RecoilRoot, useSetRecoilState } from 'recoil'
 import ErrorBoundary from './components/ErrorBoundary'
@@ -119,11 +119,11 @@ const AppRoutes = () => {
   return (
     <ErrorBoundary fallback={UnauthorizedErrorBoundary}>
       <HashRouter>
-        <Switch>
-          <Route path="/" exact component={HomeViewLazy} />
-          <Route path="/:userId" component={UserViewLazy} />
-          <Route path="*" component={NotFoundViewLazy} />
-        </Switch>
+        <Routes>
+          <Route index element={<HomeViewLazy />} />
+          <Route path=":userId/*" element={<UserViewLazy />} />
+          <Route path="*" element={<NotFoundViewLazy />} />
+        </Routes>
       </HashRouter>
     </ErrorBoundary>
   )

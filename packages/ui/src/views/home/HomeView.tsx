@@ -12,12 +12,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { Redirect } from 'react-router'
+import { useEffect } from 'react'
+import { useNavigate } from 'react-router'
 import { useRecoilValue } from 'recoil'
 import { accountSelector } from '../../state/account'
 
 export default function HomeView() {
   const account = useRecoilValue(accountSelector)
+  const navigate = useNavigate()
 
-  return <Redirect to={`/${account.userId}`} />
+  useEffect(() => {
+    navigate(`/${account.userId}`, { replace: true })
+  }, [account.userId])
+
+  return null
 }

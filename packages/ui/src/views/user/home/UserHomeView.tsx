@@ -34,9 +34,9 @@ import { Account } from '@paper/core'
 import Object from '@paper/core/src/object'
 import { useSnackbar } from 'notistack'
 import * as React from 'react'
-import { useState } from 'react'
+import { useCallback, useState } from 'react'
 import { FormattedDate } from 'react-intl'
-import { RouteComponentProps } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 import { useRecoilValue } from 'recoil'
 import { useToggleNetworkIndicator } from '../../../components/NetworkIndicator'
 import { accountSelector } from '../../../state/account'
@@ -44,10 +44,13 @@ import { useDeleteObject, useObjectPagination } from '../../../state/object'
 import { usePaper } from '../../../state/paper'
 import useAsync from '../../../utils/useAsync'
 
-export interface UserHomeViewProps extends RouteComponentProps<{ userId: string }> {}
+export default function UserHomeView() {
+  const userId = useParams<'userId'>().userId
+  if (!userId) {
+    throw new Error('Required params userId is not present')
+  }
 
-export default function UserHomeView(props: UserHomeViewProps) {
-  const { userId } = props.match.params
+  const navigate = useNavigate()
   const toggleNetworkIndicator = useToggleNetworkIndicator({ autoClose: false })
 
   const account = useRecoilValue(accountSelector)
@@ -58,9 +61,9 @@ export default function UserHomeView(props: UserHomeViewProps) {
   const pagination = useObjectPagination({ account, limit: 10 })
   const [menuState, setMenuState] = useState<{ anchorEl: Element; object: Object }>()
 
-  const handleToDetail = (_: React.MouseEvent<Element>, object: Object) => {
-    props.history.push(`/${userId}/${object.id}`)
-  }
+  const handleToDetail = useCallback((_: React.MouseEvent<Element>, object: Object) => {
+    navigate(`/${userId}/${object.id}`)
+  }, [])
 
   const handleOpenMenu = (e: React.MouseEvent<Element>, object: Object) => {
     e.stopPropagation()

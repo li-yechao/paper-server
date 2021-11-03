@@ -44,7 +44,6 @@ import { history, redo, undo } from 'prosemirror-history'
 import { undoInputRule } from 'prosemirror-inputrules'
 import { keymap } from 'prosemirror-keymap'
 import React, { MouseEventHandler, useCallback, useEffect, useRef } from 'react'
-import { Prompt, RouteComponentProps } from 'react-router'
 import { useRecoilValue } from 'recoil'
 import { accountSelector } from '../../../state/account'
 import { usePaper } from '../../../state/paper'
@@ -57,18 +56,20 @@ import { debounce } from 'lodash'
 import { HeaderAction, useHeaderActionsCtrl } from '../../../state/header'
 import { LoadingButton } from '@mui/lab'
 import { Save } from '@mui/icons-material'
+import { useParams } from 'react-router'
 
 const AUTO_SAVE_WAIT_MS = 5 * 1000
 const AUTO_SAVE_MAX_WAIT_MS = 30 * 1000
 
-export interface ObjectViewProps
-  extends RouteComponentProps<{
-    userId: string
-    objectId: string
-  }> {}
+export default function ObjectView() {
+  const { userId, objectId } = useParams<'userId' | 'objectId'>()
+  if (!userId) {
+    throw new Error('Required params userId is not present')
+  }
+  if (!objectId) {
+    throw new Error('Required params objectId is not present')
+  }
 
-export default function ObjectView(props: ObjectViewProps) {
-  const { userId, objectId } = props.match.params
   const account = useRecoilValue(accountSelector)
   if (account.userId !== userId) {
     throw new Error('Forbidden')
@@ -110,7 +111,6 @@ export default function ObjectView(props: ObjectViewProps) {
         await paper.setInfo({ title, tags })
 
         ref.current.savedVersion = version
-        await new Promise(r => setTimeout(r, 3000))
         toggleChanged(false)
       } finally {
         toggleNetworkIndicator(false)
@@ -236,16 +236,7 @@ export default function ObjectView(props: ObjectViewProps) {
     throw extensions.error
   }
 
-  return (
-    <>
-      <Prompt
-        message={() =>
-          ref.current.savedVersion !== ref.current.version ? 'Discard changes' : true
-        }
-      />
-      {extensions.loading ? <NetworkIndicator in /> : <_Editor extensions={extensions.value} />}
-    </>
-  )
+  return extensions.loading ? <NetworkIndicator in /> : <_Editor extensions={extensions.value} />
 }
 
 const _Editor = styled(Editor)`

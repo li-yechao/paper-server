@@ -16,10 +16,9 @@ import styled from '@emotion/styled'
 import { AccountCircle, Add } from '@mui/icons-material'
 import { AppBar, Box, Button, IconButton, Menu, MenuItem, Toolbar, Typography } from '@mui/material'
 import { Account } from '@paper/core'
-import Ipfs from '@paper/ipfs'
 import * as React from 'react'
-import { useMemo, useState } from 'react'
-import { Route, RouteComponentProps, Switch, useHistory } from 'react-router'
+import { useState } from 'react'
+import { Route, Routes, useNavigate } from 'react-router'
 import { useRecoilValue, useResetRecoilState } from 'recoil'
 import { useToggleNetworkIndicator } from '../../components/NetworkIndicator'
 import { accountSelector, useAccountOrNull } from '../../state/account'
@@ -29,23 +28,8 @@ import { NotFoundViewLazy } from '../error'
 import { UserHomeViewLazy } from './home'
 import { ObjectViewLazy } from './object'
 
-export interface UserViewProps extends Pick<RouteComponentProps<{ userId: string }>, 'match'> {}
-
-export default function UserView(props: UserViewProps) {
-  const { userId } = props.match.params
-  const id = useMemo(() => {
-    try {
-      return Ipfs.PeerId.parse(userId)
-    } catch {
-      return null
-    }
-  }, [userId])
-
+export default function UserView() {
   const headerActions = useHeaderActions()
-
-  if (!id) {
-    return <NotFoundViewLazy />
-  }
 
   return (
     <>
@@ -64,11 +48,11 @@ export default function UserView(props: UserViewProps) {
       </_AppBar>
 
       <_Body>
-        <Switch>
-          <Route path={`${props.match.path}`} exact component={UserHomeViewLazy} />
-          <Route path={`${props.match.path}/:objectId`} exact component={ObjectViewLazy} />
-          <Route path="*" component={NotFoundViewLazy} />
-        </Switch>
+        <Routes>
+          <Route index element={<UserHomeViewLazy />} />
+          <Route path=":objectId" element={<ObjectViewLazy />} />
+          <Route path="*" element={<NotFoundViewLazy />} />
+        </Routes>
       </_Body>
     </>
   )
@@ -95,7 +79,7 @@ const CreateButton = () => {
 }
 
 const _CreateButton = ({ account }: { account: Account }) => {
-  const history = useHistory()
+  const navigate = useNavigate()
   const toggleNetworkIndicator = useToggleNetworkIndicator()
   const createObject = useCreateObject({ account })
 
@@ -103,7 +87,7 @@ const _CreateButton = ({ account }: { account: Account }) => {
     try {
       toggleNetworkIndicator(true)
       const object = await createObject()
-      history.push(`/${account.userId}/${object.id}`)
+      navigate(`/${account.userId}/${object.id}`)
     } finally {
       toggleNetworkIndicator(false)
     }
@@ -117,10 +101,10 @@ const _CreateButton = ({ account }: { account: Account }) => {
 }
 
 const AccountButton = () => {
+  const navigate = useNavigate()
   const account = useRecoilValue(accountSelector)
   const resetAccount = useResetRecoilState(accountSelector)
   const [anchorEl, setAnchorEl] = useState<Element>()
-  const history = useHistory()
 
   const handleMenuOpen = (e: React.MouseEvent<HTMLButtonElement>) => {
     setAnchorEl(e.currentTarget)
@@ -136,7 +120,7 @@ const AccountButton = () => {
   }
 
   const handleLogin = () => {
-    history.push(`/`)
+    navigate(`/`)
   }
 
   return (
