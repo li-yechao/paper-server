@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+/// <reference types="vite-plugin-pwa/client" />
+
 interface ImportMetaEnv extends Readonly<Record<string, string | boolean>> {
   DEV: boolean
   PROD: boolean
