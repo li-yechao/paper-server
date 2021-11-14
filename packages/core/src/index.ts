@@ -15,6 +15,8 @@
 import Ipfs, { IPFS } from '@paper/ipfs'
 import { PrivateKey } from 'ipfs-core/src/components/ipns'
 import { MFSEntry } from 'ipfs-core/src/components/files/ls'
+import * as IPFSFiles from 'ipfs-core-types/src/files'
+import { IPFSPath } from 'ipfs-core-types/src/utils'
 import all from 'it-all'
 // @ts-ignore
 import WebSockets from 'libp2p-websockets'
@@ -24,6 +26,8 @@ import { customAlphabet } from 'nanoid'
 import Object from './object'
 import { crypto } from './crypto'
 import { fileUtils } from './utils/files'
+
+const SWARM_CONNECTION_CHECK_LIFETIME = 10000
 
 export interface AccountOptions {
   swarm: string
@@ -79,7 +83,9 @@ export class Account {
 
     if (isNewKey) {
       const encryptedKey = await crypto.aes.encrypt(args.password, key.bytes)
-      await ipfs.files.write(`/${userId}/keystore/main`, new Uint8Array(encryptedKey), {
+      await (
+        await account.files
+      ).write(`/${userId}/keystore/main`, new Uint8Array(encryptedKey), {
         parents: true,
         create: true,
         truncate: true,
@@ -88,11 +94,10 @@ export class Account {
       await account.publish()
     } else {
       const cid = await this.resolveName(options, userId)
-      await ipfs.swarm.connect(options.swarm)
       try {
-        await ipfs.files.rm(`/${userId}`, { recursive: true })
+        await (await account.files).rm(`/${userId}`, { recursive: true })
       } catch {}
-      await ipfs.files.cp(`/ipfs/${cid}`, `/${userId}`)
+      await (await account.files).cp(`/ipfs/${cid}`, `/${userId}`)
     }
 
     return account
@@ -132,6 +137,46 @@ export class Account {
     this.crypto = new crypto.Crypto(this.password)
   }
 
+  readonly files = {
+    chmod: (path: string, mode: number | string, options?: IPFSFiles.ChmodOptions) => {
+      return this.execFileCmd(() => this.ipfs.files.chmod(path, mode, options))
+    },
+    cp: (from: IPFSPath | IPFSPath[], to: string, options?: IPFSFiles.CpOptions) => {
+      return this.execFileCmd(() => this.ipfs.files.cp(from, to, options))
+    },
+    mkdir: (path: string, options?: IPFSFiles.MkdirOptions) => {
+      return this.execFileCmd(() => this.ipfs.files.mkdir(path, options))
+    },
+    stat: (ipfsPath: IPFSPath, options?: IPFSFiles.StatOptions) => {
+      return this.execFileCmd(() => this.ipfs.files.stat(ipfsPath, options))
+    },
+    touch: (ipfsPath: string, options?: IPFSFiles.TouchOptions) => {
+      return this.execFileCmd(() => this.ipfs.files.touch(ipfsPath, options))
+    },
+    rm: (ipfsPaths: string | string[], options?: IPFSFiles.RmOptions) => {
+      return this.execFileCmd(() => this.ipfs.files.rm(ipfsPaths, options))
+    },
+    read: (ipfsPath: IPFSPath, options?: IPFSFiles.ReadOptions) => {
+      return this.execFileIterable(this.ipfs.files.read(ipfsPath, options))
+    },
+    write: (
+      ipfsPath: string,
+      content: string | Uint8Array | Blob | AsyncIterable<Uint8Array> | Iterable<Uint8Array>,
+      options?: IPFSFiles.WriteOptions
+    ) => {
+      return this.execFileCmd(() => this.ipfs.files.write(ipfsPath, content, options))
+    },
+    mv: (from: string | string[], to: string, options?: IPFSFiles.MvOptions) => {
+      return this.execFileCmd(() => this.ipfs.files.mv(from, to, options))
+    },
+    flush: (ipfsPath: string) => {
+      return this.execFileCmd(() => this.ipfs.files.flush(ipfsPath))
+    },
+    ls: (ipfsPath: IPFSPath) => {
+      return this.execFileIterable(this.ipfs.files.ls(ipfsPath))
+    },
+  }
+
   private get objectPath() {
     return `/${this.userId}/objects`
   }
@@ -147,22 +192,7 @@ export class Account {
   private nonce = customAlphabet('0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ', 5)
 
   async publish() {
-    const peerId = new Ipfs.multiaddr(this.options.swarm).getPeerId()
-    if (!peerId) {
-      throw new Error(`Invalid swarm addrs ${this.options.swarm}`)
-    }
-    try {
-      for await (const pong of this.ipfs.ping(peerId, { count: 2, timeout: 1000 })) {
-        if (!pong.success) {
-          throw new Error(`Ping ${peerId} error`)
-        }
-      }
-    } catch {
-      await this.ipfs.swarm.disconnect(this.options.swarm)
-      await this.ipfs.swarm.connect(this.options.swarm)
-    }
-
-    const { cid } = await this.ipfs.files.stat(`/${this.userId}`)
+    const { cid } = await this.files.stat(`/${this.userId}`)
     const query = new URLSearchParams({ cid: cid.toString(), password: this.password }).toString()
     const url = `${this.options.accountGateway}/account/publish?${query}`
     await fetch(url, { method: 'POST' }).then(res => {
@@ -273,7 +303,7 @@ export class Account {
   private async *iterateObject(dir: string) {
     let years: MFSEntry[]
     try {
-      years = (await all(this.ipfs.files.ls(dir)))
+      years = (await all(this.files.ls(dir)))
         .filter(i => i.type === 'directory' && /^\d{4}$/.test(i.name))
         .sort((a, b) => (a.name < b.name ? 1 : -1))
     } catch (error: any) {
@@ -284,18 +314,18 @@ export class Account {
     }
 
     for (const year of years) {
-      const months = (await all(this.ipfs.files.ls(`${dir}/${year.name}`)))
+      const months = (await all(this.files.ls(`${dir}/${year.name}`)))
         .filter(i => i.type === 'directory' && /^\d{2}$/.test(i.name))
         .sort((a, b) => (a.name < b.name ? 1 : -1))
 
       for (const month of months) {
-        const dates = (await all(this.ipfs.files.ls(`${dir}/${year.name}/${month.name}`)))
+        const dates = (await all(this.files.ls(`${dir}/${year.name}/${month.name}`)))
           .filter(i => i.type === 'directory' && /^\d{2}$/.test(i.name))
           .sort((a, b) => (a.name < b.name ? 1 : -1))
 
         for (const date of dates) {
           const objects = (
-            await all(this.ipfs.files.ls(`${dir}/${year.name}/${month.name}/${date.name}`))
+            await all(this.files.ls(`${dir}/${year.name}/${month.name}/${date.name}`))
           )
             .filter(i => i.type === 'directory' && /^(\d+)-(\S+)$/.test(i.name))
             .sort((a, b) => (a.name < b.name ? 1 : -1))
@@ -307,4 +337,62 @@ export class Account {
       }
     }
   }
+
+  private async execFileCmd<T>(task: () => Promise<T>): Promise<T> {
+    const res = await Promise.race([task(), sleep(2000)])
+    if (res) {
+      return res
+    }
+
+    await this.ensureSwarmConnection()
+
+    return task()
+  }
+
+  private async *execFileIterable<T>(iterable: AsyncIterable<T>): AsyncIterable<T> {
+    const iter = iterable[Symbol.asyncIterator]()
+
+    while (true) {
+      await this.ensureSwarmConnection()
+      const n = await iter.next()
+      if (n.value) {
+        yield n.value
+      }
+      if (n.done) {
+        return
+      }
+    }
+  }
+
+  private _ensureSwarmConnection?: Promise<void>
+
+  private ensureSwarmConnection() {
+    if (!this._ensureSwarmConnection) {
+      this._ensureSwarmConnection = (async () => {
+        const peerId = new Ipfs.multiaddr(this.options.swarm).getPeerId()
+        if (!peerId) {
+          throw new Error(`Invalid swarm addrs ${this.options.swarm}`)
+        }
+        try {
+          for await (const pong of this.ipfs.ping(peerId, { count: 2, timeout: 1000 })) {
+            if (!pong.success) {
+              throw new Error(`Ping ${peerId} error`)
+            }
+          }
+        } catch {
+          await this.ipfs.swarm.disconnect(this.options.swarm)
+          await this.ipfs.swarm.connect(this.options.swarm)
+        }
+
+        setTimeout(() => {
+          this._ensureSwarmConnection = undefined
+        }, SWARM_CONNECTION_CHECK_LIFETIME)
+      })()
+    }
+    return this._ensureSwarmConnection
+  }
+}
+
+function sleep(ms: number): Promise<void> {
+  return new Promise(resolve => setTimeout(resolve, ms))
 }

@@ -61,7 +61,7 @@ export default class Object {
           (!this.#draftInfo || this.#objectInfo.version > this.#draftInfo.version)
         ) {
           await fileUtils.rmIfExists(this.#account.ipfs, this.#draftPath, { recursive: true })
-          await this.#account.ipfs.files.cp(this.#path, this.#draftPath, { parents: true })
+          await this.#account.files.cp(this.#path, this.#draftPath, { parents: true })
 
           this.#draftInfo = await this.#readInfo(`${this.#draftPath}/${this.#infoFilename}`)
         }
@@ -85,7 +85,7 @@ export default class Object {
     if (!this.#_password) {
       const getPassword = async (path: string) => {
         try {
-          const raw = await Object.#readBuffer(this.#account.ipfs.files.read(path))
+          const raw = await Object.#readBuffer(this.#account.files.read(path))
           return new TextDecoder().decode(await this.#account.crypto.aes.decrypt(raw))
         } catch (error) {
           if (!fileUtils.isErrNotFound(error)) {
@@ -101,7 +101,7 @@ export default class Object {
           (await (async () => {
             const password = nanoid(32)
             const raw = await this.#account.crypto.aes.encrypt(new TextEncoder().encode(password))
-            await this.#account.ipfs.files.write(
+            await this.#account.files.write(
               `${this.#draftPath}/${this.#passwordFilename}`,
               new Uint8Array(raw),
               {
@@ -155,12 +155,12 @@ export default class Object {
 
   async stat(filename: string, options?: StatOptions) {
     await this.#init
-    return this.#account.ipfs.files.stat(`${this.#draftPath}/${filename}`, options)
+    return this.#account.files.stat(`${this.#draftPath}/${filename}`, options)
   }
 
   async mv(filename: string, to: string, options?: MvOptions) {
     await this.#init
-    return this.#account.ipfs.files.mv(
+    return this.#account.files.mv(
       `${this.#draftPath}/${filename}`,
       `${this.#draftPath}/${to}`,
       options
@@ -168,7 +168,7 @@ export default class Object {
   }
 
   async #read(path: string, options?: ReadOptions): Promise<ArrayBuffer> {
-    const buffer = await Object.#readBuffer(this.#account.ipfs.files.read(path, options))
+    const buffer = await Object.#readBuffer(this.#account.files.read(path, options))
     return crypto.aes.decrypt(await this.#password, buffer)
   }
 
@@ -191,7 +191,7 @@ export default class Object {
       content = new TextEncoder().encode(content)
     }
     const buffer = await crypto.aes.encrypt(await this.#password, content)
-    await this.#account.ipfs.files.write(path, new Uint8Array(buffer), options)
+    await this.#account.files.write(path, new Uint8Array(buffer), options)
   }
 
   async write(filename: string, content: string | ArrayBuffer, options?: WriteOptions) {
@@ -211,7 +211,7 @@ export default class Object {
   async publish() {
     await this.#init
     await fileUtils.rmIfExists(this.#account.ipfs, this.#path, { recursive: true })
-    await this.#account.ipfs.files.cp(this.#draftPath, this.#path, { parents: true })
+    await this.#account.files.cp(this.#draftPath, this.#path, { parents: true })
     await this.#account.publish()
 
     // Update objectInfo
