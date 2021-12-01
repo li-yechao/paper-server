@@ -13,7 +13,7 @@
 // limitations under the License.
 
 import { Account } from '@paper/core'
-import Object, { ObjectInfo, objectInfoSchema } from '@paper/core/src/object'
+import { Object, ObjectInfo, objectInfoSchema } from '@paper/core'
 import { DocJson } from '@paper/editor/src/Editor/plugins/Value'
 import Ajv, { JTDSchemaType } from 'ajv/dist/jtd'
 import { customAlphabet } from 'nanoid'
@@ -24,23 +24,29 @@ import { useObject } from './object'
 export class Paper {
   constructor(readonly object: Object) {}
 
-  get info(): Promise<PaperInfo & PromiseType<Object['info']>> {
-    return this.object.info.then(info => {
-      if (!validatePaperInfo(info)) {
-        throw new Error(`Invalid paper info`)
-      }
-      return info
-    })
+  private _info?: Promise<PaperInfo & PromiseType<Object['info']>>
+
+  get info() {
+    if (!this._info) {
+      this._info = this.object.info.then(info => {
+        if (!validatePaperInfo(info)) {
+          throw new Error(`Invalid paper info`)
+        }
+        return info
+      })
+    }
+
+    return this._info
   }
 
-  async setInfo(info: Partial<Omit<PaperInfo, 'version' | 'updatedAt'>> = {}) {
+  async setInfo(info: Partial<PaperInfo> = {}) {
     this.object.setInfo(info)
   }
 
-  private readonly contentFilename = 'paper.json'
+  private readonly contentFilePath = '/paper.json'
 
   async setContent(content: DocJson) {
-    await this.object.write(this.contentFilename, JSON.stringify(content), {
+    await this.object.write(this.contentFilePath, JSON.stringify(content), {
       parents: true,
       create: true,
       truncate: true,
@@ -49,7 +55,7 @@ export class Paper {
 
   async getContent(): Promise<DocJson | undefined> {
     try {
-      const buffer = await this.object.read(this.contentFilename)
+      const buffer = await this.object.read(this.contentFilePath)
       const str = new TextDecoder().decode(buffer)
       return JSON.parse(str)
     } catch (error: any) {
@@ -72,8 +78,8 @@ export class Paper {
         truncate: true,
       })
     }
-    const cid = (await this.object.stat(tmp)).cid.toString()
-    await this.object.mv(tmp, `files/${cid}`)
+    const cid = (await this.object.files.stat(tmp)).cid.toString()
+    await this.object.files.mv(tmp, `files/${cid}`)
     return cid
   }
 
@@ -101,7 +107,7 @@ const paperInfoSchema: JTDSchemaType<PaperInfo> = {
 const validatePaperInfo = new Ajv().compile(paperInfoSchema)
 
 export function usePaper({ account, objectId }: { account: Account; objectId: string }) {
-  const { object, ...other } = useObject({ account, objectId })
+  const object = useObject({ account, objectId })
   const paper = useMemo(() => new Paper(object), [object])
-  return { ...other, object, paper }
+  return paper
 }

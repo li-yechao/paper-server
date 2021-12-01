@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import styled from '@emotion/styled'
 import Editor, { EditorState } from '@paper/editor'
 import Bold from '@paper/editor/src/Editor/marks/Bold'
 import Code from '@paper/editor/src/Editor/marks/Code'
@@ -24,8 +25,8 @@ import Blockquote from '@paper/editor/src/Editor/nodes/Blockquote'
 import BulletList from '@paper/editor/src/Editor/nodes/BulletList'
 import CodeBlock from '@paper/editor/src/Editor/nodes/CodeBlock'
 import Doc from '@paper/editor/src/Editor/nodes/Doc'
-import ImageBlock, { ImageBlockOptions } from '@paper/editor/src/Editor/nodes/ImageBlock'
 import Heading from '@paper/editor/src/Editor/nodes/Heading'
+import ImageBlock, { ImageBlockOptions } from '@paper/editor/src/Editor/nodes/ImageBlock'
 import Math from '@paper/editor/src/Editor/nodes/Math'
 import OrderedList from '@paper/editor/src/Editor/nodes/OrderedList'
 import Paragraph from '@paper/editor/src/Editor/nodes/Paragraph'
@@ -37,31 +38,28 @@ import DropPasteFile from '@paper/editor/src/Editor/plugins/DropPasteFile'
 import Placeholder from '@paper/editor/src/Editor/plugins/Placeholder'
 import Plugins from '@paper/editor/src/Editor/plugins/Plugins'
 import Value from '@paper/editor/src/Editor/plugins/Value'
+import { debounce } from 'lodash'
 import { baseKeymap } from 'prosemirror-commands'
 import { dropCursor } from 'prosemirror-dropcursor'
 import { gapCursor } from 'prosemirror-gapcursor'
 import { history, redo, undo } from 'prosemirror-history'
 import { undoInputRule } from 'prosemirror-inputrules'
 import { keymap } from 'prosemirror-keymap'
-import React, { MouseEventHandler, useCallback, useEffect, useRef } from 'react'
-import { useRecoilValue } from 'recoil'
-import { accountSelector } from '../../../state/account'
+import { useCallback, useEffect, useLayoutEffect, useRef } from 'react'
+import { useParams } from 'react-router-dom'
+import { useBeforeUnload, useMountedState, useToggle } from 'react-use'
+import NetworkIndicator from '../../../components/NetworkIndicator'
+import { useAccount } from '../../../state/account'
 import { usePaper } from '../../../state/paper'
-import useOnSave from '../../../utils/useOnSave'
-import styled from '@emotion/styled'
-import { useBeforeUnload, useToggle } from 'react-use'
 import useAsync from '../../../utils/useAsync'
-import NetworkIndicator, { useToggleNetworkIndicator } from '../../../components/NetworkIndicator'
-import { debounce } from 'lodash'
-import { HeaderAction, useHeaderActionsCtrl } from '../../../state/header'
-import { LoadingButton } from '@mui/lab'
-import { Save } from '@mui/icons-material'
-import { useParams } from 'react-router'
+import useOnSave from '../../../utils/useOnSave'
 
 const AUTO_SAVE_WAIT_MS = 5 * 1000
 const AUTO_SAVE_MAX_WAIT_MS = 30 * 1000
 
 export default function ObjectView() {
+  const mounted = useMountedState()
+
   const { userId, objectId } = useParams<'userId' | 'objectId'>()
   if (!userId) {
     throw new Error('Required params userId is not present')
@@ -70,11 +68,11 @@ export default function ObjectView() {
     throw new Error('Required params objectId is not present')
   }
 
-  const account = useRecoilValue(accountSelector)
-  if (account.userId !== userId) {
+  const { account } = useAccount()
+  if (account.user.id !== userId) {
     throw new Error('Forbidden')
   }
-  const { paper } = usePaper({ account, objectId })
+  const paper = usePaper({ account, objectId })
 
   const ref = useRef<{ state?: EditorState; version: number; savedVersion: number }>({
     state: undefined,
@@ -82,42 +80,44 @@ export default function ObjectView() {
     savedVersion: 0,
   })
 
-  const toggleNetworkIndicator = useToggleNetworkIndicator()
-  const [saving, toggleSaving] = useToggle(false)
   const [changed, toggleChanged] = useToggle(false)
 
   const save = useCallback(async () => {
+    if (!mounted()) {
+      return
+    }
     const { state, version, savedVersion } = ref.current
     if (paper && state && version !== savedVersion) {
-      try {
-        toggleNetworkIndicator(true)
-        toggleSaving(true)
-        let title: string | undefined
-        const firstChild = state.doc.firstChild
-        if (firstChild?.type.name === 'title') {
-          title = firstChild.textContent
-        }
+      let title: string | undefined
+      const firstChild = state.doc.firstChild
+      if (firstChild?.type.name === 'title') {
+        title = firstChild.textContent
+      }
 
-        const tags: string[] = []
-        const tagList = state.doc.maybeChild(1)
-        if (tagList?.type.name === 'tag_list') {
-          tagList.forEach(node => {
-            const tag = node.textContent.trim()
-            tag && tags.push(tag)
-          })
-        }
+      const tags: string[] = []
+      const tagList = state.doc.maybeChild(1)
+      if (tagList?.type.name === 'tag_list') {
+        tagList.forEach(node => {
+          const tag = node.textContent.trim()
+          tag && tags.push(tag)
+        })
+      }
 
-        await paper.setContent(state.doc.toJSON())
-        await paper.setInfo({ title, tags })
+      await paper.setContent(state.doc.toJSON())
+      await paper.setInfo({ title, tags })
 
-        ref.current.savedVersion = version
+      ref.current.savedVersion = version
+      if (mounted()) {
         toggleChanged(false)
-      } finally {
-        toggleNetworkIndicator(false)
-        toggleSaving(false)
       }
     }
   }, [paper])
+
+  useLayoutEffect(() => {
+    return () => {
+      save()
+    }
+  }, [])
 
   useEffect(() => {
     if (changed) {
@@ -126,23 +126,6 @@ export default function ObjectView() {
       document.title = document.title.replace(/^\**/, '')
     }
   }, [changed])
-
-  const headerActionsCtrl = useHeaderActionsCtrl()
-
-  useEffect(() => {
-    const saveAction: HeaderAction<React.ComponentProps<typeof SaveAction>> = {
-      key: 'ObjectView-saveAction',
-      component: SaveAction,
-      props: {
-        disabled: !changed,
-        loading: saving,
-        onClick: save,
-      },
-    }
-    headerActionsCtrl.set(saveAction)
-
-    return () => headerActionsCtrl.remove(saveAction)
-  }, [changed, saving, save])
 
   const extensions = useAsync(async () => {
     const autoSave = debounce(save, AUTO_SAVE_WAIT_MS, { maxWait: AUTO_SAVE_MAX_WAIT_MS })
@@ -246,26 +229,3 @@ const _Editor = styled(Editor)`
   max-width: 800px;
   margin: auto;
 `
-
-const SaveAction = ({
-  disabled,
-  loading,
-  onClick,
-}: {
-  disabled: boolean
-  loading: boolean
-  onClick: MouseEventHandler<HTMLButtonElement>
-}) => (
-  <LoadingButton
-    disabled={disabled}
-    loading={loading}
-    loadingPosition="start"
-    color="success"
-    onClick={onClick}
-    startIcon={<Save />}
-    variant="contained"
-    disableElevation
-  >
-    {disabled ? 'Saved' : loading ? 'Saving' : 'Save'}
-  </LoadingButton>
-)

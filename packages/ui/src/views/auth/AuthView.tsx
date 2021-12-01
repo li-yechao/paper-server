@@ -28,12 +28,11 @@ import { Account } from '@paper/core'
 import { useCallback, useEffect, useState } from 'react'
 import { useToggle } from 'react-use'
 import { PromiseType } from 'react-use/lib/misc/types'
-import { useSetRecoilState } from 'recoil'
 import { accountOptions } from '../../constants'
-import { accountSelector } from '../../state/account'
+import { useSetAccount } from '../../state/account'
 
 export default function AuthView() {
-  const setAccount = useSetRecoilState(accountSelector)
+  const setAccount = useSetAccount()
   const [pwdVisible, togglePwdVisible] = useToggle(false)
   const [isNewAccount, toggleIsNewAccount] = useToggle(false)
   const [loading, toggleLoading] = useToggle(false)
@@ -52,7 +51,7 @@ export default function AuthView() {
     }
     toggleLoading(true)
     try {
-      const account = await Account.create(accountOptions, { key, password })
+      const account = await Account.create({ key: key.key, password }, accountOptions)
       setAccount(account)
     } finally {
       toggleLoading(false)
@@ -65,7 +64,7 @@ export default function AuthView() {
     }
     toggleLoading(true)
     try {
-      const account = await Account.create(accountOptions, { userId, password })
+      const account = await Account.create({ id: userId, password }, accountOptions)
       setAccount(account)
     } finally {
       toggleLoading(false)
@@ -77,10 +76,9 @@ export default function AuthView() {
       if (!key) {
         Account.generateKey().then(key => {
           setKey(key)
-          key.id().then(setUserId)
         })
       } else {
-        key.id().then(setUserId)
+        setUserId(key.id)
       }
     }
   }, [isNewAccount, key])

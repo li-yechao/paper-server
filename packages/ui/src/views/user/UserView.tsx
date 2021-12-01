@@ -13,15 +13,24 @@
 // limitations under the License.
 
 import styled from '@emotion/styled'
-import { AccountCircle, Add } from '@mui/icons-material'
-import { AppBar, Box, Button, IconButton, Menu, MenuItem, Toolbar, Typography } from '@mui/material'
+import { AccountCircle, Add, CloudSync, SyncProblem } from '@mui/icons-material'
+import {
+  AppBar,
+  Box,
+  Button,
+  CircularProgress,
+  IconButton,
+  Menu,
+  MenuItem,
+  Toolbar,
+  Typography,
+} from '@mui/material'
 import { Account } from '@paper/core'
 import * as React from 'react'
 import { useState } from 'react'
 import { Route, Routes, useNavigate } from 'react-router'
-import { useRecoilValue, useResetRecoilState } from 'recoil'
 import { useToggleNetworkIndicator } from '../../components/NetworkIndicator'
-import { accountSelector, useAccountOrNull } from '../../state/account'
+import { useAccount, useAccountOrNull, useSetAccount } from '../../state/account'
 import { useHeaderActions } from '../../state/header'
 import { useCreateObject } from '../../state/object'
 import { NotFoundViewLazy } from '../error'
@@ -42,6 +51,7 @@ export default function UserView() {
           {headerActions.map(i => (
             <i.component {...i.props} key={i.key} />
           ))}
+          <SyncStatus />
           <CreateButton />
           <AccountButton />
         </Toolbar>
@@ -75,7 +85,7 @@ const _Body = styled.div`
 
 const CreateButton = () => {
   const account = useAccountOrNull()
-  return account ? <_CreateButton account={account} /> : null
+  return account ? <_CreateButton account={account.account} /> : null
 }
 
 const _CreateButton = ({ account }: { account: Account }) => {
@@ -87,7 +97,7 @@ const _CreateButton = ({ account }: { account: Account }) => {
     try {
       toggleNetworkIndicator(true)
       const object = await createObject()
-      navigate(`/${account.userId}/${object.id}`)
+      navigate(`/${account.user.id}/${object.id}`)
     } finally {
       toggleNetworkIndicator(false)
     }
@@ -102,8 +112,8 @@ const _CreateButton = ({ account }: { account: Account }) => {
 
 const AccountButton = () => {
   const navigate = useNavigate()
-  const account = useRecoilValue(accountSelector)
-  const resetAccount = useResetRecoilState(accountSelector)
+  const account = useAccount()
+  const setAccount = useSetAccount()
   const [anchorEl, setAnchorEl] = useState<Element>()
 
   const handleMenuOpen = (e: React.MouseEvent<HTMLButtonElement>) => {
@@ -116,7 +126,7 @@ const AccountButton = () => {
 
   const handleSignOut = () => {
     handleMenuClose()
-    resetAccount()
+    setAccount()
   }
 
   const handleLogin = () => {
@@ -152,5 +162,32 @@ const AccountButton = () => {
         <MenuItem onClick={handleSignOut}>Sign out</MenuItem>
       </Menu>
     </>
+  )
+}
+
+const SyncStatus = () => {
+  const account = useAccountOrNull()
+  const sync = account?.sync
+
+  const handleClick = () => {
+    if (!sync?.syncing) {
+      account?.account.sync()
+    }
+  }
+
+  if (!sync) {
+    return null
+  }
+
+  return (
+    <IconButton onClick={handleClick}>
+      {sync.error ? (
+        <SyncProblem color="error" />
+      ) : sync.syncing ? (
+        <CircularProgress size={20} />
+      ) : (
+        <CloudSync />
+      )}
+    </IconButton>
   )
 }

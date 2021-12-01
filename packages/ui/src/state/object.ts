@@ -12,8 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { Account } from '@paper/core'
-import Object from '@paper/core/src/object'
+import { Account, Object } from '@paper/core'
 import { atom, useRecoilCallback, useRecoilState, useRecoilValue } from 'recoil'
 import { memoize } from 'lodash'
 import { useEffect } from 'react'
@@ -22,36 +21,16 @@ import { useToggle } from 'react-use'
 const objectState = memoize(
   (account: Account, objectId: string) => {
     return atom({
-      key: `objectState-${account.userId}-${objectId}`,
-      default: account.object(objectId).then(object => ({
-        object,
-        isPublishing: false,
-      })),
+      key: `objectState-${account.user.id}-${objectId}`,
+      default: account.object(objectId),
     })
   },
-  (account, objectId) => `objectState-${account.userId}-${objectId}`
+  (account, objectId) => `objectState-${account.user.id}-${objectId}`
 )
 
 export function useObject({ account, objectId }: { account: Account; objectId: string }) {
   const state = objectState(account, objectId)
-  const { object, isPublishing } = useRecoilValue(state)
-
-  const publish = useRecoilCallback(
-    ({ set, snapshot }) => {
-      return async () => {
-        const { object, isPublishing } = await snapshot.getPromise(state)
-        if (isPublishing) {
-          return
-        }
-        set(state, value => ({ ...value, isPublishing: true }))
-        await object.publish()
-        set(state, value => ({ ...value, isPublishing: false }))
-      }
-    },
-    [state]
-  )
-
-  return { object, publish, isPublishing }
+  return useRecoilValue(state)
 }
 
 const objectPaginationState = memoize(
@@ -63,11 +42,11 @@ const objectPaginationState = memoize(
       page: number
       limit: number
     } | null>({
-      key: `objectPaginationState-${account.userId}`,
+      key: `objectPaginationState-${account.user.id}`,
       default: null,
     })
   },
-  account => account.userId
+  account => account.user.id
 )
 
 export interface ObjectPagination {
@@ -207,7 +186,7 @@ export function useDeleteObject({ account }: { account: Account }) {
               list: v.list.filter(i => i !== object.id),
             }
         )
-        await object.delete()
+        await account.deleteObject(object.id)
       },
     []
   )
@@ -219,7 +198,7 @@ export function useCreateObject({ account }: { account: Account }) {
   return useRecoilCallback(
     ({ set }) =>
       async () => {
-        const object = await account.createObject()
+        const object = await account.object()
         set(
           paginationState,
           v =>

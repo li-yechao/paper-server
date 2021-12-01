@@ -12,18 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { IPFS } from '@paper/ipfs'
-import { RmOptions } from 'ipfs-core-types/src/files'
+import all from 'it-all'
 
 export namespace fileUtils {
-  /**
-   * Remove file if file exists.
-   * @returns `true` if file exist otherwise `undefiend`
-   */
-  export async function rmIfExists(ipfs: IPFS, ipfsPaths: string | string[], options?: RmOptions) {
+  export async function ignoreErrNotFound<T>(promise: Promise<T>) {
     try {
-      await ipfs.files.rm(ipfsPaths, options)
-      return true
+      return await promise
     } catch (error) {
       if (!isErrNotFound(error)) {
         throw error
@@ -35,5 +29,27 @@ export namespace fileUtils {
 
   export function isErrNotFound(e: any): e is Error & { code: typeof ERR_NOT_FOUND } {
     return e.code === ERR_NOT_FOUND
+  }
+
+  export async function readAll(source: AsyncIterable<Uint8Array>): Promise<Uint8Array> {
+    const chunks = await all(source)
+    const buffer = new Uint8Array(chunks.reduce((res, i) => res + i.byteLength, 0))
+    let offset = 0
+    for (const chunk of chunks) {
+      buffer.set(chunk, offset)
+      offset += chunk.byteLength
+    }
+    return buffer
+  }
+
+  export async function readString(source: AsyncIterable<Uint8Array>): Promise<string> {
+    return new TextDecoder().decode(await readAll(source))
+  }
+
+  export function joinPath(...path: string[]): string {
+    return path
+      .map((p, i) => (i === 0 ? p : p.replace(/^\/+/, '')))
+      .filter(i => !!i)
+      .join('/')
   }
 }

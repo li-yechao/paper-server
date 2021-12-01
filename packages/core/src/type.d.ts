@@ -12,17 +12,25 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { useEffect } from 'react'
-import { useNavigate } from 'react-router'
-import { useAccount } from '../../state/account'
+declare module 'libp2p-websockets' {
+  export default class WebSockets {
+    [Symbol.toStringTag]: any
+  }
+}
 
-export default function HomeView() {
-  const { account } = useAccount()
-  const navigate = useNavigate()
+declare module 'libp2p-websockets/src/filters' {
+  interface Filters {
+    all: (addrs: any) => any
+    dnsWss: (addrs: any) => any
+    dnsWsOrWss: (addrs: any) => any
+  }
+  const filters: Filters
+  export default filters
+}
 
-  useEffect(() => {
-    navigate(`/${account.user.id}`, { replace: true })
-  }, [account.user.id])
-
-  return null
+declare module '*?sharedworker' {
+  const sharedWorker: {
+    new (): SharedWorker
+  }
+  export default sharedWorker
 }

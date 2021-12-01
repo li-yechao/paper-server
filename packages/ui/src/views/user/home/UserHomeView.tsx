@@ -13,11 +13,10 @@
 // limitations under the License.
 
 import styled from '@emotion/styled'
-import { KeyboardArrowLeft, KeyboardArrowRight, MoreVert, Publish } from '@mui/icons-material'
+import { KeyboardArrowLeft, KeyboardArrowRight, MoreVert } from '@mui/icons-material'
 import {
   Button,
   Chip,
-  CircularProgress,
   IconButton,
   List,
   ListItemButton,
@@ -30,16 +29,13 @@ import {
   Typography,
 } from '@mui/material'
 import { Box } from '@mui/system'
-import { Account } from '@paper/core'
-import Object from '@paper/core/src/object'
-import { useSnackbar } from 'notistack'
+import { Account, Object } from '@paper/core'
 import * as React from 'react'
 import { useCallback, useState } from 'react'
 import { FormattedDate } from 'react-intl'
 import { useNavigate, useParams } from 'react-router-dom'
-import { useRecoilValue } from 'recoil'
 import { useToggleNetworkIndicator } from '../../../components/NetworkIndicator'
-import { accountSelector } from '../../../state/account'
+import { useAccount } from '../../../state/account'
 import { useDeleteObject, useObjectPagination } from '../../../state/object'
 import { usePaper } from '../../../state/paper'
 import useAsync from '../../../utils/useAsync'
@@ -53,8 +49,8 @@ export default function UserHomeView() {
   const navigate = useNavigate()
   const toggleNetworkIndicator = useToggleNetworkIndicator({ autoClose: false })
 
-  const account = useRecoilValue(accountSelector)
-  if (account.userId !== userId) {
+  const { account } = useAccount()
+  if (account.user.id !== userId) {
     throw new Error('Forbidden')
   }
 
@@ -161,35 +157,16 @@ function ObjectItem({
   onClick: (e: React.MouseEvent<Element>, object: Object) => void
   onMenuClick: (e: React.MouseEvent<Element>, object: Object) => void
 }) {
-  const snackbar = useSnackbar()
-  const { paper, publish, isPublishing } = usePaper({ account, objectId })
-  const info = useAsync(() => paper.info, [paper.object.version])
-  const toggleNetworkIndicator = useToggleNetworkIndicator({ autoClose: false })
-
-  const handlePublish = async (e: React.MouseEvent) => {
-    e.stopPropagation()
-    if (isPublishing) {
-      return
-    }
-
-    try {
-      toggleNetworkIndicator(true)
-      await publish()
-      snackbar.enqueueSnackbar('Publish Success', { variant: 'success' })
-    } catch (error) {
-      snackbar.enqueueSnackbar(`Publish Failed: ${error.message}`, { variant: 'error' })
-      throw error
-    } finally {
-      toggleNetworkIndicator(false)
-    }
-  }
+  const paper = usePaper({ account, objectId })
+  const info = useAsync(() => Promise.all([paper.info, paper.object.updatedAt]), [paper.info])
 
   if (info.loading) {
     return <ObjectItem.Skeleton />
   } else if (info.error) {
     return <ObjectItem.Skeleton error={info.error} />
   } else {
-    const { title, updatedAt } = info.value
+    const { title, tags } = info.value[0]
+    const updatedAt = info.value[1]
     const time = updatedAt ?? paper.object.createdAt
 
     return (
@@ -199,18 +176,7 @@ function ObjectItem({
           secondary={
             <>
               <Box component="span" mx={-0.5}>
-                {info.value.isDraft && (
-                  <Chip
-                    sx={{ m: 0.5 }}
-                    label="unpublished"
-                    component="span"
-                    size="small"
-                    variant="outlined"
-                    deleteIcon={isPublishing ? <CircularProgress size={14} /> : <Publish />}
-                    onDelete={handlePublish}
-                  />
-                )}
-                {info.value.tags?.map((tag, index) => (
+                {tags?.map((tag, index) => (
                   <Chip
                     sx={{ m: 0.5 }}
                     key={index}

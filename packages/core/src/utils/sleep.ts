@@ -12,18 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-declare module 'libp2p-websockets' {
-  export default class WebSockets {
-    [Symbol.toStringTag]: any
-  }
-}
-
-declare module 'libp2p-websockets/src/filters' {
-  interface Filters {
-    all: (addrs: any) => any
-    dnsWss: (addrs: any) => any
-    dnsWsOrWss: (addrs: any) => any
-  }
-  const filters: Filters
-  export default filters
+export default function sleep(ms: number): Promise<void> {
+  return new Promise(resolve => setTimeout(resolve, ms))
 }

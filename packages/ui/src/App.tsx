@@ -26,11 +26,11 @@ import { Suspense, useEffect, useMemo } from 'react'
 import { IntlProvider } from 'react-intl'
 import { HashRouter, Route, Routes } from 'react-router-dom'
 import { useAsync } from 'react-use'
-import { RecoilRoot, useSetRecoilState } from 'recoil'
+import { RecoilRoot } from 'recoil'
 import ErrorBoundary from './components/ErrorBoundary'
 import NetworkIndicator from './components/NetworkIndicator'
 import { accountOptions } from './constants'
-import { accountSelector, isUnauthorizedError, useAccountOrNull } from './state/account'
+import { isUnauthorizedError, useAccountOrNull, useSetAccount } from './state/account'
 import Storage from './Storage'
 import { NotFoundViewLazy } from './views/error'
 import ErrorView from './views/error/ErrorView'
@@ -84,7 +84,7 @@ export default function App() {
 }
 
 const AppRoutes = () => {
-  const setAccount = useSetRecoilState(accountSelector)
+  const setAccount = useSetAccount()
   const accountState = useAsync(async () => {
     // NOTE: Set account into globalThis at development environment (avoid hot
     // module replacement recreate account instance).
@@ -96,8 +96,8 @@ const AppRoutes = () => {
       g.__ACCOUNT__ = (() => {
         const account = Storage.account
         if (account) {
-          const { userId, password } = account
-          return Account.create(accountOptions, { userId, password })
+          const { id, password } = account
+          return Account.create({ id, password }, accountOptions)
         }
 
         return null

@@ -12,11 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { atom, DefaultValue, selector, useRecoilValue } from 'recoil'
-import { Account } from '../../../core/src'
+import { Account } from '@paper/core'
+import { useSnackbar } from 'notistack'
+import { useCallback } from 'react'
+import { atom, DefaultValue, selector, useRecoilValue, useSetRecoilState } from 'recoil'
 import Storage from '../Storage'
 
-export type AccountState = Account
+export type AccountState = { account: Account; sync?: { syncing: boolean; error?: string } }
 
 const accountState = atom<AccountState | null>({
   key: 'accountState',
@@ -24,11 +26,11 @@ const accountState = atom<AccountState | null>({
   dangerouslyAllowMutability: true,
 })
 
-export function useAccountOrNull(): Account | null {
+export function useAccountOrNull(): AccountState | null {
   return useRecoilValue(accountState)
 }
 
-export const accountSelector = selector<AccountState>({
+const accountSelector = selector<AccountState>({
   key: 'accountSelector',
   get: ({ get }) => {
     const account = get(accountState)
@@ -37,24 +39,47 @@ export const accountSelector = selector<AccountState>({
     }
     return account
   },
-  set: ({ get, set }, value) => {
-    if (value instanceof DefaultValue) {
-      Storage.account = null
-    } else {
-      const { userId: userId, password } = value
-      Storage.account = { userId, password }
-    }
-
-    const old = get(accountState)
-
-    if (old !== value) {
-      old?.stop()
-    }
-
-    set(accountState, value)
-  },
   dangerouslyAllowMutability: true,
 })
+
+export function useAccount() {
+  return useRecoilValue(accountSelector)
+}
+
+export function useSetAccount() {
+  const setAccount = useSetRecoilState(accountState)
+  const snackbar = useSnackbar()
+
+  return useCallback((account?: Account) => {
+    if (!account) {
+      Storage.account = null
+    } else {
+      const { id, password } = account.user
+      Storage.account = { id, password }
+    }
+
+    setAccount(old => {
+      if (!old || old.account !== account) {
+        old?.account.stop()
+
+        account?.on('sync', e => {
+          setAccount(v => {
+            if (!v || v instanceof DefaultValue) {
+              return v
+            }
+            return { ...v, sync: e }
+          })
+        })
+        account?.on('error', e => {
+          snackbar.enqueueSnackbar(e.message, { variant: 'error' })
+          console.error(e)
+        })
+      }
+
+      return account ? { account } : null
+    })
+  }, [])
+}
 
 export const ERR_UNAUTHORIZED = 'ERR_UNAUTHORIZED'
 export interface UnauthorizedError extends Error {
