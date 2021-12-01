@@ -27,10 +27,3 @@ declare module 'libp2p-websockets/src/filters' {
   const filters: Filters
   export default filters
 }
-
-declare module '*?sharedworker' {
-  const sharedWorker: {
-    new (): SharedWorker
-  }
-  export default sharedWorker
-}

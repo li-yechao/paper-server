@@ -156,9 +156,9 @@ export class Client extends StrictEventEmitter<
   {},
   { [k in keyof ServerEventMap]: (userId: string, data: Parameters<ServerEventMap[k]>[0]) => void }
 > {
-  constructor(private worker: SharedWorker) {
+  constructor(private worker: Worker) {
     super()
-    this.worker.port.onmessage = <T extends MessageData['res']>(
+    this.worker.onmessage = <T extends MessageData['res']>(
       ev: MessageEvent<Pick<T, 'id' | 'response'> | ServerEvent>
     ) => {
       if (isServerEvent(ev.data)) {
@@ -193,7 +193,7 @@ export class Client extends StrictEventEmitter<
     return new Promise<any>((resolve, reject) => {
       const id = nanoid()
       this.tasks.set(id, { resolve, reject })
-      this.worker.port.postMessage({ id, type, payload })
+      this.worker.postMessage({ id, type, payload })
     })
   }
 }
@@ -205,22 +205,18 @@ export class Server {
       port: MessagePort
     ) => Promise<Awaited<ReturnType<MessageMap[key]>>>
   }) {
-    self.onconnect = ({ ports }) => {
-      for (const port of ports) {
-        port.onmessage = async (ev: MessageEvent<MessageData['req']>) => {
-          try {
-            const handler = handlers[ev.data.type] as Function
-            const response = await handler(ev.data.payload, port)
-            port.postMessage({ id: ev.data.id, type: ev.data.type, response })
-          } catch (error: any) {
-            port.postMessage({
-              id: ev.data.id,
-              type: ev.data.type,
-              response: { error: { message: error.message, code: error.code } },
-            })
-            throw error
-          }
-        }
+    self.onmessage = async (ev: MessageEvent<MessageData['req']>) => {
+      try {
+        const handler = handlers[ev.data.type] as Function
+        const response = await handler(ev.data.payload, self)
+        self.postMessage({ id: ev.data.id, type: ev.data.type, response })
+      } catch (error: any) {
+        self.postMessage({
+          id: ev.data.id,
+          type: ev.data.type,
+          response: { error: { message: error.message, code: error.code } },
+        })
+        throw error
       }
     }
   }

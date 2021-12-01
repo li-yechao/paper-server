@@ -13,7 +13,7 @@
 // limitations under the License.
 
 // @ts-ignore
-import AccountSharedWorker from './AccountSharedWorker?sharedworker'
+import AccountSharedWorker from './AccountSharedWorker?worker'
 
 import { AccountOptions, Client, SERVER_EVENT_TYPES, ServerEventMap } from './Channel'
 import Object from './Object'
