@@ -44,8 +44,12 @@ export default class ImageBlock extends Node<ImageBlockAttrs> {
     super()
   }
 
-  async create(schema: Schema, file: File): Promise<ProsemirrorNode> {
-    return getImageThumbnail(file, { maxSize: this.options.thumbnail.maxSize })
+  static async create(
+    schema: Schema,
+    file: File,
+    options: Pick<ImageBlockOptions, 'thumbnail'>
+  ): Promise<ProsemirrorNode> {
+    return getImageThumbnail(file, { maxSize: options.thumbnail.maxSize })
       .then(res =>
         readAsDataURL(res.thumbnail).then(thumbnail => ({
           ...res,
@@ -53,7 +57,7 @@ export default class ImageBlock extends Node<ImageBlockAttrs> {
         }))
       )
       .then(({ thumbnail, naturalWidth, naturalHeight }) => {
-        const node = schema.nodes[this.name]!.create(
+        const node = schema.nodes['image_block'].create(
           {
             src: null,
             thumbnail,

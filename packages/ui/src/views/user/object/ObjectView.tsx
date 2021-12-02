@@ -14,41 +14,12 @@
 
 import styled from '@emotion/styled'
 import Editor, { EditorState } from '@paper/editor'
-import Bold from '@paper/editor/src/Editor/marks/Bold'
-import Code from '@paper/editor/src/Editor/marks/Code'
-import Highlight from '@paper/editor/src/Editor/marks/Highlight'
-import Italic from '@paper/editor/src/Editor/marks/Italic'
-import Link from '@paper/editor/src/Editor/marks/Link'
-import Strikethrough from '@paper/editor/src/Editor/marks/Strikethrough'
-import Underline from '@paper/editor/src/Editor/marks/Underline'
-import Blockquote from '@paper/editor/src/Editor/nodes/Blockquote'
-import BulletList from '@paper/editor/src/Editor/nodes/BulletList'
-import CodeBlock from '@paper/editor/src/Editor/nodes/CodeBlock'
-import Doc from '@paper/editor/src/Editor/nodes/Doc'
-import Heading from '@paper/editor/src/Editor/nodes/Heading'
-import ImageBlock, { ImageBlockOptions } from '@paper/editor/src/Editor/nodes/ImageBlock'
-import Math from '@paper/editor/src/Editor/nodes/Math'
-import OrderedList from '@paper/editor/src/Editor/nodes/OrderedList'
-import Paragraph from '@paper/editor/src/Editor/nodes/Paragraph'
-import TagList from '@paper/editor/src/Editor/nodes/TagList'
-import Text from '@paper/editor/src/Editor/nodes/Text'
-import Title from '@paper/editor/src/Editor/nodes/Title'
-import TodoList from '@paper/editor/src/Editor/nodes/TodoList'
-import DropPasteFile from '@paper/editor/src/Editor/plugins/DropPasteFile'
-import Placeholder from '@paper/editor/src/Editor/plugins/Placeholder'
-import Plugins from '@paper/editor/src/Editor/plugins/Plugins'
-import Value from '@paper/editor/src/Editor/plugins/Value'
 import { debounce } from 'lodash'
-import { baseKeymap } from 'prosemirror-commands'
-import { dropCursor } from 'prosemirror-dropcursor'
-import { gapCursor } from 'prosemirror-gapcursor'
-import { history, redo, undo } from 'prosemirror-history'
-import { undoInputRule } from 'prosemirror-inputrules'
-import { keymap } from 'prosemirror-keymap'
 import { useCallback, useEffect, useLayoutEffect, useRef } from 'react'
 import { useParams } from 'react-router-dom'
 import { useBeforeUnload, useMountedState, useToggle } from 'react-use'
 import NetworkIndicator from '../../../components/NetworkIndicator'
+import { defaultMarks, defaultNodes, defaultPlugins } from '../../../editor/schema'
 import { useAccount } from '../../../state/account'
 import { usePaper } from '../../../state/paper'
 import useAsync from '../../../utils/useAsync'
@@ -132,7 +103,7 @@ export default function ObjectView() {
 
     const content = await paper.getContent()
 
-    const uploadOptions: ImageBlockOptions = {
+    const uploadOptions: Parameters<typeof defaultNodes>[0]['imageBlockOptions'] = {
       upload: async (file: File) => {
         const files = [new File([file], 'image'), new File([file], `original/${file.name}`)]
         return paper.addResource(files)
@@ -146,64 +117,22 @@ export default function ObjectView() {
       },
     }
 
-    const imageBlock = new ImageBlock(uploadOptions)
-
     return [
-      new Value({
-        defaultValue: content,
-        editable: true,
-        onDispatchTransaction: (view, tr) => {
-          if (tr.docChanged) {
-            ref.current.version += 1
-            ref.current.state = view.state
-            toggleChanged(true)
-            autoSave()
-          }
-        },
-      }),
-
-      new Placeholder(),
-      new Doc('title tag_list block+'),
-      new Text(),
-      new Title(),
-      new Paragraph(),
-      new Heading(),
-      new TagList(),
-      new Blockquote(),
-      new TodoList(),
-      new OrderedList(),
-      new BulletList(),
-      new CodeBlock(),
-      new Math(),
-
-      new Bold(),
-      new Italic(),
-      new Underline(),
-      new Strikethrough(),
-      new Highlight(),
-      new Code(),
-      new Link(),
-
-      new Plugins([
-        keymap({
-          'Mod-z': undo,
-          'Shift-Mod-z': redo,
-          'Mod-y': redo,
-          Backspace: undoInputRule,
-        }),
-        keymap(baseKeymap),
-        history(),
-        gapCursor(),
-        dropCursor({ color: 'currentColor' }),
-      ]),
-
-      imageBlock,
-
-      new DropPasteFile({
-        fileToNode: (view, file) => {
-          if (imageBlock && file.type.startsWith('image/')) {
-            return imageBlock.create(view.state.schema, file)
-          }
+      ...defaultNodes({ imageBlockOptions: uploadOptions }),
+      ...defaultMarks(),
+      ...defaultPlugins({
+        imageBlockOptions: uploadOptions,
+        valueOptions: {
+          defaultValue: content,
+          editable: true,
+          onDispatchTransaction: (view, tr) => {
+            if (tr.docChanged) {
+              ref.current.version += 1
+              ref.current.state = view.state
+              toggleChanged(true)
+              autoSave()
+            }
+          },
         },
       }),
     ]

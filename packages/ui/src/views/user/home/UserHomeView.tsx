@@ -17,6 +17,7 @@ import { DeleteOutline, KeyboardArrowLeft, KeyboardArrowRight, MoreVert } from '
 import {
   Button,
   Chip,
+  Divider,
   IconButton,
   List,
   ListItemButton,
@@ -30,16 +31,20 @@ import {
   Typography,
 } from '@mui/material'
 import { Box } from '@mui/system'
-import { Account, Object } from '@paper/core'
+import { Account } from '@paper/core'
+import FileSaver from 'file-saver'
+import { useSnackbar } from 'notistack'
 import * as React from 'react'
 import { useCallback, useState } from 'react'
 import { FormattedDate } from 'react-intl'
 import { useNavigate, useParams } from 'react-router-dom'
 import ArrowMenu from '../../../components/ArrowMenu'
+import Markdown from '../../../components/Icons/Markdown'
 import { useToggleNetworkIndicator } from '../../../components/NetworkIndicator'
+import toMarkdown from '../../../editor/toMarkdown'
 import { useAccount } from '../../../state/account'
 import { useDeleteObject, useObjectPagination } from '../../../state/object'
-import { usePaper } from '../../../state/paper'
+import { Paper, usePaper } from '../../../state/paper'
 import useAsync from '../../../utils/useAsync'
 
 export default function UserHomeView() {
@@ -48,6 +53,7 @@ export default function UserHomeView() {
     throw new Error('Required params userId is not present')
   }
 
+  const snackbar = useSnackbar()
   const navigate = useNavigate()
   const toggleNetworkIndicator = useToggleNetworkIndicator({ autoClose: false })
 
@@ -57,15 +63,15 @@ export default function UserHomeView() {
   }
 
   const pagination = useObjectPagination({ account, limit: 10 })
-  const [menuState, setMenuState] = useState<{ anchorEl: Element; object: Object }>()
+  const [menuState, setMenuState] = useState<{ anchorEl: Element; paper: Paper }>()
 
-  const handleToDetail = useCallback((_: React.MouseEvent<Element>, object: Object) => {
-    navigate(`/${userId}/${object.id}`)
+  const handleToDetail = useCallback((_: React.MouseEvent<Element>, paper: Paper) => {
+    navigate(`/${userId}/${paper.object.id}`)
   }, [])
 
-  const handleOpenMenu = (e: React.MouseEvent<Element>, object: Object) => {
+  const handleOpenMenu = (e: React.MouseEvent<Element>, paper: Paper) => {
     e.stopPropagation()
-    setMenuState({ anchorEl: e.currentTarget, object })
+    setMenuState({ anchorEl: e.currentTarget, paper })
   }
 
   const handleCloseMenu = () => setMenuState(undefined)
@@ -74,11 +80,32 @@ export default function UserHomeView() {
   const handleDelete = async () => {
     try {
       toggleNetworkIndicator(true)
-      const object = menuState?.object
+      const paper = menuState?.paper
       handleCloseMenu()
-      object && (await deleteObject(object))
+      paper && (await deleteObject(paper.object))
     } finally {
       toggleNetworkIndicator(false)
+    }
+  }
+
+  const handleExportToMarkdown = async () => {
+    const paper = menuState?.paper
+    handleCloseMenu()
+    if (paper) {
+      try {
+        toggleNetworkIndicator(true)
+        const doc = await paper.getContent()
+        if (doc) {
+          const markdown = toMarkdown(doc)
+          const blob = new Blob([new TextEncoder().encode(markdown)])
+          FileSaver.saveAs(blob, `${(await paper.info).title || 'Untitled'}.md`)
+        }
+      } catch (error) {
+        snackbar.enqueueSnackbar(error.message, { variant: 'error' })
+        console.error(error)
+      } finally {
+        toggleNetworkIndicator(false)
+      }
     }
   }
 
@@ -142,6 +169,16 @@ export default function UserHomeView() {
         open={Boolean(menuState)}
         onClose={handleCloseMenu}
       >
+        <ListSubheader>Export To</ListSubheader>
+        <MenuItem onClick={handleExportToMarkdown}>
+          <ListItemIcon>
+            <Markdown fontSize="small" />
+          </ListItemIcon>
+          Markdown
+        </MenuItem>
+
+        <Divider />
+
         <MenuItem onClick={handleDelete}>
           <ListItemIcon>
             <DeleteOutline fontSize="small" />
@@ -161,8 +198,8 @@ function ObjectItem({
 }: {
   account: Account
   objectId: string
-  onClick: (e: React.MouseEvent<Element>, object: Object) => void
-  onMenuClick: (e: React.MouseEvent<Element>, object: Object) => void
+  onClick: (e: React.MouseEvent<Element>, paper: Paper) => void
+  onMenuClick: (e: React.MouseEvent<Element>, paper: Paper) => void
 }) {
   const paper = usePaper({ account, objectId })
   const info = useAsync(() => Promise.all([paper.info, paper.object.updatedAt]), [paper.info])
@@ -177,7 +214,7 @@ function ObjectItem({
     const time = updatedAt ?? paper.object.createdAt
 
     return (
-      <_ListItemButton divider onClick={e => onClick(e, paper.object)}>
+      <_ListItemButton divider onClick={e => onClick(e, paper)}>
         <ListItemText
           primary={title || 'Untitled'}
           secondary={
@@ -211,7 +248,7 @@ function ObjectItem({
         />
 
         <ListItemSecondaryAction>
-          <IconButton edge="end" onClick={e => onMenuClick(e, paper.object)}>
+          <IconButton edge="end" onClick={e => onMenuClick(e, paper)}>
             <MoreVert />
           </IconButton>
         </ListItemSecondaryAction>

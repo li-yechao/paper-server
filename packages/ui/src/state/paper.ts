@@ -14,7 +14,7 @@
 
 import { Account } from '@paper/core'
 import { Object, ObjectInfo, objectInfoSchema } from '@paper/core'
-import { DocJson } from '@paper/editor/src/Editor/plugins/Value'
+import { DocJson } from '@paper/editor'
 import Ajv, { JTDSchemaType } from 'ajv/dist/jtd'
 import { customAlphabet } from 'nanoid'
 import { useMemo } from 'react'
