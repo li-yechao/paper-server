@@ -184,7 +184,7 @@ const SyncStatus = () => {
       {sync.error ? (
         <SyncProblem color="error" />
       ) : sync.syncing ? (
-        <CircularProgress size={20} />
+        <CircularProgress size={24} />
       ) : (
         <CloudSync />
       )}
