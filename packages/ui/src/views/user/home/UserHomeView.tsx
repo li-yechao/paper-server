@@ -13,16 +13,17 @@
 // limitations under the License.
 
 import styled from '@emotion/styled'
-import { KeyboardArrowLeft, KeyboardArrowRight, MoreVert } from '@mui/icons-material'
+import { DeleteOutline, KeyboardArrowLeft, KeyboardArrowRight, MoreVert } from '@mui/icons-material'
 import {
   Button,
   Chip,
   IconButton,
   List,
   ListItemButton,
+  ListItemIcon,
   ListItemSecondaryAction,
   ListItemText,
-  Menu,
+  ListSubheader,
   MenuItem,
   Skeleton,
   Stack,
@@ -34,6 +35,7 @@ import * as React from 'react'
 import { useCallback, useState } from 'react'
 import { FormattedDate } from 'react-intl'
 import { useNavigate, useParams } from 'react-router-dom'
+import ArrowMenu from '../../../components/ArrowMenu'
 import { useToggleNetworkIndicator } from '../../../components/NetworkIndicator'
 import { useAccount } from '../../../state/account'
 import { useDeleteObject, useObjectPagination } from '../../../state/object'
@@ -133,15 +135,20 @@ export default function UserHomeView() {
         </Stack>
       )}
 
-      <Menu
+      <ArrowMenu
         anchorEl={menuState?.anchorEl}
-        anchorOrigin={{ horizontal: 'right', vertical: 'top' }}
+        anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
         transformOrigin={{ horizontal: 'right', vertical: 'top' }}
         open={Boolean(menuState)}
         onClose={handleCloseMenu}
       >
-        <MenuItem onClick={handleDelete}>Delete</MenuItem>
-      </Menu>
+        <MenuItem onClick={handleDelete}>
+          <ListItemIcon>
+            <DeleteOutline fontSize="small" />
+          </ListItemIcon>
+          Delete
+        </MenuItem>
+      </ArrowMenu>
     </Box>
   )
 }

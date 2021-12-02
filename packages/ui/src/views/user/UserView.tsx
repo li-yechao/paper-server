@@ -13,14 +13,14 @@
 // limitations under the License.
 
 import styled from '@emotion/styled'
-import { AccountCircle, Add, CloudSync, SyncProblem } from '@mui/icons-material'
+import { AccountCircle, Add, CloudSync, Logout, SyncProblem } from '@mui/icons-material'
 import {
   AppBar,
   Box,
   Button,
   CircularProgress,
   IconButton,
-  Menu,
+  ListItemIcon,
   MenuItem,
   Toolbar,
   Typography,
@@ -29,6 +29,7 @@ import { Account } from '@paper/core'
 import * as React from 'react'
 import { useState } from 'react'
 import { Route, Routes, useNavigate } from 'react-router'
+import ArrowMenu from '../../components/ArrowMenu'
 import { useToggleNetworkIndicator } from '../../components/NetworkIndicator'
 import { useAccount, useAccountOrNull, useSetAccount } from '../../state/account'
 import { useHeaderActions } from '../../state/header'
@@ -145,22 +146,21 @@ const AccountButton = () => {
         </Button>
       )}
 
-      <Menu
+      <ArrowMenu
         anchorEl={anchorEl}
         open={Boolean(anchorEl)}
         keepMounted
-        anchorOrigin={{
-          vertical: 'top',
-          horizontal: 'right',
-        }}
-        transformOrigin={{
-          vertical: 'top',
-          horizontal: 'right',
-        }}
+        transformOrigin={{ horizontal: 'right', vertical: 'top' }}
+        anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
         onClose={handleMenuClose}
       >
-        <MenuItem onClick={handleSignOut}>Sign out</MenuItem>
-      </Menu>
+        <MenuItem onClick={handleSignOut}>
+          <ListItemIcon>
+            <Logout fontSize="small" />
+          </ListItemIcon>
+          Sign out
+        </MenuItem>
+      </ArrowMenu>
     </>
   )
 }
