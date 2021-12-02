@@ -13,15 +13,23 @@
 // limitations under the License.
 
 import styled from '@emotion/styled'
+import { CloudDownload } from '@mui/icons-material'
+import { IconButton, ListItemIcon, ListSubheader, MenuItem } from '@mui/material'
 import Editor, { EditorState } from '@paper/editor'
+import FileSaver from 'file-saver'
 import { debounce } from 'lodash'
-import { useCallback, useEffect, useLayoutEffect, useRef } from 'react'
+import { useSnackbar } from 'notistack'
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { useBeforeUnload, useMountedState, useToggle } from 'react-use'
-import NetworkIndicator from '../../../components/NetworkIndicator'
+import ArrowMenu from '../../../components/ArrowMenu'
+import Markdown from '../../../components/Icons/Markdown'
+import NetworkIndicator, { useToggleNetworkIndicator } from '../../../components/NetworkIndicator'
 import { defaultMarks, defaultNodes, defaultPlugins } from '../../../editor/schema'
+import toMarkdown from '../../../editor/toMarkdown'
 import { useAccount } from '../../../state/account'
-import { usePaper } from '../../../state/paper'
+import { HeaderAction, useHeaderActionsCtrl } from '../../../state/header'
+import { Paper, usePaper } from '../../../state/paper'
 import useAsync from '../../../utils/useAsync'
 import useOnSave from '../../../utils/useOnSave'
 
@@ -98,6 +106,19 @@ export default function ObjectView() {
     }
   }, [changed])
 
+  const headerActionsCtrl = useHeaderActionsCtrl()
+
+  useEffect(() => {
+    const exportButton: HeaderAction<React.ComponentProps<typeof MenuButton>> = {
+      key: 'ObjectView-MenuButton',
+      component: MenuButton,
+      props: { paper },
+    }
+    headerActionsCtrl.set(exportButton)
+
+    return () => headerActionsCtrl.remove(exportButton)
+  }, [paper])
+
   const extensions = useAsync(async () => {
     const autoSave = debounce(save, AUTO_SAVE_WAIT_MS, { maxWait: AUTO_SAVE_MAX_WAIT_MS })
 
@@ -158,3 +179,60 @@ const _Editor = styled(Editor)`
   max-width: 800px;
   margin: auto;
 `
+
+const MenuButton = ({ paper }: { paper: Paper }) => {
+  const snackbar = useSnackbar()
+  const toggleNetworkIndicator = useToggleNetworkIndicator({ autoClose: false })
+  const [anchorEl, setAnchorEl] = useState<Element>()
+
+  const handleMenuOpen = (e: React.MouseEvent<HTMLButtonElement>) => {
+    setAnchorEl(e.currentTarget)
+  }
+
+  const handleMenuClose = () => {
+    setAnchorEl(undefined)
+  }
+
+  const handleExportToMarkdown = async () => {
+    handleMenuClose()
+    try {
+      toggleNetworkIndicator(true)
+      const doc = await paper.getContent()
+      if (doc) {
+        const markdown = toMarkdown(doc)
+        const blob = new Blob([new TextEncoder().encode(markdown)])
+        FileSaver.saveAs(blob, `${(await paper.info).title || 'Untitled'}.md`)
+      }
+    } catch (error) {
+      snackbar.enqueueSnackbar(error.message, { variant: 'error' })
+      console.error(error)
+    } finally {
+      toggleNetworkIndicator(false)
+    }
+  }
+
+  return (
+    <>
+      <IconButton onClick={handleMenuOpen}>
+        <CloudDownload />
+      </IconButton>
+
+      <ArrowMenu
+        anchorEl={anchorEl}
+        open={Boolean(anchorEl)}
+        keepMounted
+        transformOrigin={{ horizontal: 'right', vertical: 'top' }}
+        anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
+        onClose={handleMenuClose}
+      >
+        <ListSubheader>Export To</ListSubheader>
+        <MenuItem onClick={handleExportToMarkdown}>
+          <ListItemIcon>
+            <Markdown fontSize="small" />
+          </ListItemIcon>
+          Markdown
+        </MenuItem>
+      </ArrowMenu>
+    </>
+  )
+}

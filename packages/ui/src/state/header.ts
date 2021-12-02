@@ -24,6 +24,7 @@ export interface HeaderAction<P = any, C = ComponentType<P>> {
 const headerActionsState = atom<HeaderAction[]>({
   key: 'headerActionsState',
   default: [],
+  dangerouslyAllowMutability: true,
 })
 
 export function useHeaderActions() {
