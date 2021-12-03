@@ -8,7 +8,7 @@
   "types": "src/index.ts",
   "scripts": {},
   "dependencies": {
-    "ipfs": "^0.59.1"
+    "ipfs": "^0.60.2"
   },
   "devDependencies": {
     "typescript": "^4.5.2"
