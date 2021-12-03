@@ -13,31 +13,44 @@
 // limitations under the License.
 
 import { ThemeProvider as EmotionThemeProvider } from '@emotion/react'
+import styled from '@emotion/styled'
+import { AccountCircle, Add, CloudSync, Logout, SyncProblem } from '@mui/icons-material'
 import {
+  AppBar,
   Box,
+  Button,
+  CircularProgress,
   createTheme,
   CssBaseline,
+  IconButton,
   LinearProgress,
+  ListItemIcon,
+  MenuItem,
   ThemeProvider as MuiThemeProvider,
+  Toolbar,
+  Typography,
 } from '@mui/material'
 import { StylesProvider } from '@mui/styles'
 import { Account } from '@paper/core'
-import { Suspense, useEffect, useMemo } from 'react'
+import { SnackbarProvider } from 'notistack'
+import { Suspense, useCallback, useEffect, useMemo, useState } from 'react'
 import { IntlProvider } from 'react-intl'
-import { HashRouter, Route, Routes } from 'react-router-dom'
+import { HashRouter, Route, Routes, useNavigate } from 'react-router-dom'
 import { useAsync } from 'react-use'
 import { RecoilRoot } from 'recoil'
+import ArrowMenu from './components/ArrowMenu'
 import ErrorBoundary from './components/ErrorBoundary'
-import NetworkIndicator from './components/NetworkIndicator'
+import NetworkIndicator, { useToggleNetworkIndicator } from './components/NetworkIndicator'
 import { accountOptions } from './constants'
-import { isUnauthorizedError, useAccountOrNull, useSetAccount } from './state/account'
+import { isUnauthorizedError, useAccount, useAccountOrNull, useSetAccount } from './state/account'
+import { useHeaderActions } from './state/header'
+import { useCreateObject } from './state/object'
 import Storage from './Storage'
+import { AuthViewLazy } from './views/auth'
 import { NotFoundViewLazy } from './views/error'
 import ErrorView from './views/error/ErrorView'
-import { AuthViewLazy } from './views/auth'
-import { UserViewLazy } from './views/user'
 import { HomeViewLazy } from './views/home'
-import { SnackbarProvider } from 'notistack'
+import { UserViewLazy } from './views/user'
 
 export default function App() {
   const theme = useMemo(
@@ -84,6 +97,7 @@ export default function App() {
 }
 
 const AppRoutes = () => {
+  const headerActions = useHeaderActions()
   const setAccount = useSetAccount()
   const accountState = useAsync(async () => {
     // NOTE: Set account into globalThis at development environment (avoid hot
@@ -119,11 +133,30 @@ const AppRoutes = () => {
   return (
     <ErrorBoundary fallback={UnauthorizedErrorBoundary}>
       <HashRouter>
-        <Routes>
-          <Route index element={<HomeViewLazy />} />
-          <Route path=":userId/*" element={<UserViewLazy />} />
-          <Route path="*" element={<NotFoundViewLazy />} />
-        </Routes>
+        <_AppBar position="fixed" elevation={0}>
+          <Toolbar>
+            <Typography variant="h5">Paper</Typography>
+
+            <Box flexGrow={1} />
+
+            {headerActions.map(i => (
+              <i.component {...i.props} key={i.key} />
+            ))}
+            <SyncStatus />
+            <CreateButton />
+            <AccountButton />
+          </Toolbar>
+        </_AppBar>
+
+        <_Body>
+          <ErrorBoundary fallback={ErrorView}>
+            <Routes>
+              <Route index element={<HomeViewLazy />} />
+              <Route path=":userId/*" element={<UserViewLazy />} />
+              <Route path="*" element={<NotFoundViewLazy />} />
+            </Routes>
+          </ErrorBoundary>
+        </_Body>
       </HashRouter>
     </ErrorBoundary>
   )
@@ -143,4 +176,127 @@ function UnauthorizedErrorBoundary({ error, reset }: { error: Error; reset: () =
   }
 
   throw error
+}
+
+const _AppBar = styled(AppBar)`
+  background-color: ${props => props.theme.palette.background.paper};
+  color: ${props => props.theme.palette.text.primary};
+  border-bottom: 1px solid ${props => props.theme.palette.divider};
+  user-select: none;
+
+  .MuiToolbar-root {
+    min-height: ${props => props.theme.spacing(7)};
+  }
+`
+
+const _Body = styled.div`
+  padding-top: ${props => props.theme.spacing(7)};
+`
+
+const AccountButton = () => {
+  const navigate = useNavigate()
+  const account = useAccount()
+  const setAccount = useSetAccount()
+  const [anchorEl, setAnchorEl] = useState<Element>()
+
+  const handleMenuOpen = (e: React.MouseEvent<HTMLButtonElement>) => {
+    setAnchorEl(e.currentTarget)
+  }
+
+  const handleMenuClose = () => {
+    setAnchorEl(undefined)
+  }
+
+  const handleSignOut = () => {
+    handleMenuClose()
+    setAccount()
+  }
+
+  const handleLogin = () => {
+    navigate(`/`)
+  }
+
+  return (
+    <>
+      {account ? (
+        <IconButton onClick={handleMenuOpen}>
+          <AccountCircle />
+        </IconButton>
+      ) : (
+        <Button variant="text" onClick={handleLogin}>
+          Login
+        </Button>
+      )}
+
+      <ArrowMenu
+        anchorEl={anchorEl}
+        open={Boolean(anchorEl)}
+        keepMounted
+        transformOrigin={{ horizontal: 'right', vertical: 'top' }}
+        anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
+        onClose={handleMenuClose}
+      >
+        <MenuItem onClick={handleSignOut}>
+          <ListItemIcon>
+            <Logout fontSize="small" />
+          </ListItemIcon>
+          Sign out
+        </MenuItem>
+      </ArrowMenu>
+    </>
+  )
+}
+
+const SyncStatus = () => {
+  const account = useAccountOrNull()
+  const sync = account?.sync
+
+  const handleClick = () => {
+    if (!sync?.syncing) {
+      account?.account.sync()
+    }
+  }
+
+  if (!sync) {
+    return null
+  }
+
+  return (
+    <IconButton onClick={handleClick}>
+      {sync.error ? (
+        <SyncProblem color="error" />
+      ) : sync.syncing ? (
+        <CircularProgress size={24} />
+      ) : (
+        <CloudSync />
+      )}
+    </IconButton>
+  )
+}
+
+const CreateButton = () => {
+  const account = useAccountOrNull()
+  return account ? <_CreateButton account={account.account} /> : null
+}
+
+const _CreateButton = ({ account }: { account: Account }) => {
+  const navigate = useNavigate()
+  const toggleNetworkIndicator = useToggleNetworkIndicator()
+  const createObject = useCreateObject({ account })
+
+  const handleClick = useCallback(async () => {
+    try {
+      toggleNetworkIndicator(true)
+      const object = await createObject()
+      navigate(`/${account.user.id}/${object.id}`)
+    } finally {
+      toggleNetworkIndicator(false)
+    }
+  }, [createObject])
+
+  return (
+    <IconButton onClick={handleClick}>
+      <Add />
+    </IconButton>
+  )
 }
