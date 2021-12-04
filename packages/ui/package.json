@@ -4,14 +4,20 @@
   "description": "Paper UI",
   "author": "LiYechao <liyechao@yechao.xyz>",
   "license": "Apache-2.0",
+  "main": "src/electron/index.js",
   "scripts": {
     "dev": "run-p dev:*",
     "dev:vite": "vite",
     "dev:electron": "electron src/electron/index.js",
     "build": "tsc && vite build",
+    "build:mac": "electron-builder --mac",
+    "build:win": "electron-builder --win",
     "serve": "vite preview"
   },
   "dependencies": {
+    "electron-window-state": "^5.0.3"
+  },
+  "devDependencies": {
     "@emotion/react": "^11.4.1",
     "@emotion/styled": "^11.3.0",
     "@mui/icons-material": "^5.2.0",
@@ -20,30 +26,43 @@
     "@mui/styles": "^5.0.1",
     "@paper/core": "0.0.1",
     "@paper/editor": "0.0.1",
-    "ajv": "^8.6.3",
-    "file-saver": "^2.0.5",
-    "lodash": "^4.17.21",
-    "nanoid": "^3.1.30",
-    "notistack": "^2.0.2",
-    "react": "^17.0.2",
-    "react-dom": "^17.0.2",
-    "react-intl": "^5.21.0",
-    "react-router-dom": "^6.0.0",
-    "react-use": "^17.3.1",
-    "recoil": "^0.4.1"
-  },
-  "devDependencies": {
     "@types/file-saver": "^2.0.4",
     "@types/lodash": "^4.14.176",
     "@types/react": "^17.0.30",
     "@types/react-dom": "^17.0.9",
     "@vitejs/plugin-react": "^1.0.4",
-    "electron": "^16.0.3",
+    "ajv": "^8.6.3",
+    "electron": "16.0.3",
+    "electron-builder": "^22.14.5",
     "electron-reloader": "^1.2.1",
-    "electron-window-state": "^5.0.3",
+    "file-saver": "^2.0.5",
+    "lodash": "^4.17.21",
+    "nanoid": "^3.1.30",
+    "notistack": "^2.0.2",
     "npm-run-all": "^4.1.5",
+    "react": "^17.0.2",
+    "react-dom": "^17.0.2",
+    "react-intl": "^5.21.0",
+    "react-router-dom": "^6.0.0",
+    "react-use": "^17.3.1",
+    "recoil": "^0.4.1",
     "typescript": "^4.5.2",
     "vite": "^2.6.7",
     "vite-plugin-pwa": "^0.11.5"
+  },
+  "build": {
+    "appId": "xyz.yechao.paper",
+    "productName": "Paper",
+    "electronDownload": {
+      "mirror": "https://npm.taobao.org/mirrors/electron/"
+    },
+    "files": [
+      "build/icon.*",
+      "src/electron/**/*",
+      "dist/**/*"
+    ],
+    "directories": {
+      "output": "dist-electron"
+    }
   }
 }
