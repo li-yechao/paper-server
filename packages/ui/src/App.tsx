@@ -18,7 +18,6 @@ import { AccountCircle, Add, CloudSync, Logout, SyncProblem } from '@mui/icons-m
 import {
   AppBar,
   Box,
-  Button,
   CircularProgress,
   CssBaseline,
   Divider,
@@ -42,7 +41,7 @@ import ArrowMenu from './components/ArrowMenu'
 import ErrorBoundary from './components/ErrorBoundary'
 import NetworkIndicator, { useToggleNetworkIndicator } from './components/NetworkIndicator'
 import { accountOptions } from './constants'
-import { isUnauthorizedError, useAccount, useAccountOrNull, useSetAccount } from './state/account'
+import { isUnauthorizedError, useAccountOrNull, useSetAccount } from './state/account'
 import { useHeaderActions } from './state/header'
 import { useCreateObject } from './state/object'
 import Storage from './Storage'
@@ -118,41 +117,41 @@ const AppRoutes = () => {
   }
 
   return (
-    <ErrorBoundary fallback={UnauthorizedErrorBoundary}>
-      <HashRouter>
-        <_AppBar position="fixed" elevation={0}>
-          <Toolbar>
-            {isElectron && <Box width={72} />}
-            <Typography variant="h5">Paper</Typography>
+    <HashRouter>
+      <_AppBar position="fixed" elevation={0}>
+        <Toolbar>
+          {isElectron && <Box width={72} />}
+          <Typography variant="h5">Paper</Typography>
 
-            <Box flexGrow={1} />
+          <Box flexGrow={1} />
 
-            {headerActions.map(i => (
-              <i.component {...i.props} key={i.key} />
-            ))}
-            <SyncStatus />
-            <CreateButton />
-            <AccountButton />
-          </Toolbar>
+          {headerActions.map(i => (
+            <i.component {...i.props} key={i.key} />
+          ))}
+          <SyncStatus />
+          <CreateButton />
+          <AccountButton />
+        </Toolbar>
 
-          <NetworkIndicator.Renderer>
-            <Box position="fixed" left={0} top={56} right={0} zIndex={t => t.zIndex.tooltip + 1}>
-              <LinearProgress />
-            </Box>
-          </NetworkIndicator.Renderer>
-        </_AppBar>
+        <NetworkIndicator.Renderer>
+          <Box position="fixed" left={0} top={56} right={0} zIndex={t => t.zIndex.tooltip + 1}>
+            <LinearProgress />
+          </Box>
+        </NetworkIndicator.Renderer>
+      </_AppBar>
 
-        <_Body>
-          <ErrorBoundary fallback={ErrorView}>
+      <_Body>
+        <ErrorBoundary fallback={ErrorView}>
+          <ErrorBoundary fallback={UnauthorizedErrorBoundary}>
             <Routes>
               <Route index element={<HomeViewLazy />} />
               <Route path=":userId/*" element={<UserViewLazy />} />
               <Route path="*" element={<NotFoundViewLazy />} />
             </Routes>
           </ErrorBoundary>
-        </_Body>
-      </HashRouter>
-    </ErrorBoundary>
+        </ErrorBoundary>
+      </_Body>
+    </HashRouter>
   )
 }
 
@@ -194,7 +193,7 @@ const _Body = styled.div`
 
 const AccountButton = () => {
   const navigate = useNavigate()
-  const account = useAccount()
+  const account = useAccountOrNull()
   const setAccount = useSetAccount()
   const [anchorEl, setAnchorEl] = useState<Element>()
 
@@ -208,7 +207,9 @@ const AccountButton = () => {
 
   const handleToMyProfile = () => {
     handleMenuClose()
-    navigate(`/${account.account.user.id}`)
+    if (account) {
+      navigate(`/${account.account.user.id}`)
+    }
   }
 
   const handleSignOut = () => {
@@ -216,21 +217,15 @@ const AccountButton = () => {
     setAccount()
   }
 
-  const handleLogin = () => {
-    navigate(`/`)
+  if (!account) {
+    return null
   }
 
   return (
     <>
-      {account ? (
-        <IconButton onClick={handleMenuOpen}>
-          <AccountCircle />
-        </IconButton>
-      ) : (
-        <Button variant="text" onClick={handleLogin}>
-          Login
-        </Button>
-      )}
+      <IconButton onClick={handleMenuOpen}>
+        <AccountCircle />
+      </IconButton>
 
       <ArrowMenu
         anchorEl={anchorEl}
