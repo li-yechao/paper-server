@@ -46,6 +46,7 @@ import { isUnauthorizedError, useAccount, useAccountOrNull, useSetAccount } from
 import { useHeaderActions } from './state/header'
 import { useCreateObject } from './state/object'
 import Storage from './Storage'
+import useIsElectron from './utils/useIsEelectron'
 import { AuthViewLazy } from './views/auth'
 import { NotFoundViewLazy } from './views/error'
 import ErrorView from './views/error/ErrorView'
@@ -97,6 +98,7 @@ export default function App() {
 }
 
 const AppRoutes = () => {
+  const isElectron = useIsElectron()
   const headerActions = useHeaderActions()
   const setAccount = useSetAccount()
   const accountState = useAsync(async () => {
@@ -135,6 +137,7 @@ const AppRoutes = () => {
       <HashRouter>
         <_AppBar position="fixed" elevation={0}>
           <Toolbar>
+            {isElectron && <Box width={72} />}
             <Typography variant="h5">Paper</Typography>
 
             <Box flexGrow={1} />
@@ -183,6 +186,11 @@ const _AppBar = styled(AppBar)`
   color: ${props => props.theme.palette.text.primary};
   border-bottom: 1px solid ${props => props.theme.palette.divider};
   user-select: none;
+  -webkit-app-region: drag;
+
+  button {
+    -webkit-app-region: none;
+  }
 
   .MuiToolbar-root {
     min-height: ${props => props.theme.spacing(7)};
