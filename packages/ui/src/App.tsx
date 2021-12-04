@@ -14,7 +14,14 @@
 
 import { ThemeProvider as EmotionThemeProvider } from '@emotion/react'
 import styled from '@emotion/styled'
-import { AccountCircle, Add, CloudSync, Logout, SyncProblem } from '@mui/icons-material'
+import {
+  AccountCircle,
+  Add,
+  ArrowBackIosNew,
+  CloudSync,
+  Logout,
+  SyncProblem,
+} from '@mui/icons-material'
 import {
   AppBar,
   Box,
@@ -67,7 +74,9 @@ export default function App() {
                   <EmotionThemeProvider theme={theme}>
                     <CssBaseline>
                       <Suspense fallback={<NetworkIndicator in />}>
-                        <AppRoutes />
+                        <HashRouter>
+                          <AppRoutes />
+                        </HashRouter>
                       </Suspense>
                     </CssBaseline>
                   </EmotionThemeProvider>
@@ -82,8 +91,6 @@ export default function App() {
 }
 
 const AppRoutes = () => {
-  const isElectron = useIsElectron()
-  const headerActions = useHeaderActions()
   const setAccount = useSetAccount()
   const accountState = useAsync(async () => {
     // NOTE: Set account into globalThis at development environment (avoid hot
@@ -117,28 +124,8 @@ const AppRoutes = () => {
   }
 
   return (
-    <HashRouter>
-      <_AppBar position="fixed" elevation={0}>
-        <Toolbar>
-          {isElectron && <Box width={72} />}
-          <Typography variant="h5">Paper</Typography>
-
-          <Box flexGrow={1} />
-
-          {headerActions.map(i => (
-            <i.component {...i.props} key={i.key} />
-          ))}
-          <SyncStatus />
-          <CreateButton />
-          <AccountButton />
-        </Toolbar>
-
-        <NetworkIndicator.Renderer>
-          <Box position="fixed" left={0} top={56} right={0} zIndex={t => t.zIndex.tooltip + 1}>
-            <LinearProgress />
-          </Box>
-        </NetworkIndicator.Renderer>
-      </_AppBar>
+    <>
+      <_AppBar />
 
       <_Body>
         <ErrorBoundary fallback={ErrorView}>
@@ -151,7 +138,7 @@ const AppRoutes = () => {
           </ErrorBoundary>
         </ErrorBoundary>
       </_Body>
-    </HashRouter>
+    </>
   )
 }
 
@@ -171,7 +158,49 @@ function UnauthorizedErrorBoundary({ error, reset }: { error: Error; reset: () =
   throw error
 }
 
-const _AppBar = styled(AppBar)`
+const _AppBar = () => {
+  const historyIdx: number = history.state.idx
+  const navigate = useNavigate()
+  const isElectron = useIsElectron()
+  const headerActions = useHeaderActions()
+
+  const handleBack = () => {
+    navigate(-1)
+  }
+
+  return (
+    <__AppBar position="fixed" elevation={0}>
+      <Toolbar>
+        {isElectron && <Box width={72} />}
+
+        {historyIdx > 0 && (
+          <IconButton sx={{ mr: 1 }} onClick={handleBack}>
+            <ArrowBackIosNew />
+          </IconButton>
+        )}
+
+        <Typography variant="h5">Paper</Typography>
+
+        <Box flexGrow={1} />
+
+        {headerActions.map(i => (
+          <i.component {...i.props} key={i.key} />
+        ))}
+        <SyncStatus />
+        <CreateButton />
+        <AccountButton />
+      </Toolbar>
+
+      <NetworkIndicator.Renderer>
+        <Box position="fixed" left={0} top={56} right={0} zIndex={t => t.zIndex.tooltip + 1}>
+          <LinearProgress />
+        </Box>
+      </NetworkIndicator.Renderer>
+    </__AppBar>
+  )
+}
+
+const __AppBar = styled(AppBar)`
   background-color: ${props => props.theme.palette.background.paper};
   color: ${props => props.theme.palette.text.primary};
   border-bottom: 1px solid ${props => props.theme.palette.divider};
