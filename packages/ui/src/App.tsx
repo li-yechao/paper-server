@@ -72,12 +72,6 @@ export default function App() {
       <NetworkIndicator.Provider>
         <SnackbarProvider maxSnack={3} anchorOrigin={{ vertical: 'top', horizontal: 'center' }}>
           <CssBaseline>
-            <NetworkIndicator.Renderer>
-              <Box position="fixed" left={0} top={0} right={0} zIndex={t => t.zIndex.tooltip + 1}>
-                <LinearProgress />
-              </Box>
-            </NetworkIndicator.Renderer>
-
             <IntlProvider locale={navigator.language}>
               <RecoilRoot>
                 <StylesProvider injectFirst>
@@ -150,6 +144,12 @@ const AppRoutes = () => {
             <CreateButton />
             <AccountButton />
           </Toolbar>
+
+          <NetworkIndicator.Renderer>
+            <Box position="fixed" left={0} top={56} right={0} zIndex={t => t.zIndex.tooltip + 1}>
+              <LinearProgress />
+            </Box>
+          </NetworkIndicator.Renderer>
         </_AppBar>
 
         <_Body>
