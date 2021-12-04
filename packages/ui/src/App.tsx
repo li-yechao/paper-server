@@ -20,7 +20,6 @@ import {
   Box,
   Button,
   CircularProgress,
-  createTheme,
   CssBaseline,
   Divider,
   IconButton,
@@ -34,7 +33,7 @@ import {
 import { StylesProvider } from '@mui/styles'
 import { Account } from '@paper/core'
 import { SnackbarProvider } from 'notistack'
-import { Suspense, useCallback, useEffect, useMemo, useState } from 'react'
+import { Suspense, useCallback, useEffect, useState } from 'react'
 import { IntlProvider } from 'react-intl'
 import { HashRouter, Route, Routes, useNavigate } from 'react-router-dom'
 import { useAsync } from 'react-use'
@@ -47,6 +46,7 @@ import { isUnauthorizedError, useAccount, useAccountOrNull, useSetAccount } from
 import { useHeaderActions } from './state/header'
 import { useCreateObject } from './state/object'
 import Storage from './Storage'
+import useMyTheme from './theme'
 import useIsElectron from './utils/useIsEelectron'
 import { AuthViewLazy } from './views/auth'
 import { NotFoundViewLazy } from './views/error'
@@ -55,37 +55,27 @@ import { HomeViewLazy } from './views/home'
 import { UserViewLazy } from './views/user'
 
 export default function App() {
-  const theme = useMemo(
-    () =>
-      createTheme({
-        typography: {
-          button: {
-            textTransform: 'none',
-          },
-        },
-      }),
-    []
-  )
+  const theme = useMyTheme()
 
   return (
     <ErrorBoundary fallback={ErrorView}>
       <NetworkIndicator.Provider>
         <SnackbarProvider maxSnack={3} anchorOrigin={{ vertical: 'top', horizontal: 'center' }}>
-          <CssBaseline>
-            <IntlProvider locale={navigator.language}>
-              <RecoilRoot>
-                <StylesProvider injectFirst>
-                  <MuiThemeProvider theme={theme}>
-                    <EmotionThemeProvider theme={theme}>
+          <IntlProvider locale={navigator.language}>
+            <RecoilRoot>
+              <StylesProvider injectFirst>
+                <MuiThemeProvider theme={theme}>
+                  <EmotionThemeProvider theme={theme}>
+                    <CssBaseline>
                       <Suspense fallback={<NetworkIndicator in />}>
                         <AppRoutes />
                       </Suspense>
-                    </EmotionThemeProvider>
-                  </MuiThemeProvider>
-                </StylesProvider>
-              </RecoilRoot>
-            </IntlProvider>
-          </CssBaseline>
+                    </CssBaseline>
+                  </EmotionThemeProvider>
+                </MuiThemeProvider>
+              </StylesProvider>
+            </RecoilRoot>
+          </IntlProvider>
         </SnackbarProvider>
       </NetworkIndicator.Provider>
     </ErrorBoundary>
