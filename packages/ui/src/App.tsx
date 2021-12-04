@@ -22,6 +22,7 @@ import {
   CircularProgress,
   createTheme,
   CssBaseline,
+  Divider,
   IconButton,
   LinearProgress,
   ListItemIcon,
@@ -215,6 +216,11 @@ const AccountButton = () => {
     setAnchorEl(undefined)
   }
 
+  const handleToMyProfile = () => {
+    handleMenuClose()
+    navigate(`/${account.account.user.id}`)
+  }
+
   const handleSignOut = () => {
     handleMenuClose()
     setAccount()
@@ -244,6 +250,13 @@ const AccountButton = () => {
         anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
         onClose={handleMenuClose}
       >
+        <MenuItem onClick={handleToMyProfile}>
+          <ListItemIcon>
+            <AccountCircle />
+          </ListItemIcon>
+          My profile
+        </MenuItem>
+        <Divider />
         <MenuItem onClick={handleSignOut}>
           <ListItemIcon>
             <Logout fontSize="small" />
