@@ -42,7 +42,6 @@ import { SnackbarProvider } from 'notistack'
 import { Suspense, useCallback, useEffect, useState } from 'react'
 import { IntlProvider } from 'react-intl'
 import { HashRouter, Route, Routes, useNavigate } from 'react-router-dom'
-import { useAsync } from 'react-use'
 import { RecoilRoot } from 'recoil'
 import ArrowMenu from './components/ArrowMenu'
 import ErrorBoundary from './components/ErrorBoundary'
@@ -53,6 +52,7 @@ import { useHeaderActions } from './state/header'
 import { useCreateObject } from './state/object'
 import Storage from './Storage'
 import useMyTheme from './theme'
+import useAsync from './utils/useAsync'
 import useIsElectron from './utils/useIsEelectron'
 import { AuthViewLazy } from './views/auth'
 import { NotFoundViewLazy } from './views/error'
@@ -117,10 +117,12 @@ const AppRoutes = () => {
     }
   }, [])
 
-  if (accountState.loading) {
-    return <NetworkIndicator in />
-  } else if (accountState.error) {
+  if (accountState.error) {
     throw accountState.error
+  }
+
+  if (accountState.loading) {
+    return <Splash />
   }
 
   return (
@@ -141,6 +143,26 @@ const AppRoutes = () => {
     </>
   )
 }
+
+const Splash = () => {
+  return (
+    <_Splash>
+      <CircularProgress />
+    </_Splash>
+  )
+}
+
+const _Splash = styled.div`
+  position: absolute;
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  -webkit-app-region: drag;
+`
 
 function UnauthorizedErrorBoundary({ error, reset }: { error: Error; reset: () => void }) {
   const account = useAccountOrNull()
