@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-const { app, BrowserWindow } = require('electron')
+const { app, BrowserWindow, nativeTheme } = require('electron')
 const windowStateKeeper = require('electron-window-state')
 
 try {
@@ -75,6 +75,7 @@ function createWindow(options = {}) {
   })
 
   const win = new BrowserWindow({
+    backgroundColor: nativeTheme.shouldUseDarkColors ? '#363B40' : '#FFFFFF',
     minWidth,
     minHeight,
     titleBarStyle: 'hidden',
