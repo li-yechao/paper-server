@@ -57,7 +57,7 @@ export class Paper {
     try {
       const buffer = await this.object.read(this.contentFilePath)
       const str = new TextDecoder().decode(buffer)
-      return JSON.parse(str)
+      return upgradeSchema(JSON.parse(str))
     } catch (error: any) {
       if (error.code === 'ERR_NOT_FOUND') {
         return
@@ -110,4 +110,15 @@ export function usePaper({ account, objectId }: { account: Account; objectId: st
   const object = useObject({ account, objectId })
   const paper = useMemo(() => new Paper(object), [object])
   return paper
+}
+
+function upgradeSchema(node: DocJson): DocJson {
+  if (!node) {
+    return node
+  }
+  return {
+    ...node,
+    type: node.type === 'ordered_item' || node.type === 'bullet_item' ? 'list_item' : node.type,
+    content: node.content?.map(upgradeSchema),
+  }
 }
