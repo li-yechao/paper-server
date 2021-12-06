@@ -86,8 +86,8 @@ class TagItem extends Node<TagItemAttrs> {
       attrs: {},
       content: 'text*',
       marks: '',
-      parseDOM: [{ tag: 'li' }],
-      toDOM: () => ['li', 0],
+      parseDOM: [{ tag: 'li[data-type="tag_item"]' }],
+      toDOM: () => ['li', { 'data-type': 'tag_item' }, 0],
     }
   }
 

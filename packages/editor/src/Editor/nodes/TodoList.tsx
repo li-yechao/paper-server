@@ -68,6 +68,7 @@ class TodoItem extends Node<TodoItemAttrs> {
       parseDOM: [
         {
           tag: 'li[data-type="todo_item"]',
+          priority: 100,
           getAttrs: dom => ({
             checked: (dom as HTMLElement).getAttribute('data-checked') === 'true',
           }),

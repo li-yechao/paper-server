@@ -29,7 +29,7 @@ export default class OrderedList extends Node<OrderedListAttrs> {
   get schema(): StrictNodeSpec<OrderedListAttrs> {
     return {
       attrs: {},
-      content: 'ordered_item+',
+      content: 'list_item+',
       group: 'block',
       parseDOM: [{ tag: 'ol' }],
       toDOM: () => ['ol', 0],
@@ -40,17 +40,17 @@ export default class OrderedList extends Node<OrderedListAttrs> {
     return [wrappingInputRule(/^(\d+)\.\s$/, type)]
   }
 
-  readonly childNodes = [new OrderedItem()]
+  readonly childNodes = [LIST_ITEM]
 }
 
-interface OrderedItemAttrs {}
+interface ListItemAttrs {}
 
-class OrderedItem extends Node<OrderedItemAttrs> {
+export class ListItem extends Node<ListItemAttrs> {
   get name(): string {
-    return 'ordered_item'
+    return 'list_item'
   }
 
-  get schema(): StrictNodeSpec<OrderedItemAttrs> {
+  get schema(): StrictNodeSpec<ListItemAttrs> {
     return {
       attrs: {},
       content: 'paragraph block*',
@@ -69,9 +69,9 @@ class OrderedItem extends Node<OrderedItemAttrs> {
     }
   }
 
-  get nodeView(): NodeViewCreator<OrderedItemAttrs> {
+  get nodeView(): NodeViewCreator<ListItemAttrs> {
     return () => {
-      return new (class extends NodeView<OrderedItemAttrs> {
+      return new (class extends NodeView<ListItemAttrs> {
         constructor() {
           super()
 
@@ -95,3 +95,5 @@ class OrderedItem extends Node<OrderedItemAttrs> {
     }
   }
 }
+
+export const LIST_ITEM = new ListItem()
