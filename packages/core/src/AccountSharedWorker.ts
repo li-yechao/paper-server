@@ -199,6 +199,10 @@ export default class Account extends StrictEventEmitter<{}, {}, ServerEventMap> 
     return `/${this.user.id}/objects`
   }
 
+  private get objectTrashPath() {
+    return `/${this.user.id}/trash/objects`
+  }
+
   readonly crypto: crypto.Crypto
 
   async stop() {
@@ -220,21 +224,21 @@ export default class Account extends StrictEventEmitter<{}, {}, ServerEventMap> 
     if (!this._sync) {
       this._sync = (async () => {
         this.emitReserved('sync', { syncing: true })
+        const cid = await this.cid
         try {
           if (!options.skipDownload) {
-            await this.syncIPFSFilesToLocal()
+            await this.syncIPFSFilesToLocal(cid)
           }
 
           // publish
-          await withIPFSReconnect(
-            this.ipfs,
-            this.options,
-            publishName(
-              (await this.ipfs.files.stat(`/${this.user.id}`)).cid.toString(),
-              this.user.password,
-              this.options
+          const newCID = (await this.ipfs.files.stat(`/${this.user.id}`)).cid.toString()
+          if (newCID !== cid) {
+            await withIPFSReconnect(
+              this.ipfs,
+              this.options,
+              publishName(newCID, this.user.password, this.options)
             )
-          )
+          }
           this.emitReserved('sync', { syncing: false })
         } catch (error: any) {
           this.emitReserved('sync', { syncing: false, error: error.message })
@@ -246,12 +250,7 @@ export default class Account extends StrictEventEmitter<{}, {}, ServerEventMap> 
     this._sync = undefined
   }
 
-  private async syncIPFSFilesToLocal() {
-    const cid = await this.cid
-    if (!cid) {
-      return
-    }
-
+  private async syncIPFSFilesToLocal(cid: string | null) {
     // keystore
     const keystoreIPFS = await this.ipfs.files.stat(`/ipfs/${cid}/keystore`)
     const keystoreLocal = await fileUtils.ignoreErrNotFound(
@@ -264,6 +263,61 @@ export default class Account extends StrictEventEmitter<{}, {}, ServerEventMap> 
     } else {
       if (!keystoreLocal.cid.equals(keystoreIPFS.cid)) {
         throw new Error(`CID of keystore is invalid`)
+      }
+    }
+
+    // trash
+    const trashIPFS = await fileUtils.ignoreErrNotFound(
+      this.ipfs.files.stat(`/ipfs/${cid}/trash/objects`)
+    )
+    const trashLocal = await fileUtils.ignoreErrNotFound(
+      this.ipfs.files.stat(`/${this.user.id}/trash/objects`)
+    )
+    if (trashIPFS && (!trashLocal || !trashIPFS.cid.equals(trashLocal.cid))) {
+      for await (const { name: year } of this.ipfs.files.ls(`/ipfs/${cid}/trash/objects`)) {
+        for await (const { name: month } of this.ipfs.files.ls(
+          `/ipfs/${cid}/trash/objects/${year}`
+        )) {
+          for await (const { name: day } of this.ipfs.files.ls(
+            `/ipfs/${cid}/trash/objects/${year}/${month}`
+          )) {
+            for await (const { name: objectId, cid: objectCID } of this.ipfs.files.ls(
+              `/ipfs/${cid}/trash/objects/${year}/${month}/${day}`
+            )) {
+              const localPath = `/${this.user.id}/trash/objects/${year}/${month}/${day}/${objectId}`
+
+              // Compare CID
+              const localStat = await fileUtils.ignoreErrNotFound(this.ipfs.files.stat(localPath))
+              if (localStat?.cid.equals(objectCID)) {
+                continue
+              }
+
+              // Compare mtime
+              const timeIPFS = await fileUtils.ignoreErrNotFound(
+                fileUtils.readString(
+                  this.ipfs.files.read(
+                    `/ipfs/${cid}/trash/objects/${year}/${month}/${day}/${objectId}/mtime`
+                  )
+                )
+              )
+              const timeLocal = await fileUtils.ignoreErrNotFound(
+                fileUtils.readString(this.ipfs.files.read(fileUtils.joinPath(localPath, 'mtime')))
+              )
+              if (timeIPFS && timeLocal) {
+                if (timeIPFS <= timeLocal) {
+                  continue
+                }
+              }
+
+              await fileUtils.ignoreErrNotFound(this.ipfs.files.rm(localPath, { recursive: true }))
+              await this.ipfs.files.cp(
+                `/ipfs/${cid}/trash/objects/${year}/${month}/${day}/${objectId}`,
+                localPath,
+                { parents: true }
+              )
+            }
+          }
+        }
       }
     }
 
@@ -329,6 +383,33 @@ export default class Account extends StrictEventEmitter<{}, {}, ServerEventMap> 
         }
       }
     }
+
+    const isDeleted = async (objectId: string) => {
+      const deleted = await fileUtils.ignoreErrNotFound(
+        this.ipfs.files.stat(this.getObjectTrashPath(ObjectId.parse(objectId)))
+      )
+      return !!deleted
+    }
+
+    for await (const { name: year } of this.ipfs.files.ls(`/${this.user.id}/objects`)) {
+      for await (const { name: month } of this.ipfs.files.ls(`/${this.user.id}/objects/${year}`)) {
+        for await (const { name: day } of this.ipfs.files.ls(
+          `/${this.user.id}/objects/${year}/${month}`
+        )) {
+          for await (const { name: objectId } of this.ipfs.files.ls(
+            `/${this.user.id}/objects/${year}/${month}/${day}`
+          )) {
+            // Deleted
+            const deleted = await isDeleted(objectId)
+            if (deleted) {
+              const localPath = `/${this.user.id}/objects/${year}/${month}/${day}/${objectId}`
+              await fileUtils.ignoreErrNotFound(this.ipfs.files.rm(localPath, { recursive: true }))
+              continue
+            }
+          }
+        }
+      }
+    }
   }
 
   private objectsCache: Map<string, Object> = new Map()
@@ -344,6 +425,11 @@ export default class Account extends StrictEventEmitter<{}, {}, ServerEventMap> 
   private getObjectPath(objectId: ObjectId): string {
     const { year, month, day } = this.getObjectPathSegments(objectId)
     return fileUtils.joinPath(this.objectPath, year, month, day, ObjectId.toString(objectId))
+  }
+
+  private getObjectTrashPath(objectId: ObjectId): string {
+    const { year, month, day } = this.getObjectPathSegments(objectId)
+    return fileUtils.joinPath(this.objectTrashPath, year, month, day, ObjectId.toString(objectId))
   }
 
   async object(objectId?: string | ObjectId): Promise<Object> {
@@ -365,9 +451,9 @@ export default class Account extends StrictEventEmitter<{}, {}, ServerEventMap> 
     objectId = ObjectId.parse(objectId ?? ObjectId.create())
     const key = ObjectId.toString(objectId)
     this.objectsCache.delete(key)
-    await fileUtils.ignoreErrNotFound(
-      this.ipfs.files.rm(this.getObjectPath(objectId), { recursive: true })
-    )
+    await this.ipfs.files.mv(this.getObjectPath(objectId), this.getObjectTrashPath(objectId), {
+      parents: true,
+    })
   }
 
   async objects({
