@@ -9,10 +9,9 @@
     "dev": "run-p dev:*",
     "dev:vite": "vite",
     "dev:electron": "electron src/electron/index.js",
-    "build": "tsc && vite build",
+    "build:vite": "tsc && vite build --base ./",
     "build:mac": "electron-builder --mac",
-    "build:win": "electron-builder --win",
-    "serve": "vite preview"
+    "build:win": "electron-builder --win"
   },
   "dependencies": {
     "electron-window-state": "^5.0.3"
