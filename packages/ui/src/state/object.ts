@@ -76,11 +76,21 @@ export function useObjectPagination({
       })
 
       const index = firstId ? objects.findIndex(i => i.id <= firstId) : -1
-      const hasNext = index >= 0
+      let hasNext = index >= 0
       objects = hasNext ? objects.slice(0, index) : objects
 
       const hasPrevious = objects.length > limit
       objects = hasPrevious ? objects.slice(-limit) : objects
+
+      if (objects.length < limit && hasNext) {
+        const moreLimit = limit - objects.length
+        const moreObjects = await account.objects({
+          before: objects[objects.length - 1]?.id,
+          limit: moreLimit + 1,
+        })
+        hasNext = moreObjects.length > moreLimit
+        objects.push(...moreObjects.slice(0, moreLimit))
+      }
 
       setPagination({
         list: objects,
