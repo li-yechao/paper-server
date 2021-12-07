@@ -15,8 +15,7 @@
 import { Account, Object } from '@paper/core'
 import { atom, useRecoilCallback, useRecoilState, useRecoilValue } from 'recoil'
 import { memoize } from 'lodash'
-import { useToggle } from 'react-use'
-import { useEffect } from 'react'
+import { useCallback, useEffect } from 'react'
 
 const objectState = memoize(
   (account: Account, objectId: string) => {
@@ -33,28 +32,22 @@ export function useObject({ account, objectId }: { account: Account; objectId: s
   return useRecoilValue(state)
 }
 
-const objectPaginationState = memoize(
-  (account: Account) => {
-    return atom<{
-      list: Object[]
-      hasPrevious: boolean
-      hasNext: boolean
-    } | null>({
-      key: `objectPaginationState-${account.user.id}`,
-      default: null,
-    })
-  },
-  account => account.user.id
-)
-
 export interface ObjectPagination {
   loading: boolean
   list: Object[]
   hasPrevious: boolean
   hasNext: boolean
-  loadPrevious: () => Promise<void>
-  loadNext: () => Promise<void>
 }
+
+const objectPaginationState = memoize(
+  (account: Account) => {
+    return atom<ObjectPagination>({
+      key: `objectPaginationState-${account.user.id}`,
+      default: { loading: false, list: [], hasPrevious: false, hasNext: false },
+    })
+  },
+  account => account.user.id
+)
 
 export function useObjectPagination({
   account,
@@ -62,13 +55,15 @@ export function useObjectPagination({
 }: {
   account: Account
   limit?: number
-}): ObjectPagination {
+}): ObjectPagination & {
+  loadPrevious: () => Promise<void>
+  loadNext: () => Promise<void>
+} {
   const [pagination, setPagination] = useRecoilState(objectPaginationState(account))
-  const [loading, toggleLoading] = useToggle(false)
 
-  const loadPrevious = async () => {
+  const loadPrevious = useCallback(async () => {
     try {
-      toggleLoading(true)
+      setPagination(v => ({ ...v, loading: true }))
       const firstId = pagination?.list.length ? pagination.list[0].id : undefined
       let objects = await account.objects({
         after: firstId ? decreaseObjectId(firstId) : undefined,
@@ -92,19 +87,23 @@ export function useObjectPagination({
         objects.push(...moreObjects.slice(0, moreLimit))
       }
 
-      setPagination({
+      setPagination(v => ({
+        ...v,
         list: objects,
         hasPrevious,
         hasNext,
-      })
+      }))
     } finally {
-      toggleLoading(false)
+      setPagination(v => ({
+        ...v,
+        loading: false,
+      }))
     }
-  }
+  }, [account, limit])
 
-  const loadNext = async () => {
+  const loadNext = useCallback(async () => {
     try {
-      toggleLoading(true)
+      setPagination(v => ({ ...v, loading: true }))
       const lastId = pagination?.list.length
         ? pagination.list[pagination.list.length - 1].id
         : undefined
@@ -120,38 +119,28 @@ export function useObjectPagination({
       const hasNext = objects.length > limit
       objects = hasNext ? objects.slice(0, limit) : objects
 
-      setPagination({
+      setPagination(v => ({
+        ...v,
         list: objects,
         hasPrevious,
         hasNext,
-      })
+      }))
     } finally {
-      toggleLoading(false)
+      setPagination(v => ({
+        ...v,
+        loading: false,
+      }))
     }
-  }
+  }, [account, limit])
 
   useEffect(() => {
-    if (!pagination || pagination.list.length === 0) {
+    if (pagination.list.length === 0) {
       loadNext()
     }
   }, [account])
 
-  if (!pagination) {
-    return {
-      loading,
-      list: [],
-      hasPrevious: false,
-      hasNext: false,
-      loadPrevious,
-      loadNext,
-    }
-  }
-
   return {
-    loading,
-    list: pagination.list,
-    hasPrevious: pagination.hasPrevious,
-    hasNext: pagination.hasNext,
+    ...pagination,
     loadPrevious,
     loadNext,
   }
