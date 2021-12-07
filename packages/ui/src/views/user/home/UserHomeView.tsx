@@ -130,11 +130,11 @@ export default function UserHomeView() {
             </Typography>
           )
         ) : (
-          pagination.list.map(objectId => (
+          pagination.list.map(object => (
             <ObjectItem
-              key={objectId}
+              key={object.id}
               account={account}
-              objectId={objectId}
+              objectId={object.id}
               onClick={handleToDetail}
               onMenuClick={handleOpenMenu}
             />

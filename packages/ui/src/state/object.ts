@@ -15,8 +15,8 @@
 import { Account, Object } from '@paper/core'
 import { atom, useRecoilCallback, useRecoilState, useRecoilValue } from 'recoil'
 import { memoize } from 'lodash'
-import { useEffect } from 'react'
 import { useToggle } from 'react-use'
+import { useEffect } from 'react'
 
 const objectState = memoize(
   (account: Account, objectId: string) => {
@@ -36,11 +36,9 @@ export function useObject({ account, objectId }: { account: Account; objectId: s
 const objectPaginationState = memoize(
   (account: Account) => {
     return atom<{
-      iterator: AsyncIterator<Object>
-      list: string[]
+      list: Object[]
+      hasPrevious: boolean
       hasNext: boolean
-      page: number
-      limit: number
     } | null>({
       key: `objectPaginationState-${account.user.id}`,
       default: null,
@@ -51,8 +49,7 @@ const objectPaginationState = memoize(
 
 export interface ObjectPagination {
   loading: boolean
-  list: string[]
-  page: number
+  list: Object[]
   hasPrevious: boolean
   hasNext: boolean
   loadPrevious: () => Promise<void>
@@ -69,57 +66,55 @@ export function useObjectPagination({
   const [pagination, setPagination] = useRecoilState(objectPaginationState(account))
   const [loading, toggleLoading] = useToggle(false)
 
-  const withState = (cb: (s: NonNullable<typeof pagination>) => Promise<void>) => {
-    return async () => {
-      const s = pagination ?? {
-        iterator: account.objects(),
-        list: [],
-        hasNext: true,
-        page: 0,
-        limit,
-      }
-      s && (await cb(s))
-    }
-  }
+  const loadPrevious = async () => {
+    try {
+      toggleLoading(true)
+      const firstId = pagination?.list.length ? pagination.list[0].id : undefined
+      let objects = await account.objects({
+        after: firstId ? decreaseObjectId(firstId) : undefined,
+        limit: limit + 2,
+      })
 
-  const loadPrevious = withState(async state => {
-    if (state.page > 0) {
-      setPagination({ ...state, page: state.page - 1 })
-    }
-  })
+      const index = firstId ? objects.findIndex(i => i.id <= firstId) : -1
+      const hasNext = index >= 0
+      objects = hasNext ? objects.slice(0, index) : objects
 
-  const loadMore = async (iterator: AsyncIterator<Object>, limit: number) => {
-    const list: string[] = []
-    while (list.length < limit) {
-      const next = await iterator.next()
-      if (next.value) {
-        list.push(next.value.id)
-      } else {
-        break
-      }
+      const hasPrevious = objects.length > limit
+      objects = hasPrevious ? objects.slice(-limit) : objects
+
+      setPagination({
+        list: objects,
+        hasPrevious,
+        hasNext,
+      })
+    } finally {
+      toggleLoading(false)
     }
-    return list
   }
 
   const loadNext = async () => {
     try {
       toggleLoading(true)
-      await withState(async state => {
-        const { iterator, page, limit, list } = state
-        const newPage = page === 0 && list.length < limit ? 0 : page + 1
-        // NOTE: Load one more to determine if there is a next page.
-        const needLoadCount = (newPage + 1) * limit - list.length + 1
-        const newList =
-          needLoadCount > 0 ? list.concat(await loadMore(iterator, needLoadCount)) : list
-        const hasNext = newList.length - list.length >= needLoadCount
+      const lastId = pagination?.list.length
+        ? pagination.list[pagination.list.length - 1].id
+        : undefined
+      let objects = await account.objects({
+        before: lastId ? increaseObjectId(lastId) : undefined,
+        limit: limit + 2,
+      })
 
-        setPagination({
-          ...state,
-          list: newList,
-          page: Math.max(0, Math.min(Math.ceil(list.length / limit) - 1, newPage)),
-          hasNext,
-        })
-      })()
+      const start = lastId ? objects.findIndex(i => i.id >= lastId) : -1
+      const hasPrevious = start >= 0
+      objects = hasPrevious ? objects.slice(start + 1) : objects
+
+      const hasNext = objects.length > limit
+      objects = hasNext ? objects.slice(0, limit) : objects
+
+      setPagination({
+        list: objects,
+        hasPrevious,
+        hasNext,
+      })
     } finally {
       toggleLoading(false)
     }
@@ -131,26 +126,10 @@ export function useObjectPagination({
     }
   }, [account])
 
-  useEffect(() => {
-    if (pagination && pagination.hasNext) {
-      const needLoadCount = (pagination.page + 1) * pagination.limit - pagination.list.length + 1
-      if (needLoadCount > 0) {
-        loadMore(pagination.iterator, needLoadCount).then(objects => {
-          setPagination({
-            ...pagination,
-            list: pagination.list.concat(objects),
-            hasNext: objects.length >= needLoadCount,
-          })
-        })
-      }
-    }
-  }, [pagination])
-
   if (!pagination) {
     return {
       loading,
       list: [],
-      page: 0,
       hasPrevious: false,
       hasNext: false,
       loadPrevious,
@@ -158,15 +137,11 @@ export function useObjectPagination({
     }
   }
 
-  const page = Math.max(0, Math.min(Math.ceil(pagination.list.length / limit) - 1, pagination.page))
-  const offset = page * pagination.limit
-
   return {
     loading,
-    list: pagination.list.slice(offset, offset + pagination.limit),
-    page,
-    hasPrevious: page > 0,
-    hasNext: pagination.hasNext || page < Math.ceil(pagination.list.length / pagination.limit) - 1,
+    list: pagination.list,
+    hasPrevious: pagination.hasPrevious,
+    hasNext: pagination.hasNext,
     loadPrevious,
     loadNext,
   }
@@ -183,7 +158,7 @@ export function useDeleteObject({ account }: { account: Account }) {
           v =>
             v && {
               ...v,
-              list: v.list.filter(i => i !== object.id),
+              list: v.list.filter(i => i.id !== object.id),
             }
         )
         await account.deleteObject(object.id)
@@ -204,11 +179,71 @@ export function useCreateObject({ account }: { account: Account }) {
           v =>
             v && {
               ...v,
-              list: [object.id].concat(v.list),
+              list: [object].concat(v.list),
             }
         )
         return object
       },
     []
   )
+}
+
+function increaseObjectId(id: string): string {
+  const a = id.split('')
+
+  let i = a.length
+  while (i > 0) {
+    i--
+    const c = a[i].charCodeAt(0)
+
+    if (c === 57) {
+      a[i] = '0'
+    } else if (c === 90) {
+      a[i] = 'A'
+    } else if (c === 122) {
+      a[i] = 'a'
+    } else if ((c >= 48 && c < 57) || (c >= 65 && c < 90) || (c >= 97 && c < 122)) {
+      a[i] = String.fromCharCode(c + 1)
+      break
+    } else {
+      throw new Error(`Invalid object id ${id}`)
+    }
+  }
+
+  const newId = a.join('')
+  if (newId === id) {
+    throw new Error(`Can not increase object id ${id}`)
+  }
+
+  return newId
+}
+
+function decreaseObjectId(id: string): string {
+  const a = id.split('')
+
+  let i = a.length
+  while (i > 0) {
+    i--
+    const c = a[i].charCodeAt(0)
+
+    if (c === 48) {
+      a[i] = '9'
+    } else if (c === 65) {
+      a[i] = 'Z'
+    } else if (c === 97) {
+      a[i] = 'z'
+    } else if ((c > 48 && c <= 57) || (c > 65 && c <= 90) || (c > 97 && c <= 122)) {
+      a[i] = String.fromCharCode(c - 1)
+      break
+    } else {
+      throw new Error(`Invalid object id ${id}`)
+    }
+  }
+
+  const newId = a.join('')
+  if (newId === id) {
+    throw new Error(`Can not decrease object id ${id}`)
+  }
+
+  return newId
 }

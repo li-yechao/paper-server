@@ -476,20 +476,20 @@ export default class Account extends StrictEventEmitter<{}, {}, ServerEventMap> 
     const result: string[] = []
 
     while (true) {
-      const objectId = (await localIter.next()).value
+      const next = await localIter.next()
 
-      if (!objectId) {
+      if (next.done) {
         break
       }
 
-      result.push(objectId)
+      result.push(next.value)
 
       if (result.length >= limit) {
         break
       }
     }
 
-    return result
+    return after ? result.reverse() : result
   }
 
   private async *iterateObject(
@@ -510,35 +510,76 @@ export default class Account extends StrictEventEmitter<{}, {}, ServerEventMap> 
       objectId: ObjectId.toString(after),
     }
 
-    const [sorter, yearFilter, monthFilter, dayFilter, objectFilter] = beforeFilter
-      ? [
-          (i: { name: string }, j: { name: string }) => (i.name < j.name ? 1 : -1),
-          (f: { name: string }) => /^\d{4}$/.test(f.name) && f.name <= beforeFilter.year,
-          (f: { name: string }) => /^\d{2}$/.test(f.name) && f.name <= beforeFilter.month,
-          (f: { name: string }) => /^\d{2}$/.test(f.name) && f.name <= beforeFilter.day,
-          (f: { name: string }) =>
-            ObjectId.objectIdReg.test(f.name) && f.name < beforeFilter.objectId,
-        ]
+    const sorter = beforeFilter
+      ? (i: { name: string }, j: { name: string }) => (i.name < j.name ? 1 : -1)
       : afterFilter
-      ? [
-          (i: { name: string }, j: { name: string }) => (i.name < j.name ? -1 : 1),
-          (f: { name: string }) => /^\d{4}$/.test(f.name) && f.name >= afterFilter.year,
-          (f: { name: string }) => /^\d{2}$/.test(f.name) && f.name >= afterFilter.month,
-          (f: { name: string }) => /^\d{2}$/.test(f.name) && f.name >= afterFilter.day,
-          (f: { name: string }) =>
-            ObjectId.objectIdReg.test(f.name) && f.name > afterFilter.objectId,
-        ]
-      : [
-          (i: { name: string }, j: { name: string }) => (i.name < j.name ? 1 : -1),
-          (f: { name: string }) => /^\d{4}$/.test(f.name),
-          (f: { name: string }) => /^\d{2}$/.test(f.name),
-          (f: { name: string }) => /^\d{2}$/.test(f.name),
-          (f: { name: string }) => ObjectId.objectIdReg.test(f.name),
-        ]
+      ? (i: { name: string }, j: { name: string }) => (i.name < j.name ? -1 : 1)
+      : (i: { name: string }, j: { name: string }) => (i.name < j.name ? 1 : -1)
+
+    type Filter = (y: string, m?: string, d?: string, o?: string) => boolean
+
+    const baseFilter: Filter = (y, m, d, o) => {
+      if (!/^\d{4}$/.test(y)) {
+        return false
+      } else if (m && !/^\d{2}$/.test(m)) {
+        return false
+      } else if (d && !/^\d{2}$/.test(d)) {
+        return false
+      } else if (o && !ObjectId.objectIdReg.test(o)) {
+        return false
+      }
+      return true
+    }
+
+    const filter: Filter = beforeFilter
+      ? (y, m, d, o) => {
+          if (!baseFilter(y, m, d, o)) {
+            return false
+          }
+
+          const { year, month, day, objectId } = beforeFilter
+          if (!m) {
+            return y <= year
+          } else if (!d) {
+            return y < year || (y === year && m <= month)
+          } else if (!o) {
+            return y < year || (y === year && m < month) || (y === year && m === month && d <= day)
+          } else {
+            return (
+              y < year ||
+              (y === year && m < month) ||
+              (y === year && m === month && d < day) ||
+              (y === year && m === month && d === day && o < objectId)
+            )
+          }
+        }
+      : afterFilter
+      ? (y, m, d, o) => {
+          if (!baseFilter(y, m, d, o)) {
+            return false
+          }
+
+          const { year, month, day, objectId } = afterFilter
+          if (!m) {
+            return y >= year
+          } else if (!d) {
+            return y > year || (y === year && m >= month)
+          } else if (!o) {
+            return y > year || (y === year && m > month) || (y === year && m === month && d >= day)
+          } else {
+            return (
+              y > year ||
+              (y === year && m > month) ||
+              (y === year && m === month && d > day) ||
+              (y === year && m === month && d === day && o > objectId)
+            )
+          }
+        }
+      : baseFilter
 
     const years = await (async () => {
       try {
-        return (await lsDir(dir)).filter(yearFilter).sort(sorter)
+        return (await lsDir(dir)).filter(({ name: year }) => filter(year)).sort(sorter)
       } catch (error: any) {
         if (fileUtils.isErrNotFound(error)) {
           return []
@@ -547,21 +588,23 @@ export default class Account extends StrictEventEmitter<{}, {}, ServerEventMap> 
       }
     })()
 
-    for (const year of years) {
-      const months = (await lsDir(`${dir}/${year.name}`)).filter(monthFilter).sort(sorter)
+    for (const { name: year } of years) {
+      const months = (await lsDir(`${dir}/${year}`))
+        .filter(({ name: month }) => filter(year, month))
+        .sort(sorter)
 
-      for (const month of months) {
-        const days = (await lsDir(`${dir}/${year.name}/${month.name}`))
-          .filter(dayFilter)
+      for (const { name: month } of months) {
+        const days = (await lsDir(`${dir}/${year}/${month}`))
+          .filter(({ name: day }) => filter(year, month, day))
           .sort(sorter)
 
-        for (const day of days) {
-          const objects = (await lsDir(`${dir}/${year.name}/${month.name}/${day.name}`))
-            .filter(objectFilter)
+        for (const { name: day } of days) {
+          const objects = (await lsDir(`${dir}/${year}/${month}/${day}`))
+            .filter(({ name: objectId }) => filter(year, month, day, objectId))
             .sort(sorter)
 
-          for (const object of objects) {
-            yield object.name
+          for (const { name: objectId } of objects) {
+            yield objectId
           }
         }
       }

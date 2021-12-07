@@ -70,27 +70,23 @@ export default class Account extends StrictEventEmitter<{}, {}, ServerEventMap> 
     })
   }
 
-  async *objects(): AsyncGenerator<Object> {
-    let last: string | undefined
-    const objectIds: string[] = []
+  async objects({
+    before,
+    after,
+    limit,
+  }: {
+    before?: string
+    after?: string
+    limit: number
+  }): Promise<Object[]> {
+    const ids = await Account.client.call('objects', {
+      userId: this.user.id,
+      before: before,
+      after: after,
+      limit,
+    })
 
-    while (true) {
-      if (objectIds.length === 0) {
-        const limit = 10
-        const ids = await Account.client.call('objects', {
-          userId: this.user.id,
-          before: last,
-          limit,
-        })
-        if (ids.length === 0) {
-          break
-        }
-        last = ids[ids.length - 1]
-        objectIds.push(...ids)
-      }
-
-      yield new Object(this, objectIds.shift()!)
-    }
+    return ids.map(id => new Object(this, id))
   }
 
   async object(objectId?: string): Promise<Object> {
