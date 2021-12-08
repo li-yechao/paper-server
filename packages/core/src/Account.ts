@@ -54,6 +54,10 @@ export default class Account extends StrictEventEmitter<{}, {}, ServerEventMap> 
     return new Account({ id, password: user.password })
   }
 
+  get cid() {
+    return Account.client.call('cid', { userId: this.user.id })
+  }
+
   async sync(options: { skipDownload?: boolean } = {}) {
     await Account.client.call('sync', { userId: this.user.id, ...options })
   }

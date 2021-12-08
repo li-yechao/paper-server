@@ -17,6 +17,7 @@ import { atom, useRecoilCallback, useRecoilState, useRecoilValue } from 'recoil'
 import { memoize } from 'lodash'
 import { useEffect } from 'react'
 import { AccountState } from './account'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 
 const objectState = memoize(
   (account: Account, objectId: string) => {
@@ -36,6 +37,8 @@ export function useObject({ account, objectId }: { account: Account; objectId: s
 export interface ObjectPagination {
   accountCID?: string
   loading: boolean
+  before: string | null
+  after: string | null
   list: Object[]
   hasPrevious: boolean
   hasNext: boolean
@@ -45,7 +48,14 @@ const objectPaginationState = memoize(
   (account: Account) => {
     return atom<ObjectPagination>({
       key: `objectPaginationState-${account.user.id}`,
-      default: { loading: false, list: [], hasPrevious: false, hasNext: false },
+      default: {
+        loading: false,
+        before: null,
+        after: null,
+        list: [],
+        hasPrevious: false,
+        hasNext: false,
+      },
     })
   },
   account => account.user.id
@@ -58,136 +68,69 @@ export function useObjectPagination({
   accountState: AccountState
   limit: number
 }): ObjectPagination & {
-  loadPrevious: () => Promise<void>
-  loadNext: () => Promise<void>
+  loadPrevious: () => void
+  loadNext: () => void
 } {
+  const navigate = useNavigate()
+  const [search] = useSearchParams()
+  const before = search.get('before')
+  const after = search.get('after')
   const [pagination, setPagination] = useRecoilState(objectPaginationState(account))
 
-  const loadPrevious = async () => {
-    try {
-      setPagination(v => ({ ...v, loading: true }))
-      const firstId = pagination?.list.length ? pagination.list[0].id : undefined
-      let objects = await account.objects({
-        after: firstId ? decreaseObjectId(firstId) : undefined,
-        limit: limit + 2,
-      })
-
-      const index = firstId ? objects.findIndex(i => i.id <= firstId) : -1
-      let hasNext = index >= 0
-      objects = hasNext ? objects.slice(0, index) : objects
-
-      const hasPrevious = objects.length > limit
-      objects = hasPrevious ? objects.slice(-limit) : objects
-
-      if (objects.length < limit && hasNext) {
-        const moreLimit = limit - objects.length
-        const moreObjects = await account.objects({
-          before: objects[objects.length - 1]?.id,
-          limit: moreLimit + 1,
-        })
-        hasNext = moreObjects.length > moreLimit
-        objects.push(...moreObjects.slice(0, moreLimit))
-      }
-
-      setPagination(v => ({
-        ...v,
-        list: objects,
-        hasPrevious,
-        hasNext,
-      }))
-    } finally {
-      setPagination(v => ({
-        ...v,
-        loading: false,
-        accountCID: sync?.cid,
-      }))
-    }
+  const loadFirstPage = () => {
+    const s = new URLSearchParams(search)
+    s.delete('after')
+    s.delete('before')
+    navigate({ search: s.toString() }, { replace: true })
   }
 
-  const loadNext = async () => {
+  const loadPrevious = () => {
+    const first = pagination.list[0]
+    if (!first) {
+      return
+    }
+    const s = new URLSearchParams(search)
+    s.set('after', first.id)
+    s.delete('before')
+    navigate({ search: s.toString() }, { replace: true })
+  }
+
+  const loadNext = () => {
+    const last = pagination.list[pagination.list.length - 1]
+    if (!last) {
+      return
+    }
+    const s = new URLSearchParams(search)
+    s.set('before', last.id)
+    s.delete('after')
+    navigate({ search: s.toString() }, { replace: true })
+  }
+
+  const loadPagination = async () => {
+    setPagination(v => ({ ...v, loading: true }))
     try {
-      setPagination(v => ({ ...v, loading: true }))
-      const lastId = pagination?.list.length
-        ? pagination.list[pagination.list.length - 1].id
-        : undefined
-      let objects = await account.objects({
-        before: lastId ? increaseObjectId(lastId) : undefined,
-        limit: limit + 2,
-      })
+      const page = await getObjectPagination({ account, before, after, limit })
 
-      const start = lastId ? objects.findIndex(i => i.id >= lastId) : -1
-      const hasPrevious = start >= 0
-      objects = hasPrevious ? objects.slice(start + 1) : objects
-
-      const hasNext = objects.length > limit
-      objects = hasNext ? objects.slice(0, limit) : objects
-
-      setPagination(v => ({
-        ...v,
-        list: objects,
-        hasPrevious,
-        hasNext,
-      }))
+      if (page.list.length < limit && page.hasNext) {
+        loadFirstPage()
+        return
+      }
+      const cid = await account.cid
+      setPagination(v => ({ ...v, ...page, accountCID: cid }))
     } finally {
-      setPagination(v => ({
-        ...v,
-        loading: false,
-        accountCID: sync?.cid,
-      }))
+      setPagination(v => ({ ...v, loading: false }))
     }
   }
 
   useEffect(() => {
-    if (pagination.list.length === 0) {
-      loadNext()
-    }
-  }, [account])
+    loadPagination()
+  }, [before, after, sync?.cid])
 
   return {
     ...pagination,
     loadPrevious,
     loadNext,
   }
-}
-
-export function useAutoRefreshObjectPagination({
-  accountState: { account, sync },
-  limit,
-}: {
-  accountState: AccountState
-  limit: number
-}) {
-  const [pagination, setPagination] = useRecoilState(objectPaginationState(account))
-
-  useEffect(() => {
-    ;(async () => {
-      if (sync?.cid && sync.cid === pagination.accountCID) {
-        return
-      }
-
-      const firstId = pagination.list[0]?.id
-
-      const hasPrevious = firstId
-        ? (await account.objects({ after: firstId, limit: 1 })).length > 0
-        : false
-
-      let objects = await account.objects({
-        before: firstId ? increaseObjectId(firstId) : undefined,
-        limit: limit + 1,
-      })
-
-      const hasNext = objects.length > limit
-      objects = hasNext ? objects.slice(0, limit) : objects
-
-      setPagination(v => ({
-        ...v,
-        list: objects,
-        hasPrevious,
-        hasNext,
-        accountCID: sync?.cid,
-      }))
-    })()
-  }, [sync?.cid])
 }
 
 export function useDeleteObject({ account }: { account: Account }) {
@@ -289,4 +232,52 @@ function decreaseObjectId(id: string): string {
   }
 
   return newId
+}
+
+async function getObjectPagination({
+  account,
+  before,
+  after,
+  limit,
+}: {
+  account: Account
+  before?: string | null
+  after?: string | null
+  limit: number
+}) {
+  let hasPrevious: boolean, hasNext: boolean, list: Object[]
+
+  if (before) {
+    const objects = await account.objects({
+      before: increaseObjectId(before),
+      limit: limit + 2,
+    })
+    const startIndex = objects.findIndex(i => i.id >= before)
+    hasPrevious = startIndex >= 0
+    list = objects.slice(startIndex + 1)
+    hasNext = list.length > limit
+    if (hasNext) {
+      list = list.slice(0, limit)
+    }
+  } else if (after) {
+    const objects = await account.objects({
+      after: decreaseObjectId(after),
+      limit: limit + 2,
+    })
+    const endIndex = objects.findIndex(i => i.id <= after)
+    hasNext = endIndex >= 0
+    list = objects.slice(0, endIndex)
+    hasPrevious = list.length > limit
+    if (hasPrevious) {
+      list = list.slice(-limit)
+    }
+  } else {
+    const objects = await account.objects({
+      limit: limit + 1,
+    })
+    hasPrevious = false
+    hasNext = objects.length > limit
+    list = objects.slice(0, limit)
+  }
+  return { hasPrevious, hasNext, list }
 }

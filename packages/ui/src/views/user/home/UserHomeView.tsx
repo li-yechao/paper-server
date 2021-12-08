@@ -43,11 +43,7 @@ import Markdown from '../../../components/Icons/Markdown'
 import { useToggleNetworkIndicator } from '../../../components/NetworkIndicator'
 import toMarkdown from '../../../editor/toMarkdown'
 import { useAccount } from '../../../state/account'
-import {
-  useDeleteObject,
-  useObjectPagination,
-  useAutoRefreshObjectPagination,
-} from '../../../state/object'
+import { useDeleteObject, useObjectPagination } from '../../../state/object'
 import { Paper, usePaper } from '../../../state/paper'
 import useAsync from '../../../utils/useAsync'
 
@@ -66,8 +62,6 @@ export default function UserHomeView() {
   if (account.user.id !== userId) {
     throw new Error('Forbidden')
   }
-
-  useAutoRefreshObjectPagination({ accountState, limit: 10 })
 
   const pagination = useObjectPagination({ accountState, limit: 10 })
   const [menuState, setMenuState] = useState<{ anchorEl: Element; paper: Paper }>()
