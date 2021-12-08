@@ -52,6 +52,9 @@ new Server({
     )
     return { id }
   },
+  cid: async ({ userId }) => {
+    return Account.account(userId).cid
+  },
   sync: async ({ userId, ...options }) => {
     await Account.account(userId).sync(options)
   },
@@ -192,7 +195,7 @@ export default class Account extends StrictEventEmitter<{}, {}, ServerEventMap> 
   private static accounts: Map<string, Account> = new Map()
 
   get cid(): Promise<string | null> {
-    return resolveName(this.user.id, this.options)
+    return this.ipfs.files.stat(`/${this.user.id}`).then(s => s.cid.toString())
   }
 
   private get objectPath() {
@@ -224,7 +227,7 @@ export default class Account extends StrictEventEmitter<{}, {}, ServerEventMap> 
     if (!this._sync) {
       this._sync = (async () => {
         this.emitReserved('sync', { syncing: true })
-        const cid = await this.cid
+        const cid = await resolveName(this.user.id, this.options)
         try {
           if (!options.skipDownload) {
             await this.syncIPFSFilesToLocal(cid)
@@ -239,7 +242,7 @@ export default class Account extends StrictEventEmitter<{}, {}, ServerEventMap> 
               publishName(newCID, this.user.password, this.options)
             )
           }
-          this.emitReserved('sync', { syncing: false })
+          this.emitReserved('sync', { syncing: false, cid: (await this.cid) ?? undefined })
         } catch (error: any) {
           this.emitReserved('sync', { syncing: false, error: error.message })
           this.emitReserved('error', { message: error.message })

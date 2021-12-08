@@ -18,7 +18,10 @@ import { useCallback } from 'react'
 import { atom, DefaultValue, selector, useRecoilValue, useSetRecoilState } from 'recoil'
 import Storage from '../Storage'
 
-export type AccountState = { account: Account; sync?: { syncing: boolean; error?: string } }
+export type AccountState = {
+  account: Account
+  sync?: { syncing: boolean; error?: string; cid?: string }
+}
 
 const accountState = atom<AccountState | null>({
   key: 'accountState',

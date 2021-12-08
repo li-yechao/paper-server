@@ -43,7 +43,11 @@ import Markdown from '../../../components/Icons/Markdown'
 import { useToggleNetworkIndicator } from '../../../components/NetworkIndicator'
 import toMarkdown from '../../../editor/toMarkdown'
 import { useAccount } from '../../../state/account'
-import { useDeleteObject, useObjectPagination } from '../../../state/object'
+import {
+  useDeleteObject,
+  useObjectPagination,
+  useAutoRefreshObjectPagination,
+} from '../../../state/object'
 import { Paper, usePaper } from '../../../state/paper'
 import useAsync from '../../../utils/useAsync'
 
@@ -57,12 +61,15 @@ export default function UserHomeView() {
   const navigate = useNavigate()
   const toggleNetworkIndicator = useToggleNetworkIndicator({ autoClose: false })
 
-  const { account } = useAccount()
+  const accountState = useAccount()
+  const { account } = accountState
   if (account.user.id !== userId) {
     throw new Error('Forbidden')
   }
 
-  const pagination = useObjectPagination({ account, limit: 10 })
+  useAutoRefreshObjectPagination({ accountState, limit: 10 })
+
+  const pagination = useObjectPagination({ accountState, limit: 10 })
   const [menuState, setMenuState] = useState<{ anchorEl: Element; paper: Paper }>()
 
   const handleToDetail = useCallback((_: React.MouseEvent<Element>, paper: Paper) => {

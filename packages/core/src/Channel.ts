@@ -27,7 +27,7 @@ export interface AccountOptions {
 export const SERVER_EVENT_TYPES: (keyof ServerEventMap)[] = ['error', 'sync']
 
 export interface ServerEventMap {
-  sync: (e: { syncing: boolean; error?: string }) => void
+  sync: (e: { syncing: boolean; error?: string; cid?: string }) => void
   error: (e: MessageError['error']) => void
 }
 
@@ -50,6 +50,7 @@ export interface MessageMap {
     user: { id: string; password: string } | { key: Uint8Array; password: string }
     options: AccountOptions
   }) => Promise<{ id: string }>
+  cid: (payload: { userId: string }) => Promise<string | null>
   sync: (payload: { userId: string; skipDownload?: boolean }) => Promise<void>
   stop: (payload: { userId: string }) => Promise<void>
   object: (payload: {

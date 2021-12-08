@@ -15,7 +15,8 @@
 import { Account, Object } from '@paper/core'
 import { atom, useRecoilCallback, useRecoilState, useRecoilValue } from 'recoil'
 import { memoize } from 'lodash'
-import { useCallback, useEffect } from 'react'
+import { useEffect } from 'react'
+import { AccountState } from './account'
 
 const objectState = memoize(
   (account: Account, objectId: string) => {
@@ -33,6 +34,7 @@ export function useObject({ account, objectId }: { account: Account; objectId: s
 }
 
 export interface ObjectPagination {
+  accountCID?: string
   loading: boolean
   list: Object[]
   hasPrevious: boolean
@@ -50,18 +52,18 @@ const objectPaginationState = memoize(
 )
 
 export function useObjectPagination({
-  account,
-  limit = 10,
+  accountState: { account, sync },
+  limit,
 }: {
-  account: Account
-  limit?: number
+  accountState: AccountState
+  limit: number
 }): ObjectPagination & {
   loadPrevious: () => Promise<void>
   loadNext: () => Promise<void>
 } {
   const [pagination, setPagination] = useRecoilState(objectPaginationState(account))
 
-  const loadPrevious = useCallback(async () => {
+  const loadPrevious = async () => {
     try {
       setPagination(v => ({ ...v, loading: true }))
       const firstId = pagination?.list.length ? pagination.list[0].id : undefined
@@ -97,11 +99,12 @@ export function useObjectPagination({
       setPagination(v => ({
         ...v,
         loading: false,
+        accountCID: sync?.cid,
       }))
     }
-  }, [account, limit])
+  }
 
-  const loadNext = useCallback(async () => {
+  const loadNext = async () => {
     try {
       setPagination(v => ({ ...v, loading: true }))
       const lastId = pagination?.list.length
@@ -129,9 +132,10 @@ export function useObjectPagination({
       setPagination(v => ({
         ...v,
         loading: false,
+        accountCID: sync?.cid,
       }))
     }
-  }, [account, limit])
+  }
 
   useEffect(() => {
     if (pagination.list.length === 0) {
@@ -144,6 +148,53 @@ export function useObjectPagination({
     loadPrevious,
     loadNext,
   }
+}
+
+export function useAutoRefreshObjectPagination({
+  accountState: { account, sync },
+  limit,
+}: {
+  accountState: AccountState
+  limit: number
+}) {
+  const [pagination, setPagination] = useRecoilState(objectPaginationState(account))
+
+  useEffect(() => {
+    ;(async () => {
+      if (sync?.cid && sync.cid === pagination.accountCID) {
+        return
+      }
+
+      try {
+        setPagination(v => ({ ...v, loading: true }))
+
+        const firstId = pagination.list[0]?.id
+
+        const hasPrevious = (await account.objects({ after: firstId, limit: 1 })).length > 0
+
+        let objects = await account.objects({
+          before: firstId ? increaseObjectId(firstId) : undefined,
+          limit: limit + 1,
+        })
+
+        const hasNext = objects.length > limit
+        objects = hasNext ? objects.slice(0, limit) : objects
+
+        setPagination(v => ({
+          ...v,
+          list: objects,
+          hasPrevious,
+          hasNext,
+        }))
+      } finally {
+        setPagination(v => ({
+          ...v,
+          loading: false,
+          accountCID: sync?.cid,
+        }))
+      }
+    })()
+  }, [sync?.cid])
 }
 
 export function useDeleteObject({ account }: { account: Account }) {
