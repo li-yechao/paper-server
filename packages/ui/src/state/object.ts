@@ -139,15 +139,9 @@ export function useDeleteObject({ account }: { account: Account }) {
   return useRecoilCallback(
     ({ set }) =>
       async (object: Object) => {
-        set(
-          paginationState,
-          v =>
-            v && {
-              ...v,
-              list: v.list.filter(i => i.id !== object.id),
-            }
-        )
         await account.deleteObject(object.id)
+        const accountCID = await account.cid
+        set(paginationState, v => v && { ...v, accountCID })
       },
     []
   )
@@ -160,14 +154,8 @@ export function useCreateObject({ account }: { account: Account }) {
     ({ set }) =>
       async () => {
         const object = await account.object()
-        set(
-          paginationState,
-          v =>
-            v && {
-              ...v,
-              list: [object].concat(v.list),
-            }
-        )
+        const accountCID = await account.cid
+        set(paginationState, v => v && { ...v, accountCID })
         return object
       },
     []
