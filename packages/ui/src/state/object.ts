@@ -165,34 +165,27 @@ export function useAutoRefreshObjectPagination({
         return
       }
 
-      try {
-        setPagination(v => ({ ...v, loading: true }))
+      const firstId = pagination.list[0]?.id
 
-        const firstId = pagination.list[0]?.id
+      const hasPrevious = firstId
+        ? (await account.objects({ after: firstId, limit: 1 })).length > 0
+        : false
 
-        const hasPrevious = (await account.objects({ after: firstId, limit: 1 })).length > 0
+      let objects = await account.objects({
+        before: firstId ? increaseObjectId(firstId) : undefined,
+        limit: limit + 1,
+      })
 
-        let objects = await account.objects({
-          before: firstId ? increaseObjectId(firstId) : undefined,
-          limit: limit + 1,
-        })
+      const hasNext = objects.length > limit
+      objects = hasNext ? objects.slice(0, limit) : objects
 
-        const hasNext = objects.length > limit
-        objects = hasNext ? objects.slice(0, limit) : objects
-
-        setPagination(v => ({
-          ...v,
-          list: objects,
-          hasPrevious,
-          hasNext,
-        }))
-      } finally {
-        setPagination(v => ({
-          ...v,
-          loading: false,
-          accountCID: sync?.cid,
-        }))
-      }
+      setPagination(v => ({
+        ...v,
+        list: objects,
+        hasPrevious,
+        hasNext,
+        accountCID: sync?.cid,
+      }))
     })()
   }, [sync?.cid])
 }
