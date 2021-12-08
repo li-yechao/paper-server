@@ -51,7 +51,7 @@ export interface MessageMap {
     user: { id: string; password: string } | { key: Uint8Array; password: string }
     options: AccountOptions
   }) => Promise<{ id: string }>
-  cid: (payload: { userId: string }) => Promise<string | null>
+  cid: (payload: { userId: string }) => Promise<string | undefined>
   sync: (payload: { userId: string; skipDownload?: boolean }) => Promise<void>
   stop: (payload: { userId: string }) => Promise<void>
   object: (payload: {

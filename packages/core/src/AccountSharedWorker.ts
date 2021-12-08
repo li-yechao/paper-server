@@ -202,8 +202,10 @@ export default class Account extends StrictEventEmitter<{}, {}, ServerEventMap> 
 
   private _autoRefreshInterval?: NodeJS.Timer
 
-  get cid(): Promise<string | null> {
-    return this.ipfs.files.stat(`/${this.user.id}`).then(s => s.cid.toString())
+  get cid(): Promise<string | undefined> {
+    return fileUtils.ignoreErrNotFound(
+      this.ipfs.files.stat(`/${this.user.id}`).then(s => s.cid.toString())
+    )
   }
 
   private get objectPath() {
@@ -237,7 +239,7 @@ export default class Account extends StrictEventEmitter<{}, {}, ServerEventMap> 
   async sync(options: { skipDownload?: boolean } = {}) {
     if (!this._sync) {
       this._sync = (async () => {
-        this.emitReserved('sync', { syncing: true })
+        this.emitReserved('sync', { syncing: true, cid: await this.cid })
         const cid = await resolveName(this.user.id, this.options)
         try {
           if (!options.skipDownload) {
@@ -253,9 +255,9 @@ export default class Account extends StrictEventEmitter<{}, {}, ServerEventMap> 
               publishName(newCID, this.user.password, this.options)
             )
           }
-          this.emitReserved('sync', { syncing: false, cid: (await this.cid) ?? undefined })
+          this.emitReserved('sync', { syncing: false, cid: await this.cid })
         } catch (error: any) {
-          this.emitReserved('sync', { syncing: false, error: error.message })
+          this.emitReserved('sync', { syncing: false, error: error.message, cid: await this.cid })
           this.emitReserved('error', { message: error.message })
         }
       })()
@@ -688,21 +690,16 @@ class Object {
   private readonly infoFilePath = '/info.json'
   private readonly mtimeFilePath = '/mtime'
 
-  private _info?: Promise<ObjectInfo>
-
   get info(): Promise<ObjectInfo> {
-    if (!this._info) {
-      this._info = (async () => {
-        try {
-          const json = JSON.parse(new TextDecoder().decode(await this.read(this.infoFilePath)))
-          if (validateObjectInfo(json)) {
-            return json
-          }
-        } catch {}
-        return {}
-      })()
-    }
-    return this._info
+    return (async () => {
+      try {
+        const json = JSON.parse(new TextDecoder().decode(await this.read(this.infoFilePath)))
+        if (validateObjectInfo(json)) {
+          return json
+        }
+      } catch {}
+      return {}
+    })()
   }
 
   private _updatedAt?: Promise<number>
@@ -739,7 +736,6 @@ class Object {
       truncate: true,
     })
 
-    this._info = Promise.resolve(old)
     this._updatedAt = Promise.resolve(updatedAt)
   }
 }

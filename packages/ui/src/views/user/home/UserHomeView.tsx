@@ -31,7 +31,6 @@ import {
   Typography,
 } from '@mui/material'
 import { Box } from '@mui/system'
-import { Account } from '@paper/core'
 import FileSaver from 'file-saver'
 import { useSnackbar } from 'notistack'
 import * as React from 'react'
@@ -42,7 +41,7 @@ import ArrowMenu from '../../../components/ArrowMenu'
 import Markdown from '../../../components/Icons/Markdown'
 import { useToggleNetworkIndicator } from '../../../components/NetworkIndicator'
 import toMarkdown from '../../../editor/toMarkdown'
-import { useAccount } from '../../../state/account'
+import { AccountState, useAccount } from '../../../state/account'
 import {
   useDeleteObject,
   useObjectPagination,
@@ -140,7 +139,7 @@ export default function UserHomeView() {
           pagination.list.map(object => (
             <ObjectItem
               key={object.id}
-              account={account}
+              accountState={accountState}
               objectId={object.id}
               onClick={handleToDetail}
               onMenuClick={handleOpenMenu}
@@ -198,18 +197,18 @@ export default function UserHomeView() {
 }
 
 function ObjectItem({
-  account,
+  accountState: { account, sync },
   objectId,
   onClick,
   onMenuClick,
 }: {
-  account: Account
+  accountState: AccountState
   objectId: string
   onClick: (e: React.MouseEvent<Element>, paper: Paper) => void
   onMenuClick: (e: React.MouseEvent<Element>, paper: Paper) => void
 }) {
   const paper = usePaper({ account, objectId })
-  const info = useAsync(() => Promise.all([paper.info, paper.object.updatedAt]), [paper.info])
+  const info = useAsync(() => Promise.all([paper.info, paper.object.updatedAt]), [sync?.cid])
 
   if (info.loading) {
     return <ObjectItem.Skeleton />

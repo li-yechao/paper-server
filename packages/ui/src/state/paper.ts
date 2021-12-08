@@ -18,25 +18,18 @@ import { DocJson } from '@paper/editor'
 import Ajv, { JTDSchemaType } from 'ajv/dist/jtd'
 import { customAlphabet } from 'nanoid'
 import { useMemo } from 'react'
-import { PromiseType } from 'react-use/lib/misc/types'
 import { useObject } from './object'
 
 export class Paper {
   constructor(readonly object: Object) {}
 
-  private _info?: Promise<PaperInfo & PromiseType<Object['info']>>
-
   get info() {
-    if (!this._info) {
-      this._info = this.object.info.then(info => {
-        if (!validatePaperInfo(info)) {
-          throw new Error(`Invalid paper info`)
-        }
-        return info
-      })
-    }
-
-    return this._info
+    return this.object.info.then(info => {
+      if (!validatePaperInfo(info)) {
+        throw new Error(`Invalid paper info`)
+      }
+      return info
+    })
   }
 
   async setInfo(info: Partial<PaperInfo> = {}) {
