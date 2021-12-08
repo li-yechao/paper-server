@@ -19,4 +19,5 @@ export const accountOptions: AccountOptions = {
   ipnsGateway: import.meta.env.VITE_IPNS_GATEWAY,
   libp2pTransportFilter: import.meta.env.VITE_LIBP2P_TRANSPORT_FILTER,
   swarm: import.meta.env.VITE_SWARM,
+  autoRefreshInterval: parseInt(import.meta.env.VITE_AUTO_REFRESH_INTERVAL) || 0,
 }

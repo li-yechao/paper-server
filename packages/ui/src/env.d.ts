@@ -22,6 +22,7 @@ interface ImportMetaEnv extends Readonly<Record<string, string | boolean>> {
   VITE_IPNS_GATEWAY: string
   VITE_LIBP2P_TRANSPORT_FILTER: 'all' | 'dnsWss' | 'dnsWsOrWss'
   VITE_SWARM: string
+  VITE_AUTO_REFRESH_INTERVAL: string
 }
 
 interface ImportMeta {

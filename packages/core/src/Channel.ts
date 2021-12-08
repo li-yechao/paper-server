@@ -22,6 +22,7 @@ export interface AccountOptions {
   libp2pTransportFilter: 'all' | 'dnsWss' | 'dnsWsOrWss'
   ipnsGateway: string
   accountGateway: string
+  autoRefreshInterval?: number
 }
 
 export const SERVER_EVENT_TYPES: (keyof ServerEventMap)[] = ['error', 'sync']

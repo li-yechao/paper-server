@@ -131,6 +131,12 @@ export default class Account extends StrictEventEmitter<{}, {}, ServerEventMap> 
     super()
     this.crypto = new crypto.Crypto(this.user.password)
     setTimeout(() => this.syncDebounced())
+    if (this.options.autoRefreshInterval) {
+      this._autoRefreshInterval = setInterval(
+        () => this.syncDebounced(),
+        this.options.autoRefreshInterval
+      )
+    }
   }
 
   static async create(
@@ -194,6 +200,8 @@ export default class Account extends StrictEventEmitter<{}, {}, ServerEventMap> 
 
   private static accounts: Map<string, Account> = new Map()
 
+  private _autoRefreshInterval?: NodeJS.Timer
+
   get cid(): Promise<string | null> {
     return this.ipfs.files.stat(`/${this.user.id}`).then(s => s.cid.toString())
   }
@@ -209,6 +217,9 @@ export default class Account extends StrictEventEmitter<{}, {}, ServerEventMap> 
   readonly crypto: crypto.Crypto
 
   async stop() {
+    if (this._autoRefreshInterval) {
+      clearInterval(this._autoRefreshInterval)
+    }
     await this.ipfs.stop()
     this.removeAllListeners()
   }
