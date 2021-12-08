@@ -181,7 +181,7 @@ function UnauthorizedErrorBoundary({ error, reset }: { error: Error; reset: () =
 }
 
 const _AppBar = () => {
-  const historyIdx: number = history.state.idx
+  const historyIdx: number = history.state?.idx || 0
   const navigate = useNavigate()
   const isElectron = useIsElectron()
   const headerActions = useHeaderActions()
