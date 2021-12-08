@@ -31,6 +31,7 @@ import {
   Typography,
 } from '@mui/material'
 import { Box } from '@mui/system'
+import { Account } from '@paper/core'
 import FileSaver from 'file-saver'
 import { useSnackbar } from 'notistack'
 import * as React from 'react'
@@ -41,7 +42,7 @@ import ArrowMenu from '../../../components/ArrowMenu'
 import Markdown from '../../../components/Icons/Markdown'
 import { useToggleNetworkIndicator } from '../../../components/NetworkIndicator'
 import toMarkdown from '../../../editor/toMarkdown'
-import { AccountState, useAccount } from '../../../state/account'
+import { useAccount } from '../../../state/account'
 import {
   useDeleteObject,
   useObjectPagination,
@@ -139,7 +140,7 @@ export default function UserHomeView() {
           pagination.list.map(object => (
             <ObjectItem
               key={object.id}
-              accountState={accountState}
+              account={account}
               objectId={object.id}
               onClick={handleToDetail}
               onMenuClick={handleOpenMenu}
@@ -197,27 +198,27 @@ export default function UserHomeView() {
 }
 
 function ObjectItem({
-  accountState: { account, sync },
+  account,
   objectId,
   onClick,
   onMenuClick,
 }: {
-  accountState: AccountState
+  account: Account
   objectId: string
   onClick: (e: React.MouseEvent<Element>, paper: Paper) => void
   onMenuClick: (e: React.MouseEvent<Element>, paper: Paper) => void
 }) {
   const paper = usePaper({ account, objectId })
-  const info = useAsync(() => Promise.all([paper.info, paper.object.updatedAt]), [sync?.cid])
+  const info = useAsync(() => paper.info, [])
+  const updatedAt = useAsync(() => paper.object.updatedAt, [])
 
   if (info.loading) {
     return <ObjectItem.Skeleton />
   } else if (info.error) {
     return <ObjectItem.Skeleton error={info.error} />
   } else {
-    const { title, tags } = info.value[0]
-    const updatedAt = info.value[1]
-    const time = updatedAt ?? paper.object.createdAt
+    const { title, tags } = info.value
+    const time = (updatedAt.loading && updatedAt.value) || paper.object.createdAt
 
     return (
       <_ListItemButton divider onClick={e => onClick(e, paper)}>

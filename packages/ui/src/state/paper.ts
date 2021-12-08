@@ -16,24 +16,30 @@ import { Account } from '@paper/core'
 import { Object, ObjectInfo, objectInfoSchema } from '@paper/core'
 import { DocJson } from '@paper/editor'
 import Ajv, { JTDSchemaType } from 'ajv/dist/jtd'
+import { memoize } from 'lodash'
 import { customAlphabet } from 'nanoid'
-import { useMemo } from 'react'
-import { useObject } from './object'
+import { atom, useRecoilValue } from 'recoil'
 
 export class Paper {
   constructor(readonly object: Object) {}
 
+  private _info?: Promise<PaperInfo>
+
   get info() {
-    return this.object.info.then(info => {
-      if (!validatePaperInfo(info)) {
-        throw new Error(`Invalid paper info`)
-      }
-      return info
-    })
+    if (!this._info) {
+      this._info = this.object.info.then(info => {
+        if (!validatePaperInfo(info)) {
+          throw new Error(`Invalid paper info`)
+        }
+        return info
+      })
+    }
+    return this._info
   }
 
   async setInfo(info: Partial<PaperInfo> = {}) {
-    this.object.setInfo(info)
+    this._info = this.object.setInfo(info)
+    await this._info
   }
 
   private readonly contentFilePath = '/paper.json'
@@ -82,6 +88,21 @@ export class Paper {
   }
 }
 
+const paperState = memoize(
+  (account: Account, objectId: string) => {
+    return atom({
+      key: `paperState-${account.user.id}-${objectId}`,
+      default: account.object(objectId).then(object => new Paper(object)),
+    })
+  },
+  (account, objectId) => `paperState-${account.user.id}-${objectId}`
+)
+
+export function usePaper({ account, objectId }: { account: Account; objectId: string }) {
+  const state = paperState(account, objectId)
+  return useRecoilValue(state)
+}
+
 export interface PaperInfo extends ObjectInfo {
   tags?: string[]
 }
@@ -98,12 +119,6 @@ const paperInfoSchema: JTDSchemaType<PaperInfo> = {
 } as const
 
 const validatePaperInfo = new Ajv().compile(paperInfoSchema)
-
-export function usePaper({ account, objectId }: { account: Account; objectId: string }) {
-  const object = useObject({ account, objectId })
-  const paper = useMemo(() => new Paper(object), [object])
-  return paper
-}
 
 function upgradeSchema(node: DocJson): DocJson {
   if (!node) {
