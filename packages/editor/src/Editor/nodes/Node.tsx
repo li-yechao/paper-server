@@ -27,6 +27,7 @@ import { Decoration, EditorView, NodeView as ProsemirrorNodeView } from 'prosemi
 import React from 'react'
 import ReactDOM from 'react-dom'
 import { RemoveIndex } from '../../utils/type'
+import { MenuComponentType } from '../lib/createMenuComponent'
 import Extension from '../lib/Extension'
 
 export { Node as ProsemirrorNode } from 'prosemirror-model'
@@ -69,6 +70,10 @@ export default abstract class Node<T = {}> extends Extension {
 
   keymap<S extends Schema<any, any>>(_options: { type: NodeType<S> }): Keymap<S> {
     return {}
+  }
+
+  menus<S extends Schema<any, any>>(_options: { type: NodeType<S> }): MenuComponentType[] {
+    return []
   }
 
   get nodeView(): NodeViewCreator<T> | undefined {

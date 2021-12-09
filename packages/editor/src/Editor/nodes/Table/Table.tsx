@@ -12,15 +12,35 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import { DeleteOutline } from '@mui/icons-material'
+import { Button } from '@mui/material'
 import { Keymap } from 'prosemirror-commands'
 import { NodeType } from 'prosemirror-model'
 import { Plugin } from 'prosemirror-state'
-import { goToNextCell, isInTable, tableEditing } from 'prosemirror-tables'
+import {
+  addColumnAfter,
+  addColumnBefore,
+  addRowAfter,
+  addRowBefore,
+  deleteColumn,
+  deleteRow,
+  deleteTable,
+  goToNextCell,
+  isInTable,
+  tableEditing,
+} from 'prosemirror-tables'
 import { addRowAt, getCellsInColumn } from 'prosemirror-utils'
+import { MenuComponentType } from '../../lib/createMenuComponent'
 import Node, { StrictNodeSpec } from '../Node'
+import InsertAbove from './icons/InsertAbove'
+import InsertBelow from './icons/InsertBelow'
+import InsertLeft from './icons/InsertLeft'
+import InsertRight from './icons/InsertRight'
 import TableCell from './TableCell'
 import TableHeadCell from './TableHeadCell'
 import TableRow from './TableRow'
+import getColumnIndex from './utils/getColumnIndex'
+import getRowIndex from './utils/getRowIndex'
 
 export interface TableAttrs {}
 
@@ -66,6 +86,92 @@ export default class Table extends Node<TableAttrs> {
       Tab: goToNextCell(1),
       'Shift-Tab': goToNextCell(-1),
     }
+  }
+
+  menus(_options: { type: NodeType }): MenuComponentType[] {
+    return [
+      {
+        button: ({ className, view }) => {
+          const colIndex = getColumnIndex(view.state.selection)
+          const rowIndex = getRowIndex(view.state.selection)
+          const isTableSelection = colIndex !== undefined && rowIndex !== undefined
+
+          if (isTableSelection) {
+            return (
+              <>
+                <Button
+                  className={className}
+                  color="inherit"
+                  style={{ opacity: 0.6 }}
+                  onClick={() => deleteTable(view.state, view.dispatch)}
+                >
+                  <DeleteOutline />
+                </Button>
+              </>
+            )
+          } else if (colIndex !== undefined) {
+            return (
+              <>
+                <Button
+                  className={className}
+                  color="inherit"
+                  style={{ opacity: 0.6 }}
+                  onClick={() => addColumnBefore(view.state, view.dispatch)}
+                >
+                  <InsertLeft />
+                </Button>
+                <Button
+                  className={className}
+                  color="inherit"
+                  style={{ opacity: 0.6 }}
+                  onClick={() => addColumnAfter(view.state, view.dispatch)}
+                >
+                  <InsertRight />
+                </Button>
+                <Button
+                  className={className}
+                  color="inherit"
+                  style={{ opacity: 0.6 }}
+                  onClick={() => deleteColumn(view.state, view.dispatch)}
+                >
+                  <DeleteOutline />
+                </Button>
+              </>
+            )
+          } else if (rowIndex !== undefined) {
+            return (
+              <>
+                <Button
+                  className={className}
+                  color="inherit"
+                  style={{ opacity: 0.6 }}
+                  onClick={() => addRowBefore(view.state, view.dispatch)}
+                >
+                  <InsertAbove />
+                </Button>
+                <Button
+                  className={className}
+                  color="inherit"
+                  style={{ opacity: 0.6 }}
+                  onClick={() => addRowAfter(view.state, view.dispatch)}
+                >
+                  <InsertBelow />
+                </Button>
+                <Button
+                  className={className}
+                  color="inherit"
+                  style={{ opacity: 0.6 }}
+                  onClick={() => deleteRow(view.state, view.dispatch)}
+                >
+                  <DeleteOutline />
+                </Button>
+              </>
+            )
+          }
+          return null
+        },
+      },
+    ]
   }
 
   get plugins(): Plugin[] {

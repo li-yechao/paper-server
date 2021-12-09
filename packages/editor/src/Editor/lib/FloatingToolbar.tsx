@@ -63,6 +63,9 @@ const _FloatingToolbar = React.memo(
         placement="top"
         arrow
         classes={{
+          tooltip: css`
+            max-width: none;
+          `,
           arrow: css`
             transform: translate(0, 0) !important;
             left: 0;
@@ -100,9 +103,10 @@ const _FloatingToolbar = React.memo(
         title={
           <>
             <ButtonGroup variant="text" color="inherit">
-              {menus.map((menu, index) => (
-                <menu.button key={index} view={view} />
-              ))}
+              {menus.map(
+                (menu, index) =>
+                  (menu.isVisible?.(view) ?? true) && <menu.button key={index} view={view} />
+              )}
             </ButtonGroup>
             {menus.map((menu, index) => {
               return (

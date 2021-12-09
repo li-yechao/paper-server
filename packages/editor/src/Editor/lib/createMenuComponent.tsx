@@ -24,6 +24,7 @@ export type MenuComponentType = {
   }>
   expand?: React.ComponentType<{ view: EditorView }>
   isExpandVisible?: (view: EditorView) => boolean
+  isVisible?: (view: EditorView) => boolean
 }
 
 export default function createMenuComponent({

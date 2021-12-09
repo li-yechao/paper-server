@@ -97,7 +97,9 @@ export default class ExtensionManager {
   }
 
   private get menus(): MenuComponentType[] {
-    return this.marks.flatMap(i => i.menus({ type: this.schema.marks[i.name]! }))
+    return this.marks
+      .flatMap(i => i.menus({ type: this.schema.marks[i.name]! }))
+      .concat(this.allNodes.flatMap(i => i.menus({ type: this.schema.nodes[i.name] })))
   }
 
   private async createState() {
