@@ -29,6 +29,7 @@ import ImageBlock from './Editor/nodes/ImageBlock'
 import Math from './Editor/nodes/Math'
 import OrderedList from './Editor/nodes/OrderedList'
 import Paragraph from './Editor/nodes/Paragraph'
+import Table from './Editor/nodes/Table'
 import TagList from './Editor/nodes/TagList'
 import Text from './Editor/nodes/Text'
 import Title from './Editor/nodes/Title'
@@ -78,6 +79,7 @@ export const nodes = {
   TodoList,
   OrderedList,
   BulletList,
+  Table,
 }
 
 export const marks = {

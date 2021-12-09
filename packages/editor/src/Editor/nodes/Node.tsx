@@ -54,6 +54,8 @@ export interface StrictNodeSpec<T> extends Omit<RemoveIndex<NodeSpec>, 'toDOM'> 
   toDOM?: ((node: StrictProsemirrorNode<T>) => DOMOutputSpec) | null
 
   parseDOM?: StrictParseRule<T>[] | null
+
+  tableRole?: 'table' | 'row' | 'header_cell' | 'cell'
 }
 
 export default abstract class Node<T = {}> extends Extension {

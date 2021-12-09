@@ -340,4 +340,171 @@ export const proseMirrorStyle = css`
   math-display {
     margin: 1em 0;
   }
+
+  .scrollable-wrapper {
+    position: relative;
+    margin: 0.5em 0px;
+    scrollbar-width: thin;
+    scrollbar-color: transparent transparent;
+
+    &:hover {
+      scrollbar-color: rgba(0, 0, 0, 0.3) rgba(0, 0, 0, 0.1);
+    }
+
+    & ::-webkit-scrollbar {
+      height: 14px;
+      background-color: transparent;
+    }
+
+    &:hover ::-webkit-scrollbar {
+      background-color: rgba(0, 0, 0, 0.1);
+    }
+
+    & ::-webkit-scrollbar-thumb {
+      background-color: transparent;
+      border: 3px solid transparent;
+      border-radius: 7px;
+    }
+
+    &:hover ::-webkit-scrollbar-thumb {
+      background-color: rgba(0, 0, 0, 0.3);
+      border-color: rgba(0, 0, 0, 0.1);
+    }
+  }
+
+  .scrollable {
+    overflow-y: hidden;
+    overflow-x: auto;
+    padding-left: 18px;
+    margin-left: -18px;
+    border-left: 1px solid transparent;
+    border-right: 1px solid transparent;
+    transition: border 250ms ease-in-out 0s;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    border-radius: 4px;
+    margin-top: 18px;
+    box-sizing: border-box;
+
+    * {
+      box-sizing: border-box;
+    }
+
+    tr {
+      position: relative;
+      border-bottom: 1px solid currentColor;
+    }
+
+    td,
+    th {
+      position: relative;
+      vertical-align: top;
+      border: 1px solid currentColor;
+      position: relative;
+      padding: 4px 8px;
+      min-width: 100px;
+    }
+
+    .selectedCell {
+      background: rgba(0, 0, 0, 0.1);
+
+      /* fixes Firefox background color painting over border:
+       * https://bugzilla.mozilla.org/show_bug.cgi?id=688556 */
+      background-clip: padding-box;
+    }
+
+    .grip-column {
+      color: inherit;
+
+      /* usage of ::after for all of the table grips works around a bug in
+      * prosemirror-tables that causes Safari to hang when selecting a cell
+      * in an empty table:
+      * https://github.com/ProseMirror/prosemirror/issues/947 */
+      &::after {
+        content: '';
+        cursor: pointer;
+        position: absolute;
+        top: -18px;
+        left: 0;
+        width: 100%;
+        height: 12px;
+        background: currentColor;
+        border-bottom: 3px solid currentColor;
+        display: block;
+        opacity: 0.2;
+      }
+
+      &.first::after {
+        border-top-left-radius: 3px;
+      }
+      &.last::after {
+        border-top-right-radius: 3px;
+      }
+      &:hover::after {
+        opacity: 0.8;
+      }
+      &.selected::after {
+        opacity: 0.8;
+      }
+    }
+
+    .grip-row {
+      color: inherit;
+
+      &::after {
+        content: '';
+        cursor: pointer;
+        position: absolute;
+        left: -18px;
+        top: 0;
+        height: 100%;
+        width: 12px;
+        background: currentColor;
+        border-right: 3px solid currentColor;
+        opacity: 0.2;
+      }
+
+      &.first::after {
+        border-top-left-radius: 3px;
+      }
+      &.last::after {
+        border-bottom-left-radius: 3px;
+      }
+      &:hover::after {
+        opacity: 0.8;
+      }
+      &.selected::after {
+        opacity: 0.8;
+      }
+    }
+
+    .grip-table {
+      color: inherit;
+
+      &::after {
+        content: '';
+        cursor: pointer;
+        background: currentColor;
+        width: 13px;
+        height: 13px;
+        border-radius: 13px;
+        border: 2px solid currentColor;
+        position: absolute;
+        top: -18px;
+        left: -18px;
+        display: block;
+        opacity: 0.2;
+      }
+
+      &:hover::after {
+        opacity: 0.8;
+      }
+      &.selected::after {
+        opacity: 0.8;
+      }
+    }
+  }
 `

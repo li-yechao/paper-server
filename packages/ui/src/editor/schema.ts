@@ -49,6 +49,7 @@ export const defaultNodes = ({
     new nodes.CodeBlock(),
     new nodes.Math(),
     new nodes.ImageBlock(imageBlockOptions),
+    new nodes.Table(),
   ]
 }
 
