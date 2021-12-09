@@ -116,7 +116,7 @@ export default class ImageBlock extends Node<ImageBlockAttrs> {
             'data-natural-height': attrs.naturalHeight?.toString(),
           },
           ['img'],
-          ['figcaption', 0],
+          ['div', 0],
         ]
       },
     }
@@ -191,8 +191,8 @@ class ImageBlockCaption extends Node<ImageBlockCaptionAttrs> {
       attrs: {},
       content: 'text*',
       marks: '',
-      parseDOM: [{ tag: 'div' }],
-      toDOM: () => ['div', 0],
+      parseDOM: [{ tag: 'figcaption' }],
+      toDOM: () => ['figcaption', 0],
     }
   }
 }
