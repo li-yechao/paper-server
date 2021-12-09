@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import { css } from '@emotion/css'
 import styled from '@emotion/styled'
 import { Box, ButtonGroup, Popper, Tooltip, TooltipProps } from '@mui/material'
 import { EditorView } from 'prosemirror-view'
@@ -60,14 +61,22 @@ const _FloatingToolbar = React.memo(
     return (
       <Tooltip
         placement="top"
-        arrow={false}
+        arrow
+        classes={{
+          arrow: css`
+            transform: translate(0, 0) !important;
+            left: 0;
+            right: 0;
+            margin: auto;
+          `,
+        }}
         disableFocusListener
         disableHoverListener
         disableTouchListener
         children={<div />}
         PopperProps={{
           anchorEl: view.dom,
-          style: { pointerEvents: isSelecting ? 'none' : 'all' },
+          style: { pointerEvents: isSelecting ? 'none' : 'all', position: 'relative' },
           popperOptions: {
             modifiers: [
               { name: 'flip', enabled: false },
