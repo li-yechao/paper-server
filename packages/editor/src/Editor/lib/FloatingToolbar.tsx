@@ -156,7 +156,7 @@ function useTooltipProps(view: EditorView) {
 
   if (!state.current.isSelecting) {
     const { selection } = view.state
-    if ((!selection.empty || selection.$from.marks().length) && !(selection as any).node) {
+    if (!selection.empty && !(selection as any).node) {
       const dom = view.dom
       const { width, left, top } = dom.getBoundingClientRect()
       const { left: fromLeft, top: fromTop } = view.coordsAtPos(selection.from)
