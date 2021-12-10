@@ -17,10 +17,7 @@ import styled from '@emotion/styled'
 import { Box, Button, ButtonGroup, ButtonProps, Popper, Tooltip, TooltipProps } from '@mui/material'
 import { EditorState, Transaction } from 'prosemirror-state'
 import { EditorView } from 'prosemirror-view'
-import React from 'react'
-import { useRef } from 'react'
-import { useState } from 'react'
-import { useEffect } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { useSafeUpdate } from '../../utils/useSafeUpdate'
 
 export interface FloatingToolbarProps {
