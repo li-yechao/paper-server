@@ -18,11 +18,11 @@ import { Launch, Link as LinkIcon } from '@mui/icons-material'
 import { InputRule } from 'prosemirror-inputrules'
 import { MarkSpec, MarkType, Schema } from 'prosemirror-model'
 import { useState } from 'react'
-import createMenuComponent, { MenuComponentType } from '../lib/createMenuComponent'
 import getMarkRange from '../lib/getMarkRange'
 import isMarkActive from '../lib/isMarkActive'
 import toggleMark from '../lib/toggleMark'
 import Mark from './Mark'
+import { createMarkMenu, MenuComponentType } from '../lib/FloatingToolbar'
 
 export default class Link extends Mark {
   get name() {
@@ -85,8 +85,8 @@ export default class Link extends Mark {
   menus({ type }: { type: MarkType }): MenuComponentType[] {
     return [
       {
-        ...createMenuComponent({
-          children: <LinkIcon />,
+        ...createMarkMenu({
+          icon: <LinkIcon />,
           isActive: isMarkActive(type),
           toggleMark: toggleMark(type),
         }),

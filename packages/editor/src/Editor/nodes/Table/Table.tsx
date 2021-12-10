@@ -13,7 +13,7 @@
 // limitations under the License.
 
 import { DeleteOutline } from '@mui/icons-material'
-import { Button } from '@mui/material'
+import { Button, Divider } from '@mui/material'
 import { Keymap } from 'prosemirror-commands'
 import { NodeType } from 'prosemirror-model'
 import { Plugin } from 'prosemirror-state'
@@ -30,7 +30,7 @@ import {
   tableEditing,
 } from 'prosemirror-tables'
 import { addRowAt, getCellsInColumn } from 'prosemirror-utils'
-import { MenuComponentType } from '../../lib/createMenuComponent'
+import { MenuComponentType } from '../../lib/FloatingToolbar'
 import Node, { StrictNodeSpec } from '../Node'
 import InsertAbove from './icons/InsertAbove'
 import InsertBelow from './icons/InsertBelow'
@@ -91,7 +91,7 @@ export default class Table extends Node<TableAttrs> {
   menus(_options: { type: NodeType }): MenuComponentType[] {
     return [
       {
-        button: ({ className, view }) => {
+        button: ({ view, ...buttonProps }) => {
           const colIndex = getColumnIndex(view.state.selection)
           const rowIndex = getRowIndex(view.state.selection)
           const isTableSelection = colIndex !== undefined && rowIndex !== undefined
@@ -99,72 +99,43 @@ export default class Table extends Node<TableAttrs> {
           if (isTableSelection) {
             return (
               <>
-                <Button
-                  className={className}
-                  color="inherit"
-                  style={{ opacity: 0.6 }}
-                  onClick={() => deleteTable(view.state, view.dispatch)}
-                >
+                <Divider orientation="vertical" />
+                <Button {...buttonProps} onClick={() => deleteTable(view.state, view.dispatch)}>
                   <DeleteOutline />
                 </Button>
+                <Divider orientation="vertical" />
               </>
             )
           } else if (colIndex !== undefined) {
             return (
               <>
-                <Button
-                  className={className}
-                  color="inherit"
-                  style={{ opacity: 0.6 }}
-                  onClick={() => addColumnBefore(view.state, view.dispatch)}
-                >
+                <Divider orientation="vertical" />
+                <Button {...buttonProps} onClick={() => addColumnBefore(view.state, view.dispatch)}>
                   <InsertLeft />
                 </Button>
-                <Button
-                  className={className}
-                  color="inherit"
-                  style={{ opacity: 0.6 }}
-                  onClick={() => addColumnAfter(view.state, view.dispatch)}
-                >
+                <Button {...buttonProps} onClick={() => addColumnAfter(view.state, view.dispatch)}>
                   <InsertRight />
                 </Button>
-                <Button
-                  className={className}
-                  color="inherit"
-                  style={{ opacity: 0.6 }}
-                  onClick={() => deleteColumn(view.state, view.dispatch)}
-                >
+                <Button {...buttonProps} onClick={() => deleteColumn(view.state, view.dispatch)}>
                   <DeleteOutline />
                 </Button>
+                <Divider orientation="vertical" />
               </>
             )
           } else if (rowIndex !== undefined) {
             return (
               <>
-                <Button
-                  className={className}
-                  color="inherit"
-                  style={{ opacity: 0.6 }}
-                  onClick={() => addRowBefore(view.state, view.dispatch)}
-                >
+                <Divider orientation="vertical" />
+                <Button {...buttonProps} onClick={() => addRowBefore(view.state, view.dispatch)}>
                   <InsertAbove />
                 </Button>
-                <Button
-                  className={className}
-                  color="inherit"
-                  style={{ opacity: 0.6 }}
-                  onClick={() => addRowAfter(view.state, view.dispatch)}
-                >
+                <Button {...buttonProps} onClick={() => addRowAfter(view.state, view.dispatch)}>
                   <InsertBelow />
                 </Button>
-                <Button
-                  className={className}
-                  color="inherit"
-                  style={{ opacity: 0.6 }}
-                  onClick={() => deleteRow(view.state, view.dispatch)}
-                >
+                <Button {...buttonProps} onClick={() => deleteRow(view.state, view.dispatch)}>
                   <DeleteOutline />
                 </Button>
+                <Divider orientation="vertical" />
               </>
             )
           }

@@ -20,8 +20,8 @@ import { Decoration, DirectEditorProps, EditorView, NodeView } from 'prosemirror
 import { notEmpty } from '../../utils/array'
 import Mark from '../marks/Mark'
 import Node, { ChildNode } from '../nodes/Node'
-import { MenuComponentType } from './createMenuComponent'
 import Extension from './Extension'
+import { MenuComponentType } from './FloatingToolbar'
 
 export default class ExtensionManager {
   constructor(public extensions: Extension[] = []) {

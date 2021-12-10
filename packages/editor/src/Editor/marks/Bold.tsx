@@ -16,7 +16,7 @@ import { FormatBold } from '@mui/icons-material'
 import { Keymap } from 'prosemirror-commands'
 import { InputRule } from 'prosemirror-inputrules'
 import { MarkSpec, MarkType } from 'prosemirror-model'
-import createMenuComponent, { MenuComponentType } from '../lib/createMenuComponent'
+import { createMarkMenu, MenuComponentType } from '../lib/FloatingToolbar'
 import isMarkActive from '../lib/isMarkActive'
 import markInputRule from '../lib/markInputRule'
 import toggleMark from '../lib/toggleMark'
@@ -54,8 +54,8 @@ export default class Bold extends Mark {
 
   menus({ type }: { type: MarkType }): MenuComponentType[] {
     return [
-      createMenuComponent({
-        children: <FormatBold />,
+      createMarkMenu({
+        icon: <FormatBold />,
         isActive: isMarkActive(type),
         toggleMark: toggleMark(type),
       }),

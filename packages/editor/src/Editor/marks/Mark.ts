@@ -15,8 +15,8 @@
 import { Keymap } from 'prosemirror-commands'
 import { InputRule } from 'prosemirror-inputrules'
 import { MarkSpec, MarkType, Schema } from 'prosemirror-model'
-import { MenuComponentType } from '../lib/createMenuComponent'
 import Extension from '../lib/Extension'
+import { MenuComponentType } from '../lib/FloatingToolbar'
 
 export default abstract class Mark extends Extension {
   abstract get schema(): MarkSpec

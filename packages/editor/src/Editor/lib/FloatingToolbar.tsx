@@ -14,21 +14,27 @@
 
 import { css } from '@emotion/css'
 import styled from '@emotion/styled'
-import { Box, ButtonGroup, Popper, Tooltip, TooltipProps } from '@mui/material'
+import { Box, Button, ButtonGroup, ButtonProps, Popper, Tooltip, TooltipProps } from '@mui/material'
+import { EditorState, Transaction } from 'prosemirror-state'
 import { EditorView } from 'prosemirror-view'
 import React from 'react'
 import { useRef } from 'react'
 import { useState } from 'react'
 import { useEffect } from 'react'
 import { useSafeUpdate } from '../../utils/useSafeUpdate'
-import { MenuComponentType } from './createMenuComponent'
 
 export interface FloatingToolbarProps {
   view: EditorView
   menus: MenuComponentType[]
 }
 
-const FloatingToolbar = ({ view, menus }: FloatingToolbarProps) => {
+export type MenuComponentType = {
+  button: React.ComponentType<{ view: EditorView } & ButtonProps>
+  expand?: React.ComponentType<{ view: EditorView }>
+  isExpandVisible?: (view: EditorView) => boolean
+}
+
+export default function FloatingToolbar({ view, menus }: FloatingToolbarProps) {
   const props = useTooltipProps(view)
   const [open, setOpen] = useState(false)
 
@@ -102,12 +108,11 @@ const _FloatingToolbar = React.memo(
         PopperComponent={_Popper}
         title={
           <>
-            <ButtonGroup variant="text" color="inherit">
-              {menus.map(
-                (menu, index) =>
-                  (menu.isVisible?.(view) ?? true) && <menu.button key={index} view={view} />
-              )}
-            </ButtonGroup>
+            <_ButtonGroup variant="text" color="inherit">
+              {menus.map((menu, index) => (
+                <menu.button key={index} view={view} />
+              ))}
+            </_ButtonGroup>
             {menus.map((menu, index) => {
               return (
                 menu.expand &&
@@ -179,4 +184,62 @@ const _Popper = styled(Popper)`
   }
 `
 
-export default FloatingToolbar
+const _ButtonGroup = styled(ButtonGroup)`
+  > .MuiButton-root {
+    color: inherit;
+    opacity: 0.6;
+    border-right: none !important;
+    border-left: 1px solid rgba(0, 0, 0, 0.23);
+
+    &:first-of-type {
+      border-left: none;
+    }
+  }
+
+  > .MuiDivider-root {
+    height: auto;
+    border-color: currentColor;
+    margin: 0 4px;
+
+    &:first-child,
+    &:last-child {
+      display: none;
+    }
+
+    + .MuiButton-root {
+      border-left: none;
+    }
+  }
+`
+
+export function createMarkMenu({
+  icon,
+  isActive,
+  toggleMark,
+}: {
+  icon: React.ReactNode
+  isActive?: (state: EditorState) => boolean
+  toggleMark?: (state: EditorState, dispatch?: (tr: Transaction) => void) => boolean
+}): MenuComponentType {
+  return {
+    button: ({ view, ...buttonProps }) => {
+      const active = isActive?.(view.state)
+      return (
+        <Button
+          {...buttonProps}
+          style={{ opacity: active ? 1 : 0.6 }}
+          onClick={() => {
+            if (toggleMark) {
+              const top = window.scrollY
+              toggleMark(view.state, view.dispatch)
+              window.scrollTo({ top })
+              view.focus()
+            }
+          }}
+        >
+          {icon}
+        </Button>
+      )
+    },
+  }
+}

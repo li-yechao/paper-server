@@ -27,8 +27,8 @@ import { Decoration, EditorView, NodeView as ProsemirrorNodeView } from 'prosemi
 import React from 'react'
 import ReactDOM from 'react-dom'
 import { RemoveIndex } from '../../utils/type'
-import { MenuComponentType } from '../lib/createMenuComponent'
 import Extension from '../lib/Extension'
+import { MenuComponentType } from '../lib/FloatingToolbar'
 
 export { Node as ProsemirrorNode } from 'prosemirror-model'
 
