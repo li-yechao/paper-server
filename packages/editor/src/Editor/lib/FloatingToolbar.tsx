@@ -143,7 +143,7 @@ function useTooltipProps(view: EditorView) {
     }
     const onMouseUp = () => {
       state.current.isSelecting = false
-      update()
+      setTimeout(() => update())
     }
 
     view.dom.addEventListener('mousedown', onMouseDown, true)
