@@ -1,6 +1,6 @@
 import { setBlockType } from 'prosemirror-commands'
 import { NodeType } from 'prosemirror-model'
-import { EditorState, Transaction } from 'prosemirror-state'
+import { EditorState, Selection, Transaction } from 'prosemirror-state'
 import isNodeActive from './isNodeActive'
 
 export default function toggleBlockType(
@@ -17,4 +17,20 @@ export default function toggleBlockType(
 
     return setBlockType(type, attrs)(state, dispatch)
   }
+}
+
+const CAN_TOGGLE_BLOCK_TYPES = ['paragraph', 'heading', 'blockquote']
+
+export function canToggleBlockType(selection: Selection): boolean {
+  if (selection.empty) {
+    return false
+  }
+
+  const { content } = selection.content()
+  for (let i = 0; i < content.childCount; i++) {
+    if (!CAN_TOGGLE_BLOCK_TYPES.includes(content.child(i).type.name)) {
+      return false
+    }
+  }
+  return true
 }
