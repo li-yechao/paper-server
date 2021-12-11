@@ -15,6 +15,12 @@
 import { css } from '@emotion/css'
 import { InputRule, textblockTypeInputRule } from 'prosemirror-inputrules'
 import { NodeType } from 'prosemirror-model'
+import Heading1 from '../icons/Heading1'
+import Heading2 from '../icons/Heading2'
+import Heading3 from '../icons/Heading3'
+import { createMarkMenu, MenuComponentType } from '../lib/FloatingToolbar'
+import isNodeActive from '../lib/isNodeActive'
+import toggleBlockType from '../lib/toggleBlockType'
 import Node, { NodeViewCreator, NodeView, StrictNodeSpec, StrictProsemirrorNode } from './Node'
 
 export interface HeadingAttrs {
@@ -50,6 +56,26 @@ export default class Heading extends Node<HeadingAttrs> {
       textblockTypeInputRule(/^(#{1,6})\s$/, type, match => ({
         level: match[1]!.length,
       })),
+    ]
+  }
+
+  menus({ type }: { type: NodeType }): MenuComponentType[] {
+    return [
+      createMarkMenu({
+        icon: <Heading1 />,
+        isActive: isNodeActive(type, { level: 1 }),
+        toggleMark: toggleBlockType(type, this.view!.state.schema.nodes['paragraph'], { level: 1 }),
+      }),
+      createMarkMenu({
+        icon: <Heading2 />,
+        isActive: isNodeActive(type, { level: 2 }),
+        toggleMark: toggleBlockType(type, this.view!.state.schema.nodes['paragraph'], { level: 2 }),
+      }),
+      createMarkMenu({
+        icon: <Heading3 />,
+        isActive: isNodeActive(type, { level: 3 }),
+        toggleMark: toggleBlockType(type, this.view!.state.schema.nodes['paragraph'], { level: 3 }),
+      }),
     ]
   }
 

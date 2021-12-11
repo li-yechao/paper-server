@@ -213,14 +213,21 @@ export function createMarkMenu({
   icon,
   isActive,
   toggleMark,
+  isVisible,
 }: {
   icon: React.ReactNode
   isActive?: (state: EditorState) => boolean
-  toggleMark?: (state: EditorState, dispatch?: (tr: Transaction) => void) => boolean
+  toggleMark?: (state: EditorState, dispatch: (tr: Transaction) => void) => boolean
+  isVisible?: (view: EditorView) => boolean
 }): MenuComponentType {
   return {
     button: ({ view, ...buttonProps }) => {
+      if (isVisible && !isVisible(view)) {
+        return null
+      }
+
       const active = isActive?.(view.state)
+
       return (
         <Button
           {...buttonProps}

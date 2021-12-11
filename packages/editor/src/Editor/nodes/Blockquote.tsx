@@ -12,8 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import { FormatQuote } from '@mui/icons-material'
 import { InputRule, wrappingInputRule } from 'prosemirror-inputrules'
 import { NodeType } from 'prosemirror-model'
+import { createMarkMenu, MenuComponentType } from '../lib/FloatingToolbar'
+import isNodeActive from '../lib/isNodeActive'
+import toggleWrap from '../lib/toggleWrap'
 import Node, { StrictNodeSpec } from './Node'
 
 export interface BlockquoteAttrs {}
@@ -35,5 +39,15 @@ export default class Blockquote extends Node<BlockquoteAttrs> {
 
   inputRules({ type }: { type: NodeType }): InputRule[] {
     return [wrappingInputRule(/^\s*>\s$/, type)]
+  }
+
+  menus({ type }: { type: NodeType }): MenuComponentType[] {
+    return [
+      createMarkMenu({
+        icon: <FormatQuote />,
+        isActive: isNodeActive(type),
+        toggleMark: toggleWrap(type),
+      }),
+    ]
   }
 }
