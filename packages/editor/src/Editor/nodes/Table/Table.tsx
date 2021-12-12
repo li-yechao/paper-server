@@ -32,15 +32,15 @@ import {
 import { addRowAt, getCellsInColumn } from 'prosemirror-utils'
 import { MenuComponentType } from '../../lib/FloatingToolbar'
 import Node, { StrictNodeSpec } from '../Node'
-import InsertAbove from './icons/InsertAbove'
-import InsertBelow from './icons/InsertBelow'
-import InsertLeft from './icons/InsertLeft'
-import InsertRight from './icons/InsertRight'
 import TableCell from './TableCell'
 import TableHeadCell from './TableHeadCell'
 import TableRow from './TableRow'
 import getColumnIndex from './utils/getColumnIndex'
 import getRowIndex from './utils/getRowIndex'
+import InsertAbove from '../../icons/InsertAbove'
+import InsertBelow from '../../icons/InsertBelow'
+import InsertLeft from '../../icons/InsertLeft'
+import InsertRight from '../../icons/InsertRight'
 
 export interface TableAttrs {}
 
