@@ -69,21 +69,12 @@ export default function ObjectView() {
     if (paper && state && version !== savedVersion) {
       let title: string | undefined
       const firstChild = state.doc.firstChild
-      if (firstChild?.type.name === 'title') {
+      if (firstChild?.type.name === 'heading' && firstChild.attrs.level === 1) {
         title = firstChild.textContent
       }
 
-      const tags: string[] = []
-      const tagList = state.doc.maybeChild(1)
-      if (tagList?.type.name === 'tag_list') {
-        tagList.forEach(node => {
-          const tag = node.textContent.trim()
-          tag && tags.push(tag)
-        })
-      }
-
       await paper.setContent(state.doc.toJSON())
-      await paper.setInfo({ title, tags })
+      await paper.setInfo({ title })
 
       ref.current.savedVersion = version
       if (mounted()) {

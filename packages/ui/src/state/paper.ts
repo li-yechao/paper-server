@@ -103,9 +103,7 @@ export function usePaper({ account, objectId }: { account: Account; objectId: st
   return useRecoilValue(state)
 }
 
-export interface PaperInfo extends ObjectInfo {
-  tags?: string[]
-}
+export interface PaperInfo extends ObjectInfo {}
 
 const paperInfoSchema: JTDSchemaType<PaperInfo> = {
   properties: {
@@ -113,14 +111,13 @@ const paperInfoSchema: JTDSchemaType<PaperInfo> = {
   },
   optionalProperties: {
     ...objectInfoSchema.optionalProperties,
-    tags: { elements: { type: 'string' } },
   },
   additionalProperties: true,
 } as const
 
 const validatePaperInfo = new Ajv().compile(paperInfoSchema)
 
-function upgradeSchema(node: DocJson): DocJson {
+function upgradeSchema(node: DocJson): DocJson | undefined {
   if (!node) {
     return node
   }
@@ -138,7 +135,16 @@ function upgradeSchema(node: DocJson): DocJson {
     n.content = []
   }
 
-  n.content = n.content?.map(upgradeSchema)
+  if (n.type === 'title') {
+    n.type = 'heading'
+    n.attrs = { level: 1 }
+  }
+
+  if (n.type === 'tag_list' || n.type === 'tag_item') {
+    return
+  }
+
+  n.content = n.content?.map(upgradeSchema).filter((i: any) => !!i)
 
   return n
 }

@@ -16,7 +16,6 @@ import styled from '@emotion/styled'
 import { DeleteOutline, KeyboardArrowLeft, KeyboardArrowRight, MoreVert } from '@mui/icons-material'
 import {
   Button,
-  Chip,
   Divider,
   IconButton,
   List,
@@ -211,7 +210,7 @@ function ObjectItem({
   } else if (info.error) {
     return <ObjectItem.Skeleton error={info.error} />
   } else {
-    const { title, tags } = info.value
+    const { title } = info.value
     const time = (updatedAt.loading && updatedAt.value) || paper.object.createdAt
 
     return (
@@ -219,32 +218,17 @@ function ObjectItem({
         <ListItemText
           primary={title || 'Untitled'}
           secondary={
-            <>
-              <Box component="span" mx={-0.5}>
-                {tags?.map((tag, index) => (
-                  <Chip
-                    sx={{ m: 0.5 }}
-                    key={index}
-                    label={tag}
-                    component="span"
-                    size="small"
-                    variant="outlined"
-                  />
-                ))}
-              </Box>
-              <br />
-              <Typography variant="caption">
-                <FormattedDate
-                  value={time}
-                  year="numeric"
-                  month="numeric"
-                  day="numeric"
-                  hour="numeric"
-                  hour12={false}
-                  minute="numeric"
-                />
-              </Typography>
-            </>
+            <Typography variant="caption">
+              <FormattedDate
+                value={time}
+                year="numeric"
+                month="numeric"
+                day="numeric"
+                hour="numeric"
+                hour12={false}
+                minute="numeric"
+              />
+            </Typography>
           }
         />
 

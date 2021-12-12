@@ -30,9 +30,7 @@ import Math from './Editor/nodes/Math'
 import OrderedList from './Editor/nodes/OrderedList'
 import Paragraph from './Editor/nodes/Paragraph'
 import Table from './Editor/nodes/Table'
-import TagList from './Editor/nodes/TagList'
 import Text from './Editor/nodes/Text'
-import Title from './Editor/nodes/Title'
 import TodoList from './Editor/nodes/TodoList'
 import DropPasteFile from './Editor/plugins/DropPasteFile'
 import Placeholder from './Editor/plugins/Placeholder'
@@ -68,8 +66,6 @@ export default Editor
 export const nodes = {
   Text,
   Doc,
-  Title,
-  TagList,
   Heading,
   Paragraph,
   Blockquote,

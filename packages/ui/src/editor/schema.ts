@@ -37,11 +37,9 @@ export const defaultNodes = ({
 }): StrictNode<any>[] => {
   return [
     new nodes.Text(),
-    new nodes.Doc('title tag_list block+'),
-    new nodes.Title(),
+    new nodes.Doc('block+'),
     new nodes.Paragraph(),
     new nodes.Heading(),
-    new nodes.TagList(),
     new nodes.Blockquote(),
     new nodes.TodoList(),
     new nodes.OrderedList(),
