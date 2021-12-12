@@ -28,12 +28,6 @@ export const defaultMarkdownSerializer: {
   marks: { [key: string]: MarkSerializerConfig }
 } = {
   nodes: {
-    title(state, node) {
-      state.write('#' + ' ')
-      state.renderInline(node)
-      state.closeBlock(node)
-    },
-    tag_list() {},
     heading(state, node) {
       state.write(state.repeat('#', node.attrs.level) + ' ')
       state.renderInline(node)
@@ -58,25 +52,16 @@ export const defaultMarkdownSerializer: {
       state.closeBlock(node)
     },
     ordered_list(state, node) {
-      let start = node.attrs.order || 1
-      let maxW = String(start + node.childCount - 1).length
-      let space = state.repeat(' ', maxW + 2)
-      state.renderList(node, space, i => {
-        let nStr = String(start + i)
-        return state.repeat(' ', maxW - nStr.length) + nStr + '. '
-      })
-    },
-    ordered_item(state, node) {
-      state.renderContent(node)
+      state.renderList(node, '', i => `${i + 1}. `)
     },
     bullet_list(state, node) {
-      state.renderList(node, '  ', () => '* ')
+      state.renderList(node, '', () => '* ')
     },
-    bullet_item(state, node) {
+    list_item(state, node) {
       state.renderContent(node)
     },
     todo_list(state, node) {
-      state.renderList(node, '  ', () => '[] ')
+      state.renderList(node, '', () => '[] ')
     },
     todo_item(state, node) {
       state.renderContent(node)
@@ -105,12 +90,9 @@ export const defaultMarkdownSerializer: {
         return isPlainURL(mark, parent, index, 1) ? '<' : '['
       },
       close(state, mark, parent, index) {
-        return isPlainURL(mark, parent, index, -1)
-          ? '>'
-          : '](' +
-              state.esc(mark.attrs.href) +
-              (mark.attrs.title ? ' ' + state.quote(mark.attrs.title) : '') +
-              ')'
+        const { href } = mark.attrs
+
+        return isPlainURL(mark, parent, index, -1) ? '>' : `](${state.esc(href)})`
       },
     },
   },
