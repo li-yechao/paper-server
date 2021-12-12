@@ -124,9 +124,21 @@ function upgradeSchema(node: DocJson): DocJson {
   if (!node) {
     return node
   }
-  return {
+  const n = {
     ...node,
-    type: node.type === 'ordered_item' || node.type === 'bullet_item' ? 'list_item' : node.type,
-    content: node.content?.map(upgradeSchema),
   }
+
+  if (n.type === 'ordered_item' || n.type === 'bullet_item') {
+    n.type = 'list_item'
+  }
+
+  if (n.type === 'image_block_caption') {
+    n.type = 'text'
+    n.text = n.content?.[0]?.text ?? ''
+    n.content = []
+  }
+
+  n.content = n.content?.map(upgradeSchema)
+
+  return n
 }

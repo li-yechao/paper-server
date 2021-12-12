@@ -43,7 +43,7 @@ export default class ImageBlockNodeView extends NodeViewReact<ImageBlockAttrs> {
 
   reactDOM = document.createElement('div')
 
-  contentDOM = document.createElement('div')
+  contentDOM = document.createElement('figcaption')
 
   private isDragging = false
 
