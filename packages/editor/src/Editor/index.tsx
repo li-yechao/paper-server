@@ -12,20 +12,27 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { cx } from '@emotion/css'
+import { css, cx } from '@emotion/css'
 import { TextSelection } from 'prosemirror-state'
 import { EditorView } from 'prosemirror-view'
-import React, { forwardRef } from 'react'
+import React, { forwardRef, useMemo, useState } from 'react'
 import { useEffect } from 'react'
 import { useImperativeHandle } from 'react'
 import { useRef } from 'react'
-import Extension from './lib/Extension'
-import FloatingToolbar, { MenuComponentType } from './lib/FloatingToolbar'
-import ExtensionManager from './lib/ExtensionManager'
-import { proseMirrorStyle } from './style'
-import styled from '@emotion/styled'
 import { useSafeUpdate } from '../utils/useSafeUpdate'
 import CupertinoActivityIndicator from './lib/CupertinoActivityIndicator'
+import Extension from './lib/Extension'
+import ExtensionManager from './lib/ExtensionManager'
+import FloatingToolbar, { MenuComponentType } from './lib/FloatingToolbar'
+import BlockMenu from './plugins/BlockMenu'
+import { proseMirrorStyle } from './style'
+
+// import ExtensionManager from './lib/ExtensionManager'
+// import { proseMirrorStyle } from './style'
+// import styled from '@emotion/styled'
+// import { useSafeUpdate } from '../utils/useSafeUpdate'
+// import CupertinoActivityIndicator from './lib/CupertinoActivityIndicator'
+// import BlockMenu from './plugins/BlockMenu'
 
 export interface EditorProps {
   className?: string
@@ -44,6 +51,8 @@ const Editor = React.memo(
 
     const container = useRef<HTMLDivElement>(null)
     const editor = useRef<{ view: EditorView; menus: MenuComponentType[] }>()
+
+    const [blockMenuKeyword, setBlockMenuKeyword] = useState<string | null>(null)
 
     useImperativeHandle(
       ref,
@@ -69,7 +78,9 @@ const Editor = React.memo(
 
         editor.current = await new ExtensionManager(props.extensions).createEditor(
           { mount: container.current },
-          {}
+          {
+            dispatchTransaction: () => update(),
+          }
         )
         update()
       })()
@@ -84,22 +95,44 @@ const Editor = React.memo(
       }
     }, [])
 
+    const blockMenu = useMemo(() => {
+      const e = props.extensions.find<BlockMenu>((i): i is BlockMenu => i instanceof BlockMenu)
+      e?.setOptions({
+        onOpen: setBlockMenuKeyword,
+        onClose: () => setBlockMenuKeyword(null),
+      })
+      return e
+    }, [props.extensions])
+
     return (
-      <>
+      <div className={rootCSS}>
         <div ref={container} className={cx(props.className, proseMirrorStyle)} />
         {editor.current ? (
-          <FloatingToolbar view={editor.current.view} menus={editor.current.menus} />
+          <>
+            <FloatingToolbar view={editor.current.view} menus={editor.current.menus} />
+            {blockMenu && (
+              <blockMenu.Menus
+                keyword={blockMenuKeyword}
+                view={editor.current.view}
+                onClose={() => setBlockMenuKeyword(null)}
+              />
+            )}
+          </>
         ) : (
-          <_Loading>
+          <div className={loadingCSS}>
             <CupertinoActivityIndicator />
-          </_Loading>
+          </div>
         )}
-      </>
+      </div>
     )
   })
 )
 
-const _Loading = styled.div`
+const rootCSS = css`
+  position: relative;
+`
+
+const loadingCSS = css`
   position: fixed;
   left: 0;
   top: 0;

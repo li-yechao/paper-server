@@ -141,6 +141,8 @@ export default class ExtensionManager {
       dispatchTransaction: function (tr) {
         view.updateState(view.state.apply(tr))
 
+        props.dispatchTransaction?.call(this, tr)
+
         for (const f of dispatchTransactionHandlers) {
           f(view, tr)
         }

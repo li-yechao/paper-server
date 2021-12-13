@@ -73,7 +73,7 @@ export const defaultPlugins = ({
   return [
     new plugins.Value(valueOptions),
 
-    new plugins.Placeholder(),
+    new plugins.BlockMenu(),
 
     new plugins.Plugins([
       keymap({

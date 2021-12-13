@@ -267,7 +267,7 @@ export const proseMirrorStyle = css`
   }
 
   .ProseMirror-placeholder {
-    &:after {
+    &:before {
       position: absolute;
       color: #999;
       pointer-events: none;

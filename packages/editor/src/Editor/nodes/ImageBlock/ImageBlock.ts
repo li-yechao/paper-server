@@ -117,6 +117,7 @@ export default class ImageBlock extends Node<ImageBlockAttrs> {
           ['figcaption', 0],
         ]
       },
+      options: this.options,
     }
   }
 

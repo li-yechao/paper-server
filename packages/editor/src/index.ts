@@ -32,6 +32,7 @@ import Paragraph from './Editor/nodes/Paragraph'
 import Table from './Editor/nodes/Table'
 import Text from './Editor/nodes/Text'
 import TodoList from './Editor/nodes/TodoList'
+import BlockMenu from './Editor/plugins/BlockMenu'
 import DropPasteFile from './Editor/plugins/DropPasteFile'
 import Placeholder from './Editor/plugins/Placeholder'
 import Plugins from './Editor/plugins/Plugins'
@@ -93,4 +94,5 @@ export const plugins = {
   DropPasteFile,
   Placeholder,
   Value,
+  BlockMenu,
 }
