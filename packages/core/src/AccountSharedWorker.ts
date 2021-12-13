@@ -81,7 +81,8 @@ new Server({
   },
   object_files_stat: async ({ userId, objectId, path, options }) => {
     const object = await Account.account(userId).object(objectId)
-    return object.files.stat(path, options)
+    const stat = await object.files.stat(path, options)
+    return { ...stat, cid: stat.cid.toString() }
   },
   object_files_touch: async ({ userId, objectId, path, options }) => {
     const object = await Account.account(userId).object(objectId)

@@ -77,7 +77,7 @@ export class Paper {
         truncate: true,
       })
     }
-    const cid = (await this.object.files.stat(tmp)).cid.toString()
+    const cid = (await this.object.files.stat(tmp)).cid
     await this.object.files.mv(tmp, `files/${cid}`)
     return cid
   }

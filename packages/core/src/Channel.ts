@@ -83,7 +83,7 @@ export interface MessageMap {
     objectId: string
     path: string
     options?: IPFSFiles.StatOptions
-  }) => Promise<IPFSFiles.StatResult>
+  }) => Promise<Omit<IPFSFiles.StatResult, 'cid'> & { cid: string }>
   object_files_touch: (payload: {
     userId: string
     objectId: string
