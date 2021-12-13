@@ -34,7 +34,6 @@ import Text from './Editor/nodes/Text'
 import TodoList from './Editor/nodes/TodoList'
 import BlockMenu from './Editor/plugins/BlockMenu'
 import DropPasteFile from './Editor/plugins/DropPasteFile'
-import Placeholder from './Editor/plugins/Placeholder'
 import Plugins from './Editor/plugins/Plugins'
 import Value from './Editor/plugins/Value'
 
@@ -92,7 +91,6 @@ export const marks = {
 export const plugins = {
   Plugins,
   DropPasteFile,
-  Placeholder,
   Value,
   BlockMenu,
 }
