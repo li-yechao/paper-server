@@ -1,4 +1,4 @@
-# paper-js
+# paper
 
 Store your paper use ipfs.
 
