@@ -67,11 +67,7 @@ export default function ObjectView() {
     }
     const { state, version, savedVersion } = ref.current
     if (paper && state && version !== savedVersion) {
-      let title: string | undefined
-      const firstChild = state.doc.firstChild
-      if (firstChild?.type.name === 'heading' && firstChild.attrs.level === 1) {
-        title = firstChild.textContent
-      }
+      const title = state.doc.firstChild?.textContent.slice(0, 100)
 
       await paper.setContent(state.doc.toJSON())
       await paper.setInfo({ title })
