@@ -211,7 +211,7 @@ function ObjectItem({
     return <ObjectItem.Skeleton error={info.error} />
   } else {
     const { title } = info.value
-    const time = (updatedAt.loading && updatedAt.value) || paper.object.createdAt
+    const time = updatedAt.value || paper.object.createdAt
 
     return (
       <_ListItemButton divider onClick={e => onClick(e, paper)}>
