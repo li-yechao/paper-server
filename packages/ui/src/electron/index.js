@@ -13,6 +13,7 @@
 // limitations under the License.
 
 const { app, BrowserWindow, nativeTheme } = require('electron')
+const { autoUpdater } = require('electron-updater')
 const windowStateKeeper = require('electron-window-state')
 
 try {
@@ -103,6 +104,7 @@ function createWindow(options = {}) {
 }
 
 app.once('ready', createMainWindow)
+
 app.on('activate', () => {
   if (!mainWindow) {
     createMainWindow()
@@ -112,4 +114,8 @@ app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
     app.quit()
   }
+})
+
+app.on('ready', () => {
+  autoUpdater.checkForUpdatesAndNotify()
 })

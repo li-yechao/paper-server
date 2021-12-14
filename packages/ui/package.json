@@ -14,6 +14,7 @@
     "build:win": "electron-builder --win"
   },
   "dependencies": {
+    "electron-updater": "^4.6.1",
     "electron-window-state": "^5.0.3"
   },
   "devDependencies": {
@@ -62,6 +63,13 @@
     ],
     "directories": {
       "output": "dist-electron"
-    }
+    },
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "li-yechao",
+        "repo": "paper"
+      }
+    ]
   }
 }
