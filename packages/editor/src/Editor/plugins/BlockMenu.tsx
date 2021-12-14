@@ -263,8 +263,17 @@ function useMenus({
   const selectedRef = useRef(0)
 
   useLayoutEffect(() => {
-    openRef.current = typeof keyword === 'string'
+    const open = typeof keyword === 'string'
+    if (!openRef.current && open) {
+      selectedRef.current = 0
+    }
+    openRef.current = open
   }, [keyword])
+
+  const getSelected = useCallback(
+    () => (selectedRef.current >= menusRef.current.length ? 0 : selectedRef.current),
+    []
+  )
 
   const allMenus = useMemo(() => {
     const menus: MenuItem[] = []
@@ -416,11 +425,13 @@ function useMenus({
     const cb = (e: KeyboardEvent) => {
       if (!openRef.current) return
 
+      const selected = getSelected()
+
       if (e.key === 'Enter') {
         e.preventDefault()
         e.stopPropagation()
 
-        const m = menusRef.current[selectedRef.current]
+        const m = menusRef.current[selected]
         onSubmit()
         m?.handler(view.state, view.dispatch)
         onClose()
@@ -430,7 +441,7 @@ function useMenus({
         e.preventDefault()
         e.stopPropagation()
 
-        selectedRef.current = Math.max(0, selectedRef.current - 1)
+        selectedRef.current = Math.max(0, selected - 1)
         update()
       }
 
@@ -442,10 +453,7 @@ function useMenus({
         e.preventDefault()
         e.stopPropagation()
 
-        selectedRef.current = Math.max(
-          Math.min(selectedRef.current + 1, menusRef.current.length - 1),
-          0
-        )
+        selectedRef.current = selected + 1
         update()
       }
 
@@ -459,7 +467,7 @@ function useMenus({
 
   return {
     menus: menusRef.current,
-    selected: selectedRef.current,
+    selected: getSelected(),
   }
 }
 
