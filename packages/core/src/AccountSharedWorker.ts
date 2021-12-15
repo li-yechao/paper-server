@@ -148,42 +148,47 @@ export default class Account extends StrictEventEmitter<{}, {}, ServerEventMap> 
       return typeof (a as any).key !== 'undefined'
     }
 
-    let key: PrivateKey, id: string, ipfs: IPFS, account: Account | undefined
+    let key: PrivateKey, id: string, ipfs: IPFS | undefined, account: Account | undefined
 
-    if (isKey(user)) {
-      key = await Ipfs.crypto.keys.unmarshalPrivateKey(user.key)
-      id = await key.id()
-      ipfs = await createIPFS({ repo: id, options, onChangeFile: () => account?.syncDebounced() })
+    try {
+      if (isKey(user)) {
+        key = await Ipfs.crypto.keys.unmarshalPrivateKey(user.key)
+        id = await key.id()
+        ipfs = await createIPFS({ repo: id, options, onChangeFile: () => account?.syncDebounced() })
 
-      const encryptedKey = await crypto.aes.encrypt(user.password, key.bytes)
-      await ipfs.files.write(keyPath(id), new Uint8Array(encryptedKey), {
-        parents: true,
-        create: true,
-        truncate: true,
-      })
-    } else {
-      id = user.id
-      ipfs = await createIPFS({ repo: id, options, onChangeFile: () => account?.syncDebounced() })
+        const encryptedKey = await crypto.aes.encrypt(user.password, key.bytes)
+        await ipfs.files.write(keyPath(id), new Uint8Array(encryptedKey), {
+          parents: true,
+          create: true,
+          truncate: true,
+        })
+      } else {
+        id = user.id
+        ipfs = await createIPFS({ repo: id, options, onChangeFile: () => account?.syncDebounced() })
 
-      let raw = await fileUtils.ignoreErrNotFound(fileUtils.readAll(ipfs.files.read(keyPath(id))))
+        let raw = await fileUtils.ignoreErrNotFound(fileUtils.readAll(ipfs.files.read(keyPath(id))))
 
-      if (!raw) {
-        const cid = await resolveName(id, options)
-        if (!cid) {
-          throw new Error('Load CID from ipns failed')
+        if (!raw) {
+          const cid = await resolveName(id, options)
+          if (!cid) {
+            throw new Error('Load CID from ipns failed')
+          }
+          raw = await fileUtils.readAll(ipfs.files.read(fileUtils.joinPath('/ipfs', keyPath(cid))))
         }
-        raw = await fileUtils.readAll(ipfs.files.read(fileUtils.joinPath('/ipfs', keyPath(cid))))
+        const decrypted = await crypto.aes.decrypt(user.password, raw)
+        key = await Ipfs.crypto.keys.unmarshalPrivateKey(new Uint8Array(decrypted))
       }
-      const decrypted = await crypto.aes.decrypt(user.password, raw)
-      key = await Ipfs.crypto.keys.unmarshalPrivateKey(new Uint8Array(decrypted))
-    }
 
-    account = this.accounts.get(id)
-    if (!account) {
-      account = new Account(ipfs, { id, key, password: user.password }, options)
-      this.accounts.set(id, account)
+      account = this.accounts.get(id)
+      if (!account) {
+        account = new Account(ipfs, { id, key, password: user.password }, options)
+        this.accounts.set(id, account)
+      }
+      return account
+    } catch (error) {
+      ipfs?.stop()
+      throw error
     }
-    return account
   }
 
   static account(userId: string) {
