@@ -16,6 +16,8 @@ const { app, BrowserWindow, nativeTheme } = require('electron')
 const { autoUpdater } = require('electron-updater')
 const windowStateKeeper = require('electron-window-state')
 
+app.setName('Paper')
+
 try {
   require('electron-reloader')(module)
 } catch {}
