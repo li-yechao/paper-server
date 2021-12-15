@@ -25,6 +25,7 @@ import {
   Typography,
 } from '@mui/material'
 import { Account } from '@paper/core'
+import { useSnackbar } from 'notistack'
 import { useCallback, useEffect, useState } from 'react'
 import { useToggle } from 'react-use'
 import { PromiseType } from 'react-use/lib/misc/types'
@@ -32,6 +33,7 @@ import { accountOptions } from '../../constants'
 import { useSetAccount } from '../../state/account'
 
 export default function AuthView() {
+  const snackbar = useSnackbar()
   const setAccount = useSetAccount()
   const [pwdVisible, togglePwdVisible] = useToggle(false)
   const [isNewAccount, toggleIsNewAccount] = useToggle(false)
@@ -53,6 +55,9 @@ export default function AuthView() {
     try {
       const account = await Account.create({ key: key.key, password }, accountOptions)
       setAccount(account)
+    } catch (error) {
+      snackbar.enqueueSnackbar(error.message, { variant: 'error' })
+      console.error(error)
     } finally {
       toggleLoading(false)
     }
@@ -66,6 +71,9 @@ export default function AuthView() {
     try {
       const account = await Account.create({ id: userId, password }, accountOptions)
       setAccount(account)
+    } catch (error) {
+      snackbar.enqueueSnackbar(error.message, { variant: 'error' })
+      console.error(error)
     } finally {
       toggleLoading(false)
     }
