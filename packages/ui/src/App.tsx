@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { ThemeProvider as EmotionThemeProvider } from '@emotion/react'
+import { css, Global, ThemeProvider as EmotionThemeProvider } from '@emotion/react'
 import styled from '@emotion/styled'
 import {
   AccountCircle,
@@ -66,25 +66,35 @@ export default function App() {
   return (
     <ErrorBoundary fallback={ErrorView}>
       <NetworkIndicator.Provider>
-        <SnackbarProvider maxSnack={3} anchorOrigin={{ vertical: 'top', horizontal: 'center' }}>
-          <IntlProvider locale={navigator.language}>
-            <RecoilRoot>
-              <StylesProvider injectFirst>
-                <MuiThemeProvider theme={theme}>
-                  <EmotionThemeProvider theme={theme}>
-                    <CssBaseline>
+        <IntlProvider locale={navigator.language}>
+          <RecoilRoot>
+            <StylesProvider injectFirst>
+              <MuiThemeProvider theme={theme}>
+                <EmotionThemeProvider theme={theme}>
+                  <CssBaseline>
+                    <Global
+                      styles={css`
+                        .SnackbarContainer-top {
+                          margin-top: 56px;
+                        }
+                      `}
+                    />
+                    <SnackbarProvider
+                      maxSnack={3}
+                      anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+                    >
                       <Suspense fallback={<NetworkIndicator in />}>
                         <HashRouter>
                           <AppRoutes />
                         </HashRouter>
                       </Suspense>
-                    </CssBaseline>
-                  </EmotionThemeProvider>
-                </MuiThemeProvider>
-              </StylesProvider>
-            </RecoilRoot>
-          </IntlProvider>
-        </SnackbarProvider>
+                    </SnackbarProvider>
+                  </CssBaseline>
+                </EmotionThemeProvider>
+              </MuiThemeProvider>
+            </StylesProvider>
+          </RecoilRoot>
+        </IntlProvider>
       </NetworkIndicator.Provider>
     </ErrorBoundary>
   )
