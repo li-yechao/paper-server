@@ -164,9 +164,7 @@ export class Client extends StrictEventEmitter<
       ev: MessageEvent<Pick<T, 'id' | 'response'> | ServerEvent>
     ) => {
       if (isServerEvent(ev.data)) {
-        if (ev.data.eventType === 'sync') {
-          this.emitReserved(ev.data.eventType, ev.data.userId, ev.data.data)
-        }
+        this.emitReserved(ev.data.eventType, ev.data.userId, ev.data.data as any)
         return
       }
 
