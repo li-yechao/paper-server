@@ -48,7 +48,7 @@ export default function AuthView() {
   }, [])
 
   const newAccount = useCallback(async () => {
-    if (loading || !key) {
+    if (loading || !key || !password.trim()) {
       return
     }
     toggleLoading(true)
@@ -64,7 +64,7 @@ export default function AuthView() {
   }, [loading, key, password])
 
   const login = useCallback(async () => {
-    if (loading) {
+    if (loading || !userId.trim() || !password.trim()) {
       return
     }
     toggleLoading(true)
@@ -160,7 +160,11 @@ export default function AuthView() {
               <Button variant="text" onClick={toggleIsNewAccount} disabled={loading} size="small">
                 Login
               </Button>
-              <Button variant="contained" onClick={newAccount} disabled={loading}>
+              <Button
+                variant="contained"
+                onClick={newAccount}
+                disabled={loading || !userId || !password}
+              >
                 New Account
               </Button>
             </>
@@ -169,7 +173,11 @@ export default function AuthView() {
               <Button variant="text" onClick={toggleIsNewAccount} disabled={loading} size="small">
                 New Account
               </Button>
-              <Button variant="contained" onClick={login} disabled={loading}>
+              <Button
+                variant="contained"
+                onClick={login}
+                disabled={loading || !userId || !password}
+              >
                 Login
               </Button>
             </>
