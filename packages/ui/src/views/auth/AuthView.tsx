@@ -119,7 +119,7 @@ export default function AuthView() {
             autoComplete="username"
             inputProps={{ maxLength: 128 }}
             InputProps={{
-              readOnly: loading,
+              readOnly: loading || isNewAccount,
               endAdornment: isNewAccount ? (
                 <InputAdornment position="end">
                   <IconButton edge="end" onClick={regenerateKey} disabled={loading}>
