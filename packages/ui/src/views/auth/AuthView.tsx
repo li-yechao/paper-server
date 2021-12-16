@@ -26,7 +26,7 @@ import {
 } from '@mui/material'
 import { Account } from '@paper/core'
 import { useSnackbar } from 'notistack'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useState } from 'react'
 import { useToggle } from 'react-use'
 import { PromiseType } from 'react-use/lib/misc/types'
 import { accountOptions } from '../../constants'
@@ -78,6 +78,11 @@ export default function AuthView() {
       toggleLoading(false)
     }
   }, [loading, userId, password])
+
+  useLayoutEffect(() => {
+    setUserId('')
+    setPassword('')
+  }, [isNewAccount])
 
   useEffect(() => {
     if (isNewAccount) {
