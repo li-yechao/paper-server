@@ -253,12 +253,12 @@ export default class Account extends StrictEventEmitter<{}, {}, ServerEventMap> 
           }
 
           // publish
-          const newCID = (await this.ipfs.files.stat(`/${this.user.id}`)).cid.toString()
-          if (newCID !== cid) {
+          const localCID = (await this.cid)?.toString()
+          if (localCID && localCID !== cid) {
             await withIPFSReconnect(
               this.ipfs,
               this.options,
-              publishName(newCID, this.user.password, this.options)
+              publishName(localCID, this.user.password, this.options)
             )
           }
           this.emitReserved('sync', { syncing: false, cid: await this.cid })
