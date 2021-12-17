@@ -248,7 +248,7 @@ export default class Account extends StrictEventEmitter<{}, {}, ServerEventMap> 
         this.emitReserved('sync', { syncing: true, cid: await this.cid })
         try {
           const cid = await resolveName(this.user.id, this.options)
-          if (!options.skipDownload) {
+          if (!options.skipDownload && cid) {
             await this.syncIPFSFilesToLocal(cid)
           }
 
@@ -272,7 +272,7 @@ export default class Account extends StrictEventEmitter<{}, {}, ServerEventMap> 
     this._sync = undefined
   }
 
-  private async syncIPFSFilesToLocal(cid: string | null) {
+  private async syncIPFSFilesToLocal(cid: string) {
     // keystore
     const keystoreIPFS = await this.ipfs.files.stat(`/ipfs/${cid}/keystore`)
     const keystoreLocal = await fileUtils.ignoreErrNotFound(
