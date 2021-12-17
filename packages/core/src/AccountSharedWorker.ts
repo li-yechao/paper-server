@@ -246,8 +246,8 @@ export default class Account extends StrictEventEmitter<{}, {}, ServerEventMap> 
     if (!this._sync) {
       this._sync = (async () => {
         this.emitReserved('sync', { syncing: true, cid: await this.cid })
-        const cid = await resolveName(this.user.id, this.options)
         try {
+          const cid = await resolveName(this.user.id, this.options)
           if (!options.skipDownload) {
             await this.syncIPFSFilesToLocal(cid)
           }
