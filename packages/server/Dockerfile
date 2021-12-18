@@ -2,11 +2,9 @@ FROM node:16-slim
 
 WORKDIR /app/
 
-COPY package.json /app/
-COPY go-ipfs/ /app/go-ipfs/
+COPY package.json installProdDeps.js /app/
 
-# Run twice yarn intall --prod to remove devDependencies
-RUN yarn install --prod && yarn install --prod
+RUN node installProdDeps.js
 
 COPY dist /app/dist
 
