@@ -413,20 +413,31 @@ export default class Account extends StrictEventEmitter<{}, {}, ServerEventMap> 
       return !!deleted
     }
 
-    for await (const { name: year } of this.ipfs.files.ls(`/${this.user.id}/objects`)) {
-      for await (const { name: month } of this.ipfs.files.ls(`/${this.user.id}/objects/${year}`)) {
-        for await (const { name: day } of this.ipfs.files.ls(
-          `/${this.user.id}/objects/${year}/${month}`
-        )) {
-          for await (const { name: objectId } of this.ipfs.files.ls(
-            `/${this.user.id}/objects/${year}/${month}/${day}`
+    {
+      const objectsLocal = await fileUtils.ignoreErrNotFound(
+        this.ipfs.files.stat(`/${this.user.id}/objects`)
+      )
+      if (objectsLocal) {
+        for await (const { name: year } of this.ipfs.files.ls(`/${this.user.id}/objects`)) {
+          for await (const { name: month } of this.ipfs.files.ls(
+            `/${this.user.id}/objects/${year}`
           )) {
-            // Deleted
-            const deleted = await isDeleted(objectId)
-            if (deleted) {
-              const localPath = `/${this.user.id}/objects/${year}/${month}/${day}/${objectId}`
-              await fileUtils.ignoreErrNotFound(this.ipfs.files.rm(localPath, { recursive: true }))
-              continue
+            for await (const { name: day } of this.ipfs.files.ls(
+              `/${this.user.id}/objects/${year}/${month}`
+            )) {
+              for await (const { name: objectId } of this.ipfs.files.ls(
+                `/${this.user.id}/objects/${year}/${month}/${day}`
+              )) {
+                // Deleted
+                const deleted = await isDeleted(objectId)
+                if (deleted) {
+                  const localPath = `/${this.user.id}/objects/${year}/${month}/${day}/${objectId}`
+                  await fileUtils.ignoreErrNotFound(
+                    this.ipfs.files.rm(localPath, { recursive: true })
+                  )
+                  continue
+                }
+              }
             }
           }
         }
