@@ -276,6 +276,7 @@ const AccountButton = () => {
   const handleSignOut = () => {
     handleMenuClose()
     setAccount()
+    navigate(`/`)
   }
 
   if (!account) {
