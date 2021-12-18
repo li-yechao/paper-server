@@ -53,9 +53,6 @@
   "build": {
     "appId": "xyz.yechao.paper",
     "productName": "Paper",
-    "electronDownload": {
-      "mirror": "https://npm.taobao.org/mirrors/electron/"
-    },
     "files": [
       "build/icon.*",
       "src/electron/**/*",
