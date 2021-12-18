@@ -6,9 +6,10 @@
   "license": "Apache-2.0",
   "main": "src/electron/index.js",
   "scripts": {
-    "dev": "run-p dev:*",
+    "dev": "run-p dev:vite",
     "dev:vite": "vite",
     "dev:electron": "electron src/electron/index.js",
+    "build": "run-p build:vite",
     "build:vite": "tsc && vite build --base ./",
     "build:mac": "electron-builder --mac",
     "build:win": "electron-builder --win"
