@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.1.1](https://github.com/li-yechao/paper/compare/@paper/ui@0.1.0...@paper/ui@0.1.1) (2021-12-20)
+
+### Bug Fixes
+
+- reload pagination after accountCID has changed ([80f8e7b](https://github.com/li-yechao/paper/commit/80f8e7b3c02fc00292515c1a89eb314d05b246bf))
+- set app name ([28a9f3a](https://github.com/li-yechao/paper/commit/28a9f3a548276e93336de306e7234819fcf421bc))
+
 # 0.1.0 (2021-12-15)
 
 ### Bug Fixes

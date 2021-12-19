@@ -1,13 +1,13 @@
 {
   "name": "@paper/core",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Core api for paper",
   "main": "src/index.ts",
   "author": "LiYechao <liyechao@yechao.xyz>",
   "license": "Apache-2.0",
   "type": "module",
   "dependencies": {
-    "@paper/ipfs": "^0.1.0",
+    "@paper/ipfs": "^0.1.1",
     "ajv": "^8.6.3",
     "it-all": "^1.0.6",
     "js-base64": "^3.7.2",

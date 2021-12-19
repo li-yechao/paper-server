@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.1.1](https://github.com/li-yechao/paper/compare/@paper/core@0.1.0...@paper/core@0.1.1) (2021-12-20)
+
+### Bug Fixes
+
+- catch resolveName exception ([2c6e1c9](https://github.com/li-yechao/paper/commit/2c6e1c9ac9af0185023657f7f9b725c16eabc637))
+- cid is required when sync ipfs files ([524bd63](https://github.com/li-yechao/paper/commit/524bd63a7b99ebe5ff21e982dc7c12c26e1f651e))
+- emit all server event to client ([9f05ec7](https://github.com/li-yechao/paper/commit/9f05ec71f884b3e2bddc1af0e64205e894495c15))
+- local objects path maybe not exist ([78b66df](https://github.com/li-yechao/paper/commit/78b66dfe2ddaf1e04c4727b53a5daeae6a79a37f))
+- stop ipfs if create account failed ([4e9f3f4](https://github.com/li-yechao/paper/commit/4e9f3f421c1b6201c83cd96a80e486a65e2357f1))
+
 # 0.1.0 (2021-12-15)
 
 ### Bug Fixes
