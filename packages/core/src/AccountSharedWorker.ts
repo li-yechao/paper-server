@@ -131,7 +131,7 @@ export default class Account extends StrictEventEmitter<{}, {}, ServerEventMap> 
   ) {
     super()
     this.crypto = new crypto.Crypto(this.user.password)
-    setTimeout(() => this.syncDebounced())
+    setTimeout(() => this.sync())
     if (this.options.autoRefreshInterval) {
       this._autoRefreshInterval = setInterval(
         () => this.syncDebounced(),
@@ -234,13 +234,7 @@ export default class Account extends StrictEventEmitter<{}, {}, ServerEventMap> 
 
   private _sync?: Promise<void>
 
-  private syncDebounced = debounce(
-    async () => {
-      this.sync()
-    },
-    10000,
-    { leading: true, trailing: true }
-  )
+  private syncDebounced = debounce(async () => this.sync(), 10000)
 
   async sync(options: { skipDownload?: boolean } = {}) {
     if (!this._sync) {
