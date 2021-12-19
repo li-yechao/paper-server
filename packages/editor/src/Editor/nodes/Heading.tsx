@@ -92,8 +92,8 @@ export default class Heading extends Node<HeadingAttrs> {
           ]
           return (
             <>
-              {buttons.map(B => (
-                <B {...buttonProps} view={view} />
+              {buttons.map((B, index) => (
+                <B {...buttonProps} key={index} view={view} />
               ))}
             </>
           )
