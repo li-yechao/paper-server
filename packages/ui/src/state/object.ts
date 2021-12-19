@@ -124,7 +124,7 @@ export function useObjectPagination({
 
   useEffect(() => {
     loadPagination()
-  }, [before, after, sync?.cid])
+  }, [before, after, sync?.cid, pagination.accountCID])
 
   return {
     ...pagination,
