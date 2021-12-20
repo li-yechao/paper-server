@@ -26,7 +26,7 @@ program
   .requiredOption('--ipfs-repo <ipfs repo path>', 'Ipfs repo path', './ipfs')
   .option('--ipfs-api <api>', 'Ipfs api address', '/ip4/127.0.0.1/tcp/5001')
   .option('--ipfs-gateway <gateway>', 'Ipfs gateway address', '/ip4/127.0.0.1/tcp/8081')
-  .requiredOption('--ipfs-swarm <addrs...>', 'Ipfs swarm address', '/ip4/0.0.0.0/tcp/4001')
+  .requiredOption('--ipfs-swarm <addrs...>', 'Ipfs swarm address', ['/ip4/0.0.0.0/tcp/4001'] as any)
   .action(
     async ({
       cors,
