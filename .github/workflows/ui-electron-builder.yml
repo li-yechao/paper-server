@@ -1,0 +1,42 @@
+name: ui-release
+
+on:
+  push:
+    tags:
+      - '@paper/ui@*.*.*'
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        os: [macos-10.15]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Install node
+        uses: actions/setup-node@v2
+        with:
+          node-version: '16'
+
+      - name: Build mac app
+        if: matrix.os == 'macos-10.15'
+        run: |
+          yarn install
+          NODE_OPTIONS="--max_old_space_size=4096" yarn workspace @paper/ui build:vite
+          echo "${{secrets.ELECTRON_MAC_CERTS}}" | base64 -o /tmp/mac.p12 --decode
+          CSC_LINK=/tmp/mac.p12 CSC_KEY_PASSWORD=${{secrets.ELECTRON_MAC_CERTS_PASSWORD}} yarn workspace @paper/ui build:mac --publish never
+
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        with:
+          body: 'Full Changelog: https://github.com/${{github.repository}}/blob/main/packages/ui/CHANGELOG.md'
+          files: |
+            packages/ui/dist-electron/latest-mac.yml
+            packages/ui/dist-electron/*.zip
+            packages/ui/dist-electron/*.zip.blockmap
+            packages/ui/dist-electron/*.dmg
+            packages/ui/dist-electron/*.dmg.blockmap
