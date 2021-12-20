@@ -215,7 +215,16 @@ export default class BlockMenu extends Extension {
         <Paper>
           <List>
             {menus.map((m, index) => (
-              <ListItemButton key={index} selected={index === selected}>
+              <ListItemButton
+                key={index}
+                selected={index === selected}
+                onClick={() => {
+                  onSubmit()
+                  m.handler(view.state, view.dispatch)
+                  onClose()
+                  view.focus()
+                }}
+              >
                 <ListItemIcon>{m.icon}</ListItemIcon>
                 {m.title}
               </ListItemButton>
