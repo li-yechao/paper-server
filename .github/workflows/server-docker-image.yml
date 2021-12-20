@@ -46,3 +46,8 @@ jobs:
           tags: |
             ${{ env.IMAGE_NAME }}:latest
             ${{ env.IMAGE_NAME }}:${{ env.RELEASE_VERSION }}
+
+      - name: Deploy
+        run: |
+          deploy_url=${{ secrets.SERVER_DEPLOY_HOOK_URL }}
+          [[ "$deploy_url" == https://* ]] && curl "$deploy_url"
