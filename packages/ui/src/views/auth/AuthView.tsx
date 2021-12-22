@@ -166,6 +166,7 @@ export default function AuthView() {
                 Login
               </Button>
               <Button
+                type="submit"
                 variant="contained"
                 onClick={newAccount}
                 disabled={loading || !userId || !password}
@@ -179,6 +180,7 @@ export default function AuthView() {
                 New Account
               </Button>
               <Button
+                type="submit"
                 variant="contained"
                 onClick={login}
                 disabled={loading || !userId || !password}
