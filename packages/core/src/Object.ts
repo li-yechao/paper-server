@@ -12,134 +12,105 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import Ajv, { JTDSchemaType } from 'ajv/dist/jtd'
 import * as IPFSFiles from 'ipfs-core-types/src/files'
-import Account from './Account'
-import { ObjectInfo } from './Channel'
-import { ObjectId } from './ObjectId'
+import { customAlphabet } from 'nanoid'
 
-export default class Object {
-  constructor(private account: Account, id: string | ObjectId) {
-    this.objectId = ObjectId.parse(id)
-    this.id = ObjectId.toString(this.objectId)
-    this.files = new ObjectFiles(this.account.user.id, this.id)
-  }
+export interface Object {
+  readonly id: string
+
+  readonly createdAt: number
 
   readonly files: ObjectFiles
 
-  readonly id: string
+  read(path: string, options?: IPFSFiles.ReadOptions): Promise<ArrayBuffer>
 
-  private readonly objectId: ObjectId
+  write(
+    path: string,
+    content: string | ArrayBuffer,
+    options?: IPFSFiles.WriteOptions
+  ): Promise<void>
 
-  get createdAt() {
-    return this.objectId.createdAt
+  get info(): Promise<ObjectInfo>
+
+  get updatedAt(): Promise<number>
+
+  setInfo(info?: Partial<ObjectInfo>): Promise<ObjectInfo>
+}
+
+export interface ObjectFiles {
+  cp(from: string | string[], to: string, options?: IPFSFiles.CpOptions): Promise<void>
+
+  mkdir(path: string, options?: IPFSFiles.MkdirOptions): Promise<void>
+
+  stat(
+    ipfsPath: string,
+    options?: IPFSFiles.StatOptions
+  ): Promise<Omit<IPFSFiles.StatResult, 'cid'> & { cid: string }>
+
+  touch(ipfsPath: string, options?: IPFSFiles.TouchOptions): Promise<void>
+
+  rm(ipfsPaths: string | string[], options?: IPFSFiles.RmOptions): Promise<void>
+
+  read(ipfsPath: string, options?: IPFSFiles.ReadOptions): AsyncIterable<Uint8Array>
+
+  write(
+    ipfsPath: string,
+    content: string | Uint8Array | Blob | AsyncIterable<Uint8Array> | Iterable<Uint8Array>,
+    options?: IPFSFiles.WriteOptions
+  ): Promise<void>
+
+  mv(from: string | string[], to: string, options?: IPFSFiles.MvOptions): Promise<void>
+
+  ls(ipfsPath: string): AsyncIterable<IPFSFiles.MFSEntry>
+}
+
+export interface ObjectInfo {
+  title?: string
+  description?: string
+}
+
+export const objectInfoSchema: JTDSchemaType<ObjectInfo> = {
+  properties: {},
+  optionalProperties: {
+    title: { type: 'string' },
+    description: { type: 'string' },
+  },
+  additionalProperties: true,
+} as const
+
+export const validateObjectInfo = new Ajv().compile(objectInfoSchema)
+
+export namespace ObjectId {
+  const objectNonce = customAlphabet('0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ', 5)
+  export const objectIdReg = /^(?<createdAt>\d+)-(?<nonce>[0-9|A-Z]{5})$/
+
+  export function create(date?: Date, nonce?: string): ObjectId {
+    date ??= new Date()
+    nonce ??= objectNonce()
+    return { createdAt: date.getTime(), nonce }
   }
 
-  get updatedAt() {
-    return Account.client.call('object_updatedAt', {
-      userId: this.account.user.id,
-      objectId: this.id,
-    })
+  export function parse(id: string | ObjectId): ObjectId {
+    if (typeof id !== 'string') {
+      return id
+    }
+    const m = id.match(objectIdReg)
+    if (m?.groups) {
+      const createdAt = parseInt(m.groups.createdAt)
+      const nonce = m.groups.nonce
+      return { createdAt, nonce }
+    }
+    throw new Error(`Invalid object id ${id}`)
   }
 
-  get info(): Promise<ObjectInfo> {
-    return Account.client.call('object_info', {
-      userId: this.account.user.id,
-      objectId: this.id,
-    })
-  }
-
-  async setInfo(info: Partial<ObjectInfo> = {}): Promise<ObjectInfo> {
-    return Account.client.call('object_setInfo', {
-      userId: this.account.user.id,
-      objectId: this.id,
-      info,
-    })
-  }
-
-  async read(path: string, options?: IPFSFiles.ReadOptions): Promise<ArrayBuffer> {
-    return Account.client.call('object_read', {
-      userId: this.account.user.id,
-      objectId: this.id,
-      path,
-      options,
-    })
-  }
-
-  async write(path: string, content: string | ArrayBuffer, options?: IPFSFiles.WriteOptions) {
-    return Account.client.call('object_write', {
-      userId: this.account.user.id,
-      objectId: this.id,
-      path,
-      content,
-      options,
-    })
+  export function toString(id: string | ObjectId): string {
+    const oid = typeof id === 'string' ? parse(id) : id
+    return `${oid.createdAt}-${oid.nonce}`
   }
 }
 
-class ObjectFiles {
-  constructor(private userId: string, private objectId: string) {}
-
-  cp(from: string | string[], to: string, options?: IPFSFiles.CpOptions) {
-    return Account.client.call('object_files_cp', {
-      userId: this.userId,
-      objectId: this.objectId,
-      from,
-      to,
-      options,
-    })
-  }
-
-  mkdir(path: string, options?: IPFSFiles.MkdirOptions) {
-    return Account.client.call('object_files_mkdir', {
-      userId: this.userId,
-      objectId: this.objectId,
-      path,
-      options,
-    })
-  }
-
-  stat(path: string, options?: IPFSFiles.StatOptions) {
-    return Account.client.call('object_files_stat', {
-      userId: this.userId,
-      objectId: this.objectId,
-      path,
-      options,
-    })
-  }
-
-  touch(path: string, options?: IPFSFiles.TouchOptions) {
-    return Account.client.call('object_files_touch', {
-      userId: this.userId,
-      objectId: this.objectId,
-      path,
-      options,
-    })
-  }
-
-  rm(path: string | string[], options?: IPFSFiles.RmOptions) {
-    return Account.client.call('object_files_rm', {
-      userId: this.userId,
-      objectId: this.objectId,
-      path,
-      options,
-    })
-  }
-
-  mv(from: string | string[], to: string, options?: IPFSFiles.MvOptions) {
-    return Account.client.call('object_files_mv', {
-      userId: this.userId,
-      objectId: this.objectId,
-      from,
-      to,
-      options,
-    })
-  }
-
-  ls(path: string) {
-    return Account.client.call('object_files_ls', {
-      userId: this.userId,
-      objectId: this.objectId,
-      path,
-    })
-  }
+export interface ObjectId {
+  createdAt: number
+  nonce: string
 }

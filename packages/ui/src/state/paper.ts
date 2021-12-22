@@ -12,8 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { Account } from '@paper/core'
-import { Object, ObjectInfo, objectInfoSchema } from '@paper/core'
+import { Account, Object, ObjectInfo, objectInfoSchema } from '@paper/core'
 import { DocJson } from '@paper/editor'
 import Ajv, { JTDSchemaType } from 'ajv/dist/jtd'
 import { memoize } from 'lodash'

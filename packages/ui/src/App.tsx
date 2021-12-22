@@ -37,7 +37,7 @@ import {
   Typography,
 } from '@mui/material'
 import { StylesProvider } from '@mui/styles'
-import { Account } from '@paper/core'
+import { Account, createAccountWorker } from '@paper/core'
 import { SnackbarProvider } from 'notistack'
 import { Suspense, useCallback, useEffect, useState } from 'react'
 import { IntlProvider } from 'react-intl'
@@ -114,7 +114,7 @@ const AppRoutes = () => {
         const account = Storage.account
         if (account) {
           const { id, password } = account
-          return Account.create({ id, password }, accountOptions)
+          return createAccountWorker({ id, password }, accountOptions)
         }
 
         return null

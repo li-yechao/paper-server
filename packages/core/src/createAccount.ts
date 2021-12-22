@@ -21,15 +21,8 @@ import WebSockets from 'libp2p-websockets'
 import filters from 'libp2p-websockets/src/filters'
 import debounce from 'lodash/debounce'
 import { nanoid } from 'nanoid'
-import {
-  AccountOptions,
-  ObjectInfo,
-  Server,
-  ServerEventMap,
-  SERVER_EVENT_TYPES,
-  validateObjectInfo,
-} from './Channel'
-import { ObjectId } from './ObjectId'
+import { Account, ServerEventMap } from './Account'
+import { Object, ObjectFiles, ObjectId, ObjectInfo, validateObjectInfo } from './Object'
 import { crypto } from './utils/crypto'
 import { fileUtils } from './utils/files'
 import sleep from './utils/sleep'
@@ -37,101 +30,77 @@ import { StrictEventEmitter } from './utils/StrictEventEmitter'
 
 const keyPath = (id: string) => `/${id}/keystore/main`
 
-new Server({
-  generateKey: async (_: undefined) => {
-    const key = await Ipfs.crypto.keys.generateKeyPair('RSA', 2048)
-    return { key: key.bytes, id: await key.id() }
-  },
-  create: async ({ user, options }, port) => {
-    const account = await Account.create(user, options)
-    const { id } = account.user
-    SERVER_EVENT_TYPES.forEach(type =>
-      account.on(type, (data: any) =>
-        port.postMessage({ type: 'event', userId: id, eventType: type, data })
-      )
-    )
-    return { id }
-  },
-  cid: async ({ userId }) => {
-    return Account.account(userId).cid
-  },
-  sync: async ({ userId, ...options }) => {
-    await Account.account(userId).sync(options)
-  },
-  stop: async ({ userId }) => {
-    await Account.stop(userId)
-  },
-  object: async ({ userId, objectId }) => {
-    const object = await Account.account(userId).object(objectId)
-    return { userId, objectId: object.id }
-  },
-  objects: async ({ userId, before, after, limit }) => {
-    return Account.account(userId).objects({ before, after, limit })
-  },
-  deleteObject: async ({ userId, objectId }) => {
-    return Account.account(userId).deleteObject(objectId)
-  },
-  object_files_cp: async ({ userId, objectId, from, to, options }) => {
-    const object = await Account.account(userId).object(objectId)
-    return object.files.cp(from, to, options)
-  },
-  object_files_mkdir: async ({ userId, objectId, path, options }) => {
-    const object = await Account.account(userId).object(objectId)
-    return object.files.mkdir(path, options)
-  },
-  object_files_stat: async ({ userId, objectId, path, options }) => {
-    const object = await Account.account(userId).object(objectId)
-    const stat = await object.files.stat(path, options)
-    return { ...stat, cid: stat.cid.toString() }
-  },
-  object_files_touch: async ({ userId, objectId, path, options }) => {
-    const object = await Account.account(userId).object(objectId)
-    return object.files.touch(path, options)
-  },
-  object_files_rm: async ({ userId, objectId, path, options }) => {
-    const object = await Account.account(userId).object(objectId)
-    return object.files.rm(path, options)
-  },
-  object_files_mv: async ({ userId, objectId, from, to, options }) => {
-    const object = await Account.account(userId).object(objectId)
-    return object.files.mv(from, to, options)
-  },
-  object_files_ls: async ({ userId, objectId, path }) => {
-    const object = await Account.account(userId).object(objectId)
-    return all(object.files.ls(path))
-  },
-  object_read: async ({ userId, objectId, path, options }) => {
-    const object = await Account.account(userId).object(objectId)
-    return object.read(path, options)
-  },
-  object_write: async ({ userId, objectId, path, content, options }) => {
-    const object = await Account.account(userId).object(objectId)
-    return object.write(path, content, options)
-  },
-  object_info: async ({ userId, objectId }) => {
-    const object = await Account.account(userId).object(objectId)
-    return object.info
-  },
-  object_updatedAt: async ({ userId, objectId }) => {
-    const object = await Account.account(userId).object(objectId)
-    return object.updatedAt
-  },
-  object_setInfo: async ({ userId, objectId, info }) => {
-    const object = await Account.account(userId).object(objectId)
-    await object.setInfo(info)
-    return object.info
-  },
-})
+export interface AccountOptions {
+  swarm: string
+  libp2pTransportFilter: 'all' | 'dnsWss' | 'dnsWsOrWss'
+  ipnsGateway: string
+  accountGateway: string
+  autoRefreshInterval?: number
+}
 
-export default class Account extends StrictEventEmitter<{}, {}, ServerEventMap> {
-  private constructor(
+export default async function createAccount(
+  user: { id: string; password: string } | { key: Uint8Array; password: string },
+  options: AccountOptions
+): Promise<Account> {
+  function isKey(a: typeof user): a is { key: Uint8Array; password: string } {
+    return typeof (a as any).key !== 'undefined'
+  }
+
+  let key: PrivateKey, id: string, ipfs: IPFS | undefined, account: Account | undefined
+
+  try {
+    if (isKey(user)) {
+      key = await Ipfs.crypto.keys.unmarshalPrivateKey(user.key)
+      id = await key.id()
+      ipfs = await createIPFS({
+        repo: id,
+        options,
+        onChangeFile: () => account?.sync({ debounce: true }),
+      })
+
+      const encryptedKey = await crypto.aes.encrypt(user.password, key.bytes)
+      await ipfs.files.write(keyPath(id), new Uint8Array(encryptedKey), {
+        parents: true,
+        create: true,
+        truncate: true,
+      })
+    } else {
+      id = user.id
+      ipfs = await createIPFS({
+        repo: id,
+        options,
+        onChangeFile: () => account?.sync({ debounce: true }),
+      })
+
+      let raw = await fileUtils.ignoreErrNotFound(fileUtils.readAll(ipfs.files.read(keyPath(id))))
+
+      if (!raw) {
+        const cid = await resolveName(id, options)
+        if (!cid) {
+          throw new Error('Load CID from ipns failed')
+        }
+        raw = await fileUtils.readAll(ipfs.files.read(fileUtils.joinPath('/ipfs', keyPath(cid))))
+      }
+      const decrypted = await crypto.aes.decrypt(user.password, raw)
+      key = await Ipfs.crypto.keys.unmarshalPrivateKey(new Uint8Array(decrypted))
+    }
+
+    return new AccountImpl(ipfs, { id, key, password: user.password }, options)
+  } catch (error) {
+    ipfs?.stop()
+    throw error
+  }
+}
+
+class AccountImpl extends StrictEventEmitter<{}, {}, ServerEventMap> implements Account {
+  constructor(
     readonly ipfs: IPFS,
     readonly user: { id: string; key: PrivateKey; password: string },
     readonly options: AccountOptions
   ) {
     super()
     this.crypto = new crypto.Crypto(this.user.password)
-    setTimeout(() => this.sync())
+    setTimeout(() => this._sync())
     if (this.options.autoRefreshInterval) {
       this._autoRefreshInterval = setInterval(
         () => this.syncDebounced(),
@@ -139,72 +108,6 @@ export default class Account extends StrictEventEmitter<{}, {}, ServerEventMap> 
       )
     }
   }
-
-  static async create(
-    user: { id: string; password: string } | { key: Uint8Array; password: string },
-    options: AccountOptions
-  ): Promise<Account> {
-    function isKey(a: typeof user): a is { key: Uint8Array; password: string } {
-      return typeof (a as any).key !== 'undefined'
-    }
-
-    let key: PrivateKey, id: string, ipfs: IPFS | undefined, account: Account | undefined
-
-    try {
-      if (isKey(user)) {
-        key = await Ipfs.crypto.keys.unmarshalPrivateKey(user.key)
-        id = await key.id()
-        ipfs = await createIPFS({ repo: id, options, onChangeFile: () => account?.syncDebounced() })
-
-        const encryptedKey = await crypto.aes.encrypt(user.password, key.bytes)
-        await ipfs.files.write(keyPath(id), new Uint8Array(encryptedKey), {
-          parents: true,
-          create: true,
-          truncate: true,
-        })
-      } else {
-        id = user.id
-        ipfs = await createIPFS({ repo: id, options, onChangeFile: () => account?.syncDebounced() })
-
-        let raw = await fileUtils.ignoreErrNotFound(fileUtils.readAll(ipfs.files.read(keyPath(id))))
-
-        if (!raw) {
-          const cid = await resolveName(id, options)
-          if (!cid) {
-            throw new Error('Load CID from ipns failed')
-          }
-          raw = await fileUtils.readAll(ipfs.files.read(fileUtils.joinPath('/ipfs', keyPath(cid))))
-        }
-        const decrypted = await crypto.aes.decrypt(user.password, raw)
-        key = await Ipfs.crypto.keys.unmarshalPrivateKey(new Uint8Array(decrypted))
-      }
-
-      account = this.accounts.get(id)
-      if (!account) {
-        account = new Account(ipfs, { id, key, password: user.password }, options)
-        this.accounts.set(id, account)
-      }
-      return account
-    } catch (error) {
-      ipfs?.stop()
-      throw error
-    }
-  }
-
-  static account(userId: string) {
-    const account = this.accounts.get(userId)
-    if (!account) {
-      throw new Error(`Account is not opened ${userId}`)
-    }
-    return account
-  }
-
-  static async stop(userId: string) {
-    await this.account(userId).stop()
-    this.accounts.delete(userId)
-  }
-
-  private static accounts: Map<string, Account> = new Map()
 
   private _autoRefreshInterval?: NodeJS.Timer
 
@@ -222,7 +125,7 @@ export default class Account extends StrictEventEmitter<{}, {}, ServerEventMap> 
     return `/${this.user.id}/trash/objects`
   }
 
-  readonly crypto: crypto.Crypto
+  private readonly crypto: crypto.Crypto
 
   async stop() {
     if (this._autoRefreshInterval) {
@@ -232,13 +135,24 @@ export default class Account extends StrictEventEmitter<{}, {}, ServerEventMap> 
     this.removeAllListeners()
   }
 
-  private _sync?: Promise<void>
+  async sync(options: { skipDownload?: boolean; debounce?: boolean } = {}) {
+    if (options.debounce) {
+      return this.syncDebounced()
+    } else {
+      return this._sync(options)
+    }
+  }
 
-  private syncDebounced = debounce(async () => this.sync(), 10000)
+  private _syncTask?: Promise<void>
 
-  async sync(options: { skipDownload?: boolean } = {}) {
-    if (!this._sync) {
-      this._sync = (async () => {
+  private syncDebounced = debounce(
+    async (options?: Parameters<AccountImpl['_sync']>[0]) => this._sync(options),
+    10000
+  )
+
+  private async _sync(options: { skipDownload?: boolean } = {}) {
+    if (!this._syncTask) {
+      this._syncTask = (async () => {
         this.emitReserved('sync', { syncing: true, cid: await this.cid })
         try {
           const cid = await resolveName(this.user.id, this.options)
@@ -262,8 +176,8 @@ export default class Account extends StrictEventEmitter<{}, {}, ServerEventMap> 
         }
       })()
     }
-    await this._sync
-    this._sync = undefined
+    await this._syncTask
+    this._syncTask = undefined
   }
 
   private async syncIPFSFilesToLocal(cid: string) {
@@ -464,11 +378,7 @@ export default class Account extends StrictEventEmitter<{}, {}, ServerEventMap> 
     const key = ObjectId.toString(objectId)
     let object = this.objectsCache.get(key)
     if (!object) {
-      object = new Object(
-        new ObjectFiles(this.ipfs, this.getObjectPath(objectId)),
-        this.crypto,
-        objectId
-      )
+      object = createObject(this.ipfs, this.getObjectPath(objectId), this.crypto, objectId)
       this.objectsCache.set(key, object)
     }
     return object
@@ -491,7 +401,7 @@ export default class Account extends StrictEventEmitter<{}, {}, ServerEventMap> 
     before?: string | ObjectId
     after?: string | ObjectId
     limit: number
-  }): Promise<string[]> {
+  }): Promise<Object[]> {
     before = before ? ObjectId.parse(before) : undefined
     after = after ? ObjectId.parse(after) : undefined
 
@@ -500,7 +410,7 @@ export default class Account extends StrictEventEmitter<{}, {}, ServerEventMap> 
       after,
     })
 
-    const result: string[] = []
+    const result: Object[] = []
 
     while (true) {
       const next = await localIter.next()
@@ -509,7 +419,8 @@ export default class Account extends StrictEventEmitter<{}, {}, ServerEventMap> 
         break
       }
 
-      result.push(next.value)
+      const objectId = ObjectId.parse(next.value)
+      result.push(createObject(this.ipfs, this.getObjectPath(objectId), this.crypto, objectId))
 
       if (result.length >= limit) {
         break
@@ -636,176 +547,6 @@ export default class Account extends StrictEventEmitter<{}, {}, ServerEventMap> 
         }
       }
     }
-  }
-}
-
-class Object {
-  constructor(readonly files: ObjectFiles, readonly crypto: crypto.Crypto, id: string | ObjectId) {
-    this.objectId = ObjectId.parse(id)
-    this.id = ObjectId.toString(this.objectId)
-  }
-
-  readonly id: string
-
-  private readonly objectId: ObjectId
-
-  private readonly passwordFilePath = '/password'
-
-  private _password?: Promise<string>
-
-  private get password(): Promise<string> {
-    if (!this._password) {
-      const getPassword = async (content: AsyncIterable<Uint8Array>) => {
-        try {
-          const raw = await fileUtils.readAll(content)
-          return new TextDecoder().decode(await this.crypto.aes.decrypt(raw))
-        } catch (error) {
-          if (!fileUtils.isErrNotFound(error)) {
-            throw error
-          }
-        }
-      }
-
-      this._password = (async () => {
-        return (
-          (await getPassword(this.files.read(this.passwordFilePath))) ||
-          (await (async () => {
-            const password = nanoid(32)
-            const raw = await this.crypto.aes.encrypt(new TextEncoder().encode(password))
-            await this.files.write(this.passwordFilePath, new Uint8Array(raw), {
-              parents: true,
-              create: true,
-              truncate: true,
-            })
-            return password
-          })())
-        )
-      })()
-    }
-    return this._password
-  }
-
-  async read(path: string, options?: IPFSFiles.ReadOptions): Promise<ArrayBuffer> {
-    const buffer = await fileUtils.readAll(this.files.read(path, options))
-    return crypto.aes.decrypt(await this.password, buffer)
-  }
-
-  async write(path: string, content: string | ArrayBuffer, options?: IPFSFiles.WriteOptions) {
-    if (typeof content === 'string') {
-      content = new TextEncoder().encode(content)
-    }
-    const buffer = await crypto.aes.encrypt(await this.password, content)
-    await this.files.write(path, new Uint8Array(buffer), options)
-  }
-
-  private readonly infoFilePath = '/info.json'
-  private readonly mtimeFilePath = '/mtime'
-
-  get info(): Promise<ObjectInfo> {
-    return (async () => {
-      try {
-        const json = JSON.parse(new TextDecoder().decode(await this.read(this.infoFilePath)))
-        if (validateObjectInfo(json)) {
-          return json
-        }
-      } catch {}
-      return {}
-    })()
-  }
-
-  private _updatedAt?: Promise<number>
-
-  get updatedAt(): Promise<number> {
-    if (!this._updatedAt) {
-      this._updatedAt = (async () => {
-        const time = await fileUtils.ignoreErrNotFound(
-          fileUtils.readString(this.files.read('/mtime'))
-        )
-        return (time && parseInt(time)) || 0
-      })()
-    }
-    return this._updatedAt
-  }
-
-  async setInfo(info: Partial<ObjectInfo> = {}) {
-    const old = await this.info
-
-    globalThis.Object.entries(info).forEach(
-      ([key, value]) => value !== undefined && ((old as any)[key] = value)
-    )
-
-    await this.write(this.infoFilePath, JSON.stringify(old), {
-      parents: true,
-      create: true,
-      truncate: true,
-    })
-
-    const updatedAt = Date.now()
-    await this.files.write(this.mtimeFilePath, updatedAt.toString(), {
-      parents: true,
-      create: true,
-      truncate: true,
-    })
-
-    this._updatedAt = Promise.resolve(updatedAt)
-  }
-}
-
-class ObjectFiles {
-  constructor(private ipfs: IPFS, private base: string) {
-    if (!base.startsWith('/')) {
-      throw new Error(`Base must be starts with /, but got "${base}"`)
-    }
-  }
-
-  cp(from: string | string[], to: string, options?: IPFSFiles.CpOptions) {
-    return this.ipfs.files.cp(this.resolvePath(from), this.resolvePath(to), options)
-  }
-
-  mkdir(path: string, options?: IPFSFiles.MkdirOptions) {
-    return this.ipfs.files.mkdir(this.resolvePath(path), options)
-  }
-
-  stat(ipfsPath: string, options?: IPFSFiles.StatOptions) {
-    return this.ipfs.files.stat(this.resolvePath(ipfsPath), options)
-  }
-
-  touch(ipfsPath: string, options?: IPFSFiles.TouchOptions) {
-    return this.ipfs.files.touch(this.resolvePath(ipfsPath), options)
-  }
-
-  rm(ipfsPaths: string | string[], options?: IPFSFiles.RmOptions) {
-    return this.ipfs.files.rm(this.resolvePath(ipfsPaths), options)
-  }
-
-  read(ipfsPath: string, options?: IPFSFiles.ReadOptions) {
-    return this.ipfs.files.read(this.resolvePath(ipfsPath), options)
-  }
-
-  write(
-    ipfsPath: string,
-    content: string | Uint8Array | Blob | AsyncIterable<Uint8Array> | Iterable<Uint8Array>,
-    options?: IPFSFiles.WriteOptions
-  ) {
-    return this.ipfs.files.write(this.resolvePath(ipfsPath), content, options)
-  }
-
-  mv(from: string | string[], to: string, options?: IPFSFiles.MvOptions) {
-    return this.ipfs.files.mv(this.resolvePath(from), this.resolvePath(to), options)
-  }
-
-  ls(ipfsPath: string) {
-    return this.ipfs.files.ls(this.resolvePath(ipfsPath))
-  }
-
-  private resolvePath(path: string[]): string[]
-  private resolvePath(path: string): string
-  private resolvePath(path: string | string[]): string | string[]
-  private resolvePath(path: string | string[]): string | string[] {
-    if (Array.isArray(path)) {
-      return path.map(i => this.resolvePath(i))
-    }
-    return fileUtils.joinPath(this.base, path)
   }
 }
 
@@ -994,4 +735,190 @@ async function ensureSwarmConnection(
     })()
   }
   return ipfs._ensureSwarmConnection
+}
+
+function createObject(
+  ipfs: IPFS,
+  base: string,
+  crypto: crypto.Crypto,
+  id: string | ObjectId
+): Object {
+  return new ObjectImpl(new ObjectFilesImpl(ipfs, base), crypto, id)
+}
+
+class ObjectImpl implements Object {
+  constructor(readonly files: ObjectFiles, readonly crypto: crypto.Crypto, id: string | ObjectId) {
+    this.objectId = ObjectId.parse(id)
+    this.id = ObjectId.toString(this.objectId)
+  }
+
+  readonly id: string
+
+  get createdAt() {
+    return this.objectId.createdAt
+  }
+
+  private readonly objectId: ObjectId
+
+  private readonly passwordFilePath = '/password'
+
+  private _password?: Promise<string>
+
+  private get password(): Promise<string> {
+    if (!this._password) {
+      const getPassword = async (content: AsyncIterable<Uint8Array>) => {
+        try {
+          const raw = await fileUtils.readAll(content)
+          return new TextDecoder().decode(await this.crypto.aes.decrypt(raw))
+        } catch (error) {
+          if (!fileUtils.isErrNotFound(error)) {
+            throw error
+          }
+        }
+      }
+
+      this._password = (async () => {
+        return (
+          (await getPassword(this.files.read(this.passwordFilePath))) ||
+          (await (async () => {
+            const password = nanoid(32)
+            const raw = await this.crypto.aes.encrypt(new TextEncoder().encode(password))
+            await this.files.write(this.passwordFilePath, new Uint8Array(raw), {
+              parents: true,
+              create: true,
+              truncate: true,
+            })
+            return password
+          })())
+        )
+      })()
+    }
+    return this._password
+  }
+
+  async read(path: string, options?: IPFSFiles.ReadOptions): Promise<ArrayBuffer> {
+    const buffer = await fileUtils.readAll(this.files.read(path, options))
+    return crypto.aes.decrypt(await this.password, buffer)
+  }
+
+  async write(path: string, content: string | ArrayBuffer, options?: IPFSFiles.WriteOptions) {
+    if (typeof content === 'string') {
+      content = new TextEncoder().encode(content)
+    }
+    const buffer = await crypto.aes.encrypt(await this.password, content)
+    await this.files.write(path, new Uint8Array(buffer), options)
+  }
+
+  private readonly infoFilePath = '/info.json'
+  private readonly mtimeFilePath = '/mtime'
+
+  get info(): Promise<ObjectInfo> {
+    return (async () => {
+      try {
+        const json = JSON.parse(new TextDecoder().decode(await this.read(this.infoFilePath)))
+        if (validateObjectInfo(json)) {
+          return json
+        }
+      } catch {}
+      return {}
+    })()
+  }
+
+  private _updatedAt?: Promise<number>
+
+  get updatedAt(): Promise<number> {
+    if (!this._updatedAt) {
+      this._updatedAt = (async () => {
+        const time = await fileUtils.ignoreErrNotFound(
+          fileUtils.readString(this.files.read('/mtime'))
+        )
+        return (time && parseInt(time)) || 0
+      })()
+    }
+    return this._updatedAt
+  }
+
+  async setInfo(info: Partial<ObjectInfo> = {}) {
+    const old = await this.info
+
+    globalThis.Object.entries(info).forEach(
+      ([key, value]) => value !== undefined && ((old as any)[key] = value)
+    )
+
+    await this.write(this.infoFilePath, JSON.stringify(old), {
+      parents: true,
+      create: true,
+      truncate: true,
+    })
+
+    const updatedAt = Date.now()
+    await this.files.write(this.mtimeFilePath, updatedAt.toString(), {
+      parents: true,
+      create: true,
+      truncate: true,
+    })
+
+    this._updatedAt = Promise.resolve(updatedAt)
+
+    return old
+  }
+}
+
+class ObjectFilesImpl implements ObjectFiles {
+  constructor(private ipfs: IPFS, private base: string) {
+    if (!base.startsWith('/')) {
+      throw new Error(`Base must be starts with /, but got "${base}"`)
+    }
+  }
+
+  cp(from: string | string[], to: string, options?: IPFSFiles.CpOptions) {
+    return this.ipfs.files.cp(this.resolvePath(from), this.resolvePath(to), options)
+  }
+
+  mkdir(path: string, options?: IPFSFiles.MkdirOptions) {
+    return this.ipfs.files.mkdir(this.resolvePath(path), options)
+  }
+
+  async stat(ipfsPath: string, options?: IPFSFiles.StatOptions) {
+    const stat = await this.ipfs.files.stat(this.resolvePath(ipfsPath), options)
+    return { ...stat, cid: stat.cid.toString() }
+  }
+
+  touch(ipfsPath: string, options?: IPFSFiles.TouchOptions) {
+    return this.ipfs.files.touch(this.resolvePath(ipfsPath), options)
+  }
+
+  rm(ipfsPaths: string | string[], options?: IPFSFiles.RmOptions) {
+    return this.ipfs.files.rm(this.resolvePath(ipfsPaths), options)
+  }
+
+  read(ipfsPath: string, options?: IPFSFiles.ReadOptions) {
+    return this.ipfs.files.read(this.resolvePath(ipfsPath), options)
+  }
+
+  write(
+    ipfsPath: string,
+    content: string | Uint8Array | Blob | AsyncIterable<Uint8Array> | Iterable<Uint8Array>,
+    options?: IPFSFiles.WriteOptions
+  ) {
+    return this.ipfs.files.write(this.resolvePath(ipfsPath), content, options)
+  }
+
+  mv(from: string | string[], to: string, options?: IPFSFiles.MvOptions) {
+    return this.ipfs.files.mv(this.resolvePath(from), this.resolvePath(to), options)
+  }
+
+  ls(ipfsPath: string) {
+    return this.ipfs.files.ls(this.resolvePath(ipfsPath))
+  }
+
+  private resolvePath(path: string[]): string[]
+  private resolvePath(path: string): string
+  private resolvePath(path: string | string[]): string | string[]
+  private resolvePath(path: string | string[]): string | string[] {
+    if (Array.isArray(path)) {
+      return path.map(i => this.resolvePath(i))
+    }
+    return fileUtils.joinPath(this.base, path)
+  }
 }

@@ -12,93 +12,38 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// @ts-ignore
-import AccountSharedWorker from './AccountSharedWorker?worker'
-
-import { AccountOptions, Client, SERVER_EVENT_TYPES, ServerEventMap } from './Channel'
-import Object from './Object'
+import { Object, ObjectId } from './Object'
 import { StrictEventEmitter } from './utils/StrictEventEmitter'
 
-export default class Account extends StrictEventEmitter<{}, {}, ServerEventMap> {
-  private constructor(readonly user: { id: string; password: string }) {
-    super()
+export interface Account extends StrictEventEmitter<{}, {}, ServerEventMap> {
+  readonly cid: Promise<string | undefined>
 
-    SERVER_EVENT_TYPES.forEach(type => {
-      const handler = (userId: string, e: any) => {
-        userId === this.user.id && this.emitReserved(type, e)
-      }
-      Account.client.on(type, handler)
-      this.serverEventListeners[type] = handler
-    })
-  }
+  readonly user: { id: string; password: string }
 
-  private serverEventListeners: { [key in keyof ServerEventMap]?: Function } = {}
+  stop(): Promise<void>
 
-  private static _client: Client
-  static get client() {
-    if (!this._client) {
-      this._client = new Client(new AccountSharedWorker())
-    }
-    return this._client
-  }
+  sync(options?: { skipDownload?: boolean; debounce?: boolean }): Promise<void>
 
-  static async generateKey() {
-    return this.client.call('generateKey', undefined)
-  }
+  object(objectId?: string | ObjectId): Promise<Object>
 
-  static async create(
-    user: { id: string; password: string } | { key: Uint8Array; password: string },
-    options: AccountOptions
-  ) {
-    const { id } = await this.client.call('create', { user, options })
-    return new Account({ id, password: user.password })
-  }
+  deleteObject(objectId?: string | ObjectId): Promise<void>
 
-  get cid() {
-    return Account.client.call('cid', { userId: this.user.id })
-  }
-
-  async sync(options: { skipDownload?: boolean } = {}) {
-    await Account.client.call('sync', { userId: this.user.id, ...options })
-  }
-
-  async stop() {
-    await Account.client.call('stop', { userId: this.user.id })
-
-    SERVER_EVENT_TYPES.forEach(type => {
-      const handler = this.serverEventListeners[type]
-      if (handler) {
-        Account.client.off(type, handler as any)
-        this.serverEventListeners[type] = undefined
-      }
-    })
-  }
-
-  async objects({
-    before,
-    after,
-    limit,
-  }: {
-    before?: string
-    after?: string
+  objects(query: {
+    before?: string | ObjectId
+    after?: string | ObjectId
     limit: number
-  }): Promise<Object[]> {
-    const ids = await Account.client.call('objects', {
-      userId: this.user.id,
-      before: before,
-      after: after,
-      limit,
-    })
+  }): Promise<Object[]>
+}
 
-    return ids.map(id => new Object(this, id))
-  }
+export interface ServerEventMap {
+  sync: (e: { syncing: boolean; error?: string; cid?: string }) => void
+  error: (e: MessageError['error']) => void
+}
 
-  async object(objectId?: string): Promise<Object> {
-    const res = await Account.client.call('object', { userId: this.user.id, objectId })
-    return new Object(this, res.objectId)
-  }
+export interface MessageError {
+  error: { message: string; code?: string }
+}
 
-  async deleteObject(objectId?: string) {
-    await Account.client.call('deleteObject', { userId: this.user.id, objectId })
-  }
+export function isMessageError(e: any): e is MessageError {
+  return typeof (e as MessageError)?.error !== 'undefined'
 }

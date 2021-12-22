@@ -24,7 +24,7 @@ import {
   TextField,
   Typography,
 } from '@mui/material'
-import { Account } from '@paper/core'
+import { createAccountWorker, generateKeyWorker } from '@paper/core'
 import { useSnackbar } from 'notistack'
 import { useCallback, useEffect, useLayoutEffect, useState } from 'react'
 import { useToggle } from 'react-use'
@@ -39,12 +39,12 @@ export default function AuthView() {
   const [isNewAccount, toggleIsNewAccount] = useToggle(false)
   const [loading, toggleLoading] = useToggle(false)
 
-  const [key, setKey] = useState<PromiseType<ReturnType<typeof Account.generateKey>>>()
+  const [key, setKey] = useState<PromiseType<ReturnType<typeof generateKeyWorker>>>()
   const [userId, setUserId] = useState('')
   const [password, setPassword] = useState('')
 
   const regenerateKey = useCallback(async () => {
-    setKey(await Account.generateKey())
+    setKey(await generateKeyWorker())
   }, [])
 
   const newAccount = useCallback(async () => {
@@ -53,7 +53,7 @@ export default function AuthView() {
     }
     toggleLoading(true)
     try {
-      const account = await Account.create({ key: key.key, password }, accountOptions)
+      const account = await createAccountWorker({ key: key.key, password }, accountOptions)
       setAccount(account)
     } catch (error) {
       snackbar.enqueueSnackbar(error.message, { variant: 'error' })
@@ -69,7 +69,7 @@ export default function AuthView() {
     }
     toggleLoading(true)
     try {
-      const account = await Account.create({ id: userId, password }, accountOptions)
+      const account = await createAccountWorker({ id: userId, password }, accountOptions)
       setAccount(account)
     } catch (error) {
       snackbar.enqueueSnackbar(error.message, { variant: 'error' })
@@ -87,7 +87,7 @@ export default function AuthView() {
   useEffect(() => {
     if (isNewAccount) {
       if (!key) {
-        Account.generateKey().then(key => {
+        generateKeyWorker().then(key => {
           setKey(key)
         })
       } else {

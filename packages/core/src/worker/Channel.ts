@@ -12,25 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import Ajv, { JTDSchemaType } from 'ajv/dist/jtd'
 import * as IPFSFiles from 'ipfs-core-types/src/files'
 import { nanoid } from 'nanoid'
-import { StrictEventEmitter } from './utils/StrictEventEmitter'
-
-export interface AccountOptions {
-  swarm: string
-  libp2pTransportFilter: 'all' | 'dnsWss' | 'dnsWsOrWss'
-  ipnsGateway: string
-  accountGateway: string
-  autoRefreshInterval?: number
-}
+import { isMessageError, MessageError, ServerEventMap } from '../Account'
+import { AccountOptions } from '../createAccount'
+import { ObjectInfo } from '../Object'
+import { StrictEventEmitter } from '../utils/StrictEventEmitter'
 
 export const SERVER_EVENT_TYPES: (keyof ServerEventMap)[] = ['error', 'sync']
-
-export interface ServerEventMap {
-  sync: (e: { syncing: boolean; error?: string; cid?: string }) => void
-  error: (e: MessageError['error']) => void
-}
 
 export type ServerEvent<K extends keyof ServerEventMap = keyof ServerEventMap> = {
   [k in keyof ServerEventMap]: {
@@ -145,14 +134,6 @@ export type MessageData<T extends keyof MessageMap = keyof MessageMap> = {
   }
 }[T]
 
-export interface MessageError {
-  error: { message: string; code?: string }
-}
-
-export function isMessageError(e: any): e is MessageError {
-  return typeof (e as MessageError)?.error !== 'undefined'
-}
-
 export class Client extends StrictEventEmitter<
   {},
   {},
@@ -221,19 +202,3 @@ export class Server {
     }
   }
 }
-
-export interface ObjectInfo {
-  title?: string
-  description?: string
-}
-
-export const objectInfoSchema: JTDSchemaType<ObjectInfo> = {
-  properties: {},
-  optionalProperties: {
-    title: { type: 'string' },
-    description: { type: 'string' },
-  },
-  additionalProperties: true,
-} as const
-
-export const validateObjectInfo = new Ajv().compile(objectInfoSchema)

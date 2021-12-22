@@ -12,11 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-export * from './Account'
-export * from './createAccount'
-export { default as createAccount } from './createAccount'
-export * from './Object'
-export {
-  default as createAccountWorker,
-  generateKey as generateKeyWorker,
-} from './worker/createAccountWorker'
+// @ts-ignore
+import AccountWorker_ from './AccountWorker_worker?worker'
+
+export default AccountWorker_
