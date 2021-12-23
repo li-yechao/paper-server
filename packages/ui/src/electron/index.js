@@ -16,6 +16,8 @@ const { app, BrowserWindow, nativeTheme } = require('electron')
 const { autoUpdater } = require('electron-updater')
 const windowStateKeeper = require('electron-window-state')
 
+const CHECK_UPDATE_TIME_INTERVAL = 1000 * 60 * 15
+
 app.setName('Paper')
 
 try {
@@ -118,6 +120,9 @@ app.on('window-all-closed', () => {
   }
 })
 
-app.on('ready', () => {
-  autoUpdater.checkForUpdatesAndNotify()
+app.on('ready', async () => {
+  while (true) {
+    await autoUpdater.checkForUpdatesAndNotify()
+    await new Promise(resolve => setTimeout(resolve, CHECK_UPDATE_TIME_INTERVAL))
+  }
 })
