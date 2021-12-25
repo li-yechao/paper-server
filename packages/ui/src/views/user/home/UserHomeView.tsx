@@ -217,6 +217,7 @@ function ObjectItem({
       <_ListItemButton divider onClick={e => onClick(e, paper)}>
         <ListItemText
           primary={title || 'Untitled'}
+          primaryTypographyProps={{ noWrap: true }}
           secondary={
             <Typography variant="caption">
               <FormattedDate
