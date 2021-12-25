@@ -19,6 +19,7 @@ import { Keymap } from 'prosemirror-commands'
 import { InputRule, wrappingInputRule } from 'prosemirror-inputrules'
 import { NodeType } from 'prosemirror-model'
 import { liftListItem, sinkListItem, splitListItem } from 'prosemirror-schema-list'
+import { findParentNodeOfType } from 'prosemirror-utils'
 import { EditorView } from 'prosemirror-view'
 import Node, { NodeViewCreator, NodeViewReact, StrictNodeSpec, StrictProsemirrorNode } from './Node'
 
@@ -89,7 +90,15 @@ class TodoItem extends Node<TodoItemAttrs> {
 
   keymap({ type }: { type: NodeType }): Keymap {
     return {
-      Enter: splitListItem(type),
+      Enter: (state, dispatch) => {
+        return splitListItem(type)(state, tr => {
+          const p = findParentNodeOfType(type)(tr.selection)
+          if (p) {
+            tr = tr.setNodeMarkup(p.pos, undefined, { ...p.node.attrs, checked: false })
+          }
+          dispatch?.(tr)
+        })
+      },
       'Mod-[': liftListItem(type),
       'Mod-]': sinkListItem(type),
     }
