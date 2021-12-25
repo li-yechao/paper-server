@@ -201,7 +201,7 @@ const _AppBar = () => {
   }
 
   return (
-    <__AppBar position="fixed" elevation={0}>
+    <__AppBar position="fixed">
       <Toolbar>
         {isElectron && <Box width={72} />}
 
@@ -233,9 +233,8 @@ const _AppBar = () => {
 }
 
 const __AppBar = styled(AppBar)`
-  background-color: ${props => props.theme.palette.background.paper};
+  background-color: ${props => props.theme.palette.background.default};
   color: ${props => props.theme.palette.text.primary};
-  border-bottom: 1px solid ${props => props.theme.palette.divider};
   user-select: none;
   -webkit-app-region: drag;
 
