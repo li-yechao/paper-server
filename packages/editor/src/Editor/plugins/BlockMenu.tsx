@@ -241,7 +241,7 @@ function useMenuPosition(view: EditorView) {
   const coords = view.coordsAtPos(selection.from)
   const rect = view.dom.getBoundingClientRect()
   return {
-    left: Math.floor(rect.left),
+    left: Math.floor(Math.abs(coords.left - rect.left)),
     top: Math.floor(coords.top - rect.top),
   }
 }

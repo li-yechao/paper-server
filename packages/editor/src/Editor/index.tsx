@@ -130,6 +130,8 @@ const Editor = React.memo(
 
 const rootCSS = css`
   position: relative;
+  margin-left: 24px;
+  margin-right: 24px;
 `
 
 const loadingCSS = css`
