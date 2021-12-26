@@ -34,7 +34,7 @@ import { Account } from '@paper/core'
 import FileSaver from 'file-saver'
 import { useSnackbar } from 'notistack'
 import * as React from 'react'
-import { useCallback, useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { FormattedDate } from 'react-intl'
 import { useNavigate, useParams } from 'react-router-dom'
 import ArrowMenu from '../../../components/ArrowMenu'
@@ -65,9 +65,11 @@ export default function UserHomeView() {
   const pagination = useObjectPagination({ accountState, limit: 10 })
   const [menuState, setMenuState] = useState<{ anchorEl: Element; paper: Paper }>()
 
-  const handleToDetail = useCallback((_: React.MouseEvent<Element>, paper: Paper) => {
-    navigate(`/${userId}/${paper.object.id}`)
-  }, [])
+  const handleToDetail = (_: React.MouseEvent<Element>, paper: Paper) => {
+    navigate(`/${userId}/${paper.object.id}`, {
+      state: { before: pagination.before, after: pagination.after },
+    })
+  }
 
   const handleOpenMenu = (e: React.MouseEvent<Element>, paper: Paper) => {
     e.stopPropagation()

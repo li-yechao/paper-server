@@ -17,7 +17,7 @@ import { atom, useRecoilCallback, useRecoilState } from 'recoil'
 import { memoize } from 'lodash'
 import { useEffect } from 'react'
 import { AccountState } from './account'
-import { useNavigate, useSearchParams } from 'react-router-dom'
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom'
 
 export interface ObjectPagination {
   accountCID?: string
@@ -58,9 +58,10 @@ export function useObjectPagination({
   loadNext: () => void
 } {
   const navigate = useNavigate()
+  const location = useLocation()
   const [search] = useSearchParams()
-  const before = search.get('before')
-  const after = search.get('after')
+  const before = location.state?.before || search.get('before')
+  const after = location.state?.after || search.get('after')
   const [pagination, setPagination] = useRecoilState(objectPaginationState(account))
 
   const loadFirstPage = () => {
@@ -93,7 +94,7 @@ export function useObjectPagination({
   }
 
   const loadPagination = async () => {
-    setPagination(v => ({ ...v, loading: true }))
+    setPagination(v => ({ ...v, before, after, loading: true }))
     try {
       const page = await getObjectPagination({ account, before, after, limit })
 
