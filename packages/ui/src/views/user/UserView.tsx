@@ -27,7 +27,10 @@ export default function UserView() {
     return (
       <LargeContainer>
         <aside>
-          <UserHomeViewLazy />
+          <Routes>
+            <Route index element={<UserHomeViewLazy />} />
+            <Route path=":objectId" element={<UserHomeViewLazy />} />
+          </Routes>
         </aside>
         <main>
           <Routes>

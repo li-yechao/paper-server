@@ -201,6 +201,7 @@ function ObjectItem({
   onClick: (e: React.MouseEvent<Element>, paper: Paper) => void
   onMenuClick: (e: React.MouseEvent<Element>, paper: Paper) => void
 }) {
+  const { objectId: currentObjectId } = useParams<'objectId'>()
   const [cid, setCID] = useState<string>()
   const paper = usePaper({ account, objectId })
   const info = useAsync(() => paper.info, [cid])
@@ -225,7 +226,11 @@ function ObjectItem({
     const time = updatedAt.value || paper.object.createdAt
 
     return (
-      <_ListItemButton divider onClick={e => onClick(e, paper)}>
+      <_ListItemButton
+        divider
+        selected={objectId === currentObjectId}
+        onClick={e => onClick(e, paper)}
+      >
         <ListItemText
           primary={title || 'Untitled'}
           primaryTypographyProps={{ noWrap: true }}
