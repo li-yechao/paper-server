@@ -13,27 +13,11 @@
 // limitations under the License.
 
 import { Account, Object } from '@paper/core'
-import { atom, useRecoilCallback, useRecoilState, useRecoilValue } from 'recoil'
+import { atom, useRecoilCallback, useRecoilState } from 'recoil'
 import { memoize } from 'lodash'
 import { useEffect } from 'react'
 import { AccountState } from './account'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-
-const objectState = memoize(
-  (account: Account, objectId: string) => {
-    return atom({
-      key: `objectState-${account.user.id}-${objectId}`,
-      default: account.object(objectId),
-      dangerouslyAllowMutability: true,
-    })
-  },
-  (account, objectId) => `objectState-${account.user.id}-${objectId}`
-)
-
-export function useObject({ account, objectId }: { account: Account; objectId: string }) {
-  const state = objectState(account, objectId)
-  return useRecoilValue(state)
-}
 
 export interface ObjectPagination {
   accountCID?: string
