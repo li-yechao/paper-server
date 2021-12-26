@@ -207,7 +207,9 @@ function ObjectItem({
   const updatedAt = useAsync(() => paper.object.updatedAt, [])
 
   useEffect(() => {
-    const onChange = (e: { cid: string }) => setCID(e.cid)
+    const onChange = (e: { cid: string }) => {
+      setCID(e.cid)
+    }
     paper.object.files.on('change', onChange)
     return () => {
       paper.object.files.off('change', onChange)

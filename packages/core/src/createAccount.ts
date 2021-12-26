@@ -877,12 +877,12 @@ class ObjectFilesImpl extends StrictEventEmitter<{}, {}, ObjectFileEvents> imple
 
   async cp(from: string | string[], to: string, options?: IPFSFiles.CpOptions) {
     await this.ipfs.files.cp(this.resolvePath(from), this.resolvePath(to), options)
-    await this.emitChangeEvent()
+    this.emitChangeEvent()
   }
 
   async mkdir(path: string, options?: IPFSFiles.MkdirOptions) {
     await this.ipfs.files.mkdir(this.resolvePath(path), options)
-    await this.emitChangeEvent()
+    this.emitChangeEvent()
   }
 
   async stat(ipfsPath: string, options?: IPFSFiles.StatOptions) {
@@ -892,12 +892,12 @@ class ObjectFilesImpl extends StrictEventEmitter<{}, {}, ObjectFileEvents> imple
 
   async touch(ipfsPath: string, options?: IPFSFiles.TouchOptions) {
     await this.ipfs.files.touch(this.resolvePath(ipfsPath), options)
-    await this.emitChangeEvent()
+    this.emitChangeEvent()
   }
 
   async rm(ipfsPaths: string | string[], options?: IPFSFiles.RmOptions) {
     await this.ipfs.files.rm(this.resolvePath(ipfsPaths), options)
-    await this.emitChangeEvent()
+    this.emitChangeEvent()
   }
 
   read(ipfsPath: string, options?: IPFSFiles.ReadOptions) {
@@ -910,12 +910,12 @@ class ObjectFilesImpl extends StrictEventEmitter<{}, {}, ObjectFileEvents> imple
     options?: IPFSFiles.WriteOptions
   ) {
     await this.ipfs.files.write(this.resolvePath(ipfsPath), content, options)
-    await this.emitChangeEvent()
+    this.emitChangeEvent()
   }
 
   async mv(from: string | string[], to: string, options?: IPFSFiles.MvOptions) {
     await this.ipfs.files.mv(this.resolvePath(from), this.resolvePath(to), options)
-    await this.emitChangeEvent()
+    this.emitChangeEvent()
   }
 
   ls(ipfsPath: string) {
@@ -932,8 +932,8 @@ class ObjectFilesImpl extends StrictEventEmitter<{}, {}, ObjectFileEvents> imple
     return fileUtils.joinPath(this.base, path)
   }
 
-  private async emitChangeEvent() {
+  private emitChangeEvent = debounce(async () => {
     const cid = (await this.stat('/')).cid.toString()
     this.emitReserved('change', { cid })
-  }
+  }, 500)
 }
