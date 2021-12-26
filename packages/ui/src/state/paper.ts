@@ -92,6 +92,7 @@ const paperState = memoize(
     return atom({
       key: `paperState-${account.user.id}-${objectId}`,
       default: account.object(objectId).then(object => new Paper(object)),
+      dangerouslyAllowMutability: true,
     })
   },
   (account, objectId) => `paperState-${account.user.id}-${objectId}`

@@ -38,6 +38,7 @@ export interface Account extends StrictEventEmitter<{}, {}, AccountEvents> {
 export interface AccountEvents {
   sync: (e: { syncing: boolean; error?: string; cid?: string }) => void
   error: (e: AccountError['error']) => void
+  objectChange: (e: { objectId: string; cid: string }) => void
 }
 
 export interface AccountError {

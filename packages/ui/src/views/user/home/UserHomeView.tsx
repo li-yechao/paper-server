@@ -34,7 +34,7 @@ import { Account } from '@paper/core'
 import FileSaver from 'file-saver'
 import { useSnackbar } from 'notistack'
 import * as React from 'react'
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { FormattedDate } from 'react-intl'
 import { useNavigate, useParams } from 'react-router-dom'
 import ArrowMenu from '../../../components/ArrowMenu'
@@ -201,9 +201,18 @@ function ObjectItem({
   onClick: (e: React.MouseEvent<Element>, paper: Paper) => void
   onMenuClick: (e: React.MouseEvent<Element>, paper: Paper) => void
 }) {
+  const [cid, setCID] = useState<string>()
   const paper = usePaper({ account, objectId })
-  const info = useAsync(() => paper.info, [])
+  const info = useAsync(() => paper.info, [cid])
   const updatedAt = useAsync(() => paper.object.updatedAt, [])
+
+  useEffect(() => {
+    const onChange = (e: { cid: string }) => setCID(e.cid)
+    paper.object.files.on('change', onChange)
+    return () => {
+      paper.object.files.off('change', onChange)
+    }
+  }, [paper])
 
   if (info.loading) {
     return <ObjectItem.Skeleton />

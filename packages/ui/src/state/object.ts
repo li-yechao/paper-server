@@ -24,6 +24,7 @@ const objectState = memoize(
     return atom({
       key: `objectState-${account.user.id}-${objectId}`,
       default: account.object(objectId),
+      dangerouslyAllowMutability: true,
     })
   },
   (account, objectId) => `objectState-${account.user.id}-${objectId}`
@@ -56,6 +57,7 @@ const objectPaginationState = memoize(
         hasPrevious: false,
         hasNext: false,
       },
+      dangerouslyAllowMutability: true,
     })
   },
   account => account.user.id

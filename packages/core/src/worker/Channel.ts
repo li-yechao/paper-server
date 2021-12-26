@@ -19,7 +19,7 @@ import { AccountOptions } from '../createAccount'
 import { ObjectInfo } from '../Object'
 import { StrictEventEmitter } from '../utils/StrictEventEmitter'
 
-export const SERVER_EVENT_TYPES: (keyof AccountEvents)[] = ['error', 'sync']
+export const SERVER_EVENT_TYPES: (keyof AccountEvents)[] = ['error', 'sync', 'objectChange']
 
 export type ServerEvent<K extends keyof AccountEvents = keyof AccountEvents> = {
   [k in keyof AccountEvents]: {

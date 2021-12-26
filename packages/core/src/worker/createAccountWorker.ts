@@ -15,7 +15,7 @@
 import * as IPFSFiles from 'ipfs-core-types/src/files'
 import { Account, AccountEvents } from '../Account'
 import { AccountOptions } from '../createAccount'
-import { Object, ObjectFiles, ObjectId, ObjectInfo } from '../Object'
+import { Object, ObjectFileEvents, ObjectFiles, ObjectId, ObjectInfo } from '../Object'
 import { StrictEventEmitter } from '../utils/StrictEventEmitter'
 import AccountWorker_ from './AccountWorker_'
 import { Client, SERVER_EVENT_TYPES } from './Channel'
@@ -43,7 +43,13 @@ export class AccountWorker extends StrictEventEmitter<{}, {}, AccountEvents> imp
       AccountWorker.client.on(type, handler)
       this.serverEventListeners[type] = handler
     })
+
+    this.on('objectChange', ({ objectId, ...e }) => {
+      ;(this.objectsCache.get(objectId)?.files as any).emitReserved('change', e)
+    })
   }
+
+  private objectsCache: Map<string, Object> = new Map()
 
   private serverEventListeners: { [key in keyof AccountEvents]?: Function } = {}
 
@@ -91,16 +97,25 @@ export class AccountWorker extends StrictEventEmitter<{}, {}, AccountEvents> imp
       limit,
     })
 
-    return ids.map(id => new ObjectWorker(this, id))
+    return ids.map(id => this.createObject(id))
   }
 
   async object(objectId?: string): Promise<Object> {
     const res = await AccountWorker.client.call('object', { userId: this.user.id, objectId })
-    return new ObjectWorker(this, res.objectId)
+    return this.createObject(res.objectId)
   }
 
   async deleteObject(objectId?: string) {
     await AccountWorker.client.call('deleteObject', { userId: this.user.id, objectId })
+  }
+
+  private createObject(objectId: string): Object {
+    let object = this.objectsCache.get(objectId)
+    if (!object) {
+      object = new ObjectWorker(this, objectId)
+      this.objectsCache.set(objectId, object)
+    }
+    return object
   }
 }
 
@@ -163,8 +178,10 @@ class ObjectWorker implements Object {
   }
 }
 
-class ObjectFilesImpl implements ObjectFiles {
-  constructor(private userId: string, private objectId: string) {}
+class ObjectFilesImpl extends StrictEventEmitter<{}, {}, ObjectFileEvents> implements ObjectFiles {
+  constructor(private userId: string, private objectId: string) {
+    super()
+  }
 
   cp(from: string | string[], to: string, options?: IPFSFiles.CpOptions) {
     return AccountWorker.client.call('object_files_cp', {

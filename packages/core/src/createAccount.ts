@@ -21,7 +21,14 @@ import debounce from 'lodash/debounce'
 import { nanoid } from 'nanoid'
 import { Account, AccountEvents } from './Account'
 import { filters, WebSockets } from './libp2p-websocket'
-import { Object, ObjectFiles, ObjectId, ObjectInfo, validateObjectInfo } from './Object'
+import {
+  Object,
+  ObjectFileEvents,
+  ObjectFiles,
+  ObjectId,
+  ObjectInfo,
+  validateObjectInfo,
+} from './Object'
 import { crypto } from './utils/crypto'
 import { fileUtils } from './utils/files'
 import sleep from './utils/sleep'
@@ -374,11 +381,11 @@ class AccountImpl extends StrictEventEmitter<{}, {}, AccountEvents> implements A
 
   async object(objectId?: string | ObjectId): Promise<Object> {
     objectId = ObjectId.parse(objectId ?? ObjectId.create())
-    const key = ObjectId.toString(objectId)
-    let object = this.objectsCache.get(key)
+    const objectIdString = ObjectId.toString(objectId)
+    let object = this.objectsCache.get(objectIdString)
     if (!object) {
-      object = createObject(this.ipfs, this.getObjectPath(objectId), this.crypto, objectId)
-      this.objectsCache.set(key, object)
+      object = this.createObject(objectId)
+      this.objectsCache.set(objectIdString, object)
     }
     return object
   }
@@ -419,7 +426,7 @@ class AccountImpl extends StrictEventEmitter<{}, {}, AccountEvents> implements A
       }
 
       const objectId = ObjectId.parse(next.value)
-      result.push(createObject(this.ipfs, this.getObjectPath(objectId), this.crypto, objectId))
+      result.push(this.createObject(objectId))
 
       if (result.length >= limit) {
         break
@@ -546,6 +553,13 @@ class AccountImpl extends StrictEventEmitter<{}, {}, AccountEvents> implements A
         }
       }
     }
+  }
+
+  private createObject(objectId: ObjectId): Object {
+    const files = new ObjectFilesImpl(this.ipfs, this.getObjectPath(objectId))
+    const objectIdString = ObjectId.toString(objectId)
+    files.on('change', e => this.emitReserved('objectChange', { ...e, objectId: objectIdString }))
+    return new ObjectImpl(files, this.crypto, objectId)
   }
 }
 
@@ -736,15 +750,6 @@ async function ensureSwarmConnection(
   return ipfs._ensureSwarmConnection
 }
 
-function createObject(
-  ipfs: IPFS,
-  base: string,
-  crypto: crypto.Crypto,
-  id: string | ObjectId
-): Object {
-  return new ObjectImpl(new ObjectFilesImpl(ipfs, base), crypto, id)
-}
-
 class ObjectImpl implements Object {
   constructor(readonly files: ObjectFiles, readonly crypto: crypto.Crypto, id: string | ObjectId) {
     this.objectId = ObjectId.parse(id)
@@ -863,19 +868,22 @@ class ObjectImpl implements Object {
   }
 }
 
-class ObjectFilesImpl implements ObjectFiles {
+class ObjectFilesImpl extends StrictEventEmitter<{}, {}, ObjectFileEvents> implements ObjectFiles {
   constructor(private ipfs: IPFS, private base: string) {
+    super()
     if (!base.startsWith('/')) {
       throw new Error(`Base must be starts with /, but got "${base}"`)
     }
   }
 
-  cp(from: string | string[], to: string, options?: IPFSFiles.CpOptions) {
-    return this.ipfs.files.cp(this.resolvePath(from), this.resolvePath(to), options)
+  async cp(from: string | string[], to: string, options?: IPFSFiles.CpOptions) {
+    await this.ipfs.files.cp(this.resolvePath(from), this.resolvePath(to), options)
+    await this.emitChangeEvent()
   }
 
-  mkdir(path: string, options?: IPFSFiles.MkdirOptions) {
-    return this.ipfs.files.mkdir(this.resolvePath(path), options)
+  async mkdir(path: string, options?: IPFSFiles.MkdirOptions) {
+    await this.ipfs.files.mkdir(this.resolvePath(path), options)
+    await this.emitChangeEvent()
   }
 
   async stat(ipfsPath: string, options?: IPFSFiles.StatOptions) {
@@ -883,28 +891,32 @@ class ObjectFilesImpl implements ObjectFiles {
     return { ...stat, cid: stat.cid.toString() }
   }
 
-  touch(ipfsPath: string, options?: IPFSFiles.TouchOptions) {
-    return this.ipfs.files.touch(this.resolvePath(ipfsPath), options)
+  async touch(ipfsPath: string, options?: IPFSFiles.TouchOptions) {
+    await this.ipfs.files.touch(this.resolvePath(ipfsPath), options)
+    await this.emitChangeEvent()
   }
 
-  rm(ipfsPaths: string | string[], options?: IPFSFiles.RmOptions) {
-    return this.ipfs.files.rm(this.resolvePath(ipfsPaths), options)
+  async rm(ipfsPaths: string | string[], options?: IPFSFiles.RmOptions) {
+    await this.ipfs.files.rm(this.resolvePath(ipfsPaths), options)
+    await this.emitChangeEvent()
   }
 
   read(ipfsPath: string, options?: IPFSFiles.ReadOptions) {
     return this.ipfs.files.read(this.resolvePath(ipfsPath), options)
   }
 
-  write(
+  async write(
     ipfsPath: string,
     content: string | Uint8Array | Blob | AsyncIterable<Uint8Array> | Iterable<Uint8Array>,
     options?: IPFSFiles.WriteOptions
   ) {
-    return this.ipfs.files.write(this.resolvePath(ipfsPath), content, options)
+    await this.ipfs.files.write(this.resolvePath(ipfsPath), content, options)
+    await this.emitChangeEvent()
   }
 
-  mv(from: string | string[], to: string, options?: IPFSFiles.MvOptions) {
-    return this.ipfs.files.mv(this.resolvePath(from), this.resolvePath(to), options)
+  async mv(from: string | string[], to: string, options?: IPFSFiles.MvOptions) {
+    await this.ipfs.files.mv(this.resolvePath(from), this.resolvePath(to), options)
+    await this.emitChangeEvent()
   }
 
   ls(ipfsPath: string) {
@@ -919,5 +931,10 @@ class ObjectFilesImpl implements ObjectFiles {
       return path.map(i => this.resolvePath(i))
     }
     return fileUtils.joinPath(this.base, path)
+  }
+
+  private async emitChangeEvent() {
+    const cid = (await this.stat('/')).cid.toString()
+    this.emitReserved('change', { cid })
   }
 }

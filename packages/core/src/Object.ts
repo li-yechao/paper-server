@@ -15,6 +15,7 @@
 import Ajv, { JTDSchemaType } from 'ajv/dist/jtd'
 import * as IPFSFiles from 'ipfs-core-types/src/files'
 import { customAlphabet } from 'nanoid'
+import { StrictEventEmitter } from './utils/StrictEventEmitter'
 
 export interface Object {
   readonly id: string
@@ -38,7 +39,11 @@ export interface Object {
   setInfo(info?: Partial<ObjectInfo>): Promise<ObjectInfo>
 }
 
-export interface ObjectFiles {
+export interface ObjectFileEvents {
+  change: (e: { cid: string }) => void
+}
+
+export interface ObjectFiles extends StrictEventEmitter<{}, {}, ObjectFileEvents> {
   cp(from: string | string[], to: string, options?: IPFSFiles.CpOptions): Promise<void>
 
   mkdir(path: string, options?: IPFSFiles.MkdirOptions): Promise<void>
