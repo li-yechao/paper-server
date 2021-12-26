@@ -67,9 +67,7 @@ new Server({
     return { userId, objectId: object.id }
   },
   objects: async ({ userId, before, after, limit }) => {
-    return getAccount(userId)
-      .objects({ before, after, limit })
-      .then(res => res.map(i => i.id))
+    return getAccount(userId).objects({ before, after, limit })
   },
   deleteObject: async ({ userId, objectId }) => {
     return getAccount(userId).deleteObject(objectId)

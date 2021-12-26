@@ -40,7 +40,7 @@ export interface ObjectPagination {
   loading: boolean
   before: string | null
   after: string | null
-  list: Object[]
+  list: string[]
   hasPrevious: boolean
   hasNext: boolean
 }
@@ -92,7 +92,7 @@ export function useObjectPagination({
       return
     }
     const s = new URLSearchParams(search)
-    s.set('after', first.id)
+    s.set('after', first)
     s.delete('before')
     navigate({ search: s.toString() }, { replace: true })
   }
@@ -103,7 +103,7 @@ export function useObjectPagination({
       return
     }
     const s = new URLSearchParams(search)
-    s.set('before', last.id)
+    s.set('before', last)
     s.delete('after')
     navigate({ search: s.toString() }, { replace: true })
   }
@@ -235,14 +235,14 @@ async function getObjectPagination({
   after?: string | null
   limit: number
 }) {
-  let hasPrevious: boolean, hasNext: boolean, list: Object[]
+  let hasPrevious: boolean, hasNext: boolean, list: string[]
 
   if (before) {
     const objects = await account.objects({
       before: increaseObjectId(before),
       limit: limit + 2,
     })
-    const startIndex = objects.findIndex(i => i.id >= before)
+    const startIndex = objects.findIndex(i => i >= before)
     hasPrevious = startIndex >= 0
     list = objects.slice(startIndex + 1)
     hasNext = list.length > limit
@@ -254,7 +254,7 @@ async function getObjectPagination({
       after: decreaseObjectId(after),
       limit: limit + 2,
     })
-    const endIndex = objects.findIndex(i => i.id <= after)
+    const endIndex = objects.findIndex(i => i <= after)
     hasNext = endIndex >= 0
     list = objects.slice(0, endIndex)
     hasPrevious = list.length > limit

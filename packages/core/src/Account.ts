@@ -32,7 +32,7 @@ export interface Account extends StrictEventEmitter<{}, {}, AccountEvents> {
     before?: string | ObjectId
     after?: string | ObjectId
     limit: number
-  }): Promise<Object[]>
+  }): Promise<string[]>
 }
 
 export interface AccountEvents {

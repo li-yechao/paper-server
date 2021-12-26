@@ -407,7 +407,7 @@ class AccountImpl extends StrictEventEmitter<{}, {}, AccountEvents> implements A
     before?: string | ObjectId
     after?: string | ObjectId
     limit: number
-  }): Promise<Object[]> {
+  }): Promise<string[]> {
     before = before ? ObjectId.parse(before) : undefined
     after = after ? ObjectId.parse(after) : undefined
 
@@ -416,7 +416,7 @@ class AccountImpl extends StrictEventEmitter<{}, {}, AccountEvents> implements A
       after,
     })
 
-    const result: Object[] = []
+    const result: string[] = []
 
     while (true) {
       const next = await localIter.next()
@@ -425,8 +425,7 @@ class AccountImpl extends StrictEventEmitter<{}, {}, AccountEvents> implements A
         break
       }
 
-      const objectId = ObjectId.parse(next.value)
-      result.push(this.createObject(objectId))
+      result.push(next.value)
 
       if (result.length >= limit) {
         break

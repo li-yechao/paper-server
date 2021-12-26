@@ -81,7 +81,7 @@ export class AccountWorker extends StrictEventEmitter<{}, {}, AccountEvents> imp
     })
   }
 
-  async objects({
+  objects({
     before,
     after,
     limit,
@@ -89,15 +89,13 @@ export class AccountWorker extends StrictEventEmitter<{}, {}, AccountEvents> imp
     before?: string
     after?: string
     limit: number
-  }): Promise<Object[]> {
-    const ids = await AccountWorker.client.call('objects', {
+  }): Promise<string[]> {
+    return AccountWorker.client.call('objects', {
       userId: this.user.id,
       before: before,
       after: after,
       limit,
     })
-
-    return ids.map(id => this.createObject(id))
   }
 
   async object(objectId?: string): Promise<Object> {
