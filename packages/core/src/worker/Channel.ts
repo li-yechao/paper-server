@@ -14,19 +14,19 @@
 
 import * as IPFSFiles from 'ipfs-core-types/src/files'
 import { nanoid } from 'nanoid'
-import { isMessageError, MessageError, ServerEventMap } from '../Account'
+import { isMessageError, AccountError, AccountEvents } from '../Account'
 import { AccountOptions } from '../createAccount'
 import { ObjectInfo } from '../Object'
 import { StrictEventEmitter } from '../utils/StrictEventEmitter'
 
-export const SERVER_EVENT_TYPES: (keyof ServerEventMap)[] = ['error', 'sync']
+export const SERVER_EVENT_TYPES: (keyof AccountEvents)[] = ['error', 'sync']
 
-export type ServerEvent<K extends keyof ServerEventMap = keyof ServerEventMap> = {
-  [k in keyof ServerEventMap]: {
+export type ServerEvent<K extends keyof AccountEvents = keyof AccountEvents> = {
+  [k in keyof AccountEvents]: {
     type: 'event'
     userId: string
     eventType: k
-    data: Parameters<ServerEventMap[k]>[0]
+    data: Parameters<AccountEvents[k]>[0]
   }
 }[K]
 
@@ -129,7 +129,7 @@ export type MessageData<T extends keyof MessageMap = keyof MessageMap> = {
     res: {
       id: string
       type: key
-      response: Awaited<ReturnType<MessageMap[key]>> | MessageError
+      response: Awaited<ReturnType<MessageMap[key]>> | AccountError
     }
   }
 }[T]
@@ -137,7 +137,9 @@ export type MessageData<T extends keyof MessageMap = keyof MessageMap> = {
 export class Client extends StrictEventEmitter<
   {},
   {},
-  { [k in keyof ServerEventMap]: (userId: string, data: Parameters<ServerEventMap[k]>[0]) => void }
+  {
+    [k in keyof AccountEvents]: (userId: string, data: Parameters<AccountEvents[k]>[0]) => void
+  }
 > {
   constructor(private worker: Worker) {
     super()

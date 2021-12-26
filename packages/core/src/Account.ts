@@ -15,7 +15,7 @@
 import { Object, ObjectId } from './Object'
 import { StrictEventEmitter } from './utils/StrictEventEmitter'
 
-export interface Account extends StrictEventEmitter<{}, {}, ServerEventMap> {
+export interface Account extends StrictEventEmitter<{}, {}, AccountEvents> {
   readonly cid: Promise<string | undefined>
 
   readonly user: { id: string; password: string }
@@ -35,15 +35,15 @@ export interface Account extends StrictEventEmitter<{}, {}, ServerEventMap> {
   }): Promise<Object[]>
 }
 
-export interface ServerEventMap {
+export interface AccountEvents {
   sync: (e: { syncing: boolean; error?: string; cid?: string }) => void
-  error: (e: MessageError['error']) => void
+  error: (e: AccountError['error']) => void
 }
 
-export interface MessageError {
+export interface AccountError {
   error: { message: string; code?: string }
 }
 
-export function isMessageError(e: any): e is MessageError {
-  return typeof (e as MessageError)?.error !== 'undefined'
+export function isMessageError(e: any): e is AccountError {
+  return typeof (e as AccountError)?.error !== 'undefined'
 }

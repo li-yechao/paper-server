@@ -19,7 +19,7 @@ import { PrivateKey } from 'ipfs-core/src/components/ipns'
 import all from 'it-all'
 import debounce from 'lodash/debounce'
 import { nanoid } from 'nanoid'
-import { Account, ServerEventMap } from './Account'
+import { Account, AccountEvents } from './Account'
 import { filters, WebSockets } from './libp2p-websocket'
 import { Object, ObjectFiles, ObjectId, ObjectInfo, validateObjectInfo } from './Object'
 import { crypto } from './utils/crypto'
@@ -91,7 +91,7 @@ export default async function createAccount(
   }
 }
 
-class AccountImpl extends StrictEventEmitter<{}, {}, ServerEventMap> implements Account {
+class AccountImpl extends StrictEventEmitter<{}, {}, AccountEvents> implements Account {
   constructor(
     readonly ipfs: IPFS,
     readonly user: { id: string; key: PrivateKey; password: string },

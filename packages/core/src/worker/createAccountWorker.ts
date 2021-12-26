@@ -13,7 +13,7 @@
 // limitations under the License.
 
 import * as IPFSFiles from 'ipfs-core-types/src/files'
-import { Account, ServerEventMap } from '../Account'
+import { Account, AccountEvents } from '../Account'
 import { AccountOptions } from '../createAccount'
 import { Object, ObjectFiles, ObjectId, ObjectInfo } from '../Object'
 import { StrictEventEmitter } from '../utils/StrictEventEmitter'
@@ -32,7 +32,7 @@ export async function generateKey() {
   return AccountWorker.client.call('generateKey', undefined)
 }
 
-export class AccountWorker extends StrictEventEmitter<{}, {}, ServerEventMap> implements Account {
+export class AccountWorker extends StrictEventEmitter<{}, {}, AccountEvents> implements Account {
   constructor(readonly user: { id: string; password: string }) {
     super()
 
@@ -45,7 +45,7 @@ export class AccountWorker extends StrictEventEmitter<{}, {}, ServerEventMap> im
     })
   }
 
-  private serverEventListeners: { [key in keyof ServerEventMap]?: Function } = {}
+  private serverEventListeners: { [key in keyof AccountEvents]?: Function } = {}
 
   private static _client: Client
   static get client() {
