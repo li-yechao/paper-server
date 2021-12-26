@@ -19,7 +19,7 @@ import Editor, { EditorState } from '@paper/editor'
 import FileSaver from 'file-saver'
 import { debounce } from 'lodash'
 import { useSnackbar } from 'notistack'
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { useBeforeUnload, useMountedState, useToggle } from 'react-use'
 import ArrowMenu from '../../../components/ArrowMenu'
@@ -79,11 +79,11 @@ export default function ObjectView() {
     }
   }, [paper])
 
-  useLayoutEffect(() => {
+  useEffect(() => {
     return () => {
       save()
     }
-  }, [])
+  }, [userId, objectId])
 
   useEffect(() => {
     if (changed) {
