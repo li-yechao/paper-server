@@ -238,6 +238,28 @@ export const proseMirrorStyle = css`
     color: #8c8c8c;
   }
 
+  > blockquote {
+    > h1,
+    > h2,
+    > h3,
+    > h4,
+    > h5,
+    > h6 {
+      &:before {
+        margin-left: -42px;
+      }
+    }
+
+    > ul,
+    > ol {
+      > li {
+        &:before {
+          left: -74px;
+        }
+      }
+    }
+  }
+
   code {
     font-family: SFMono-Regular, Consolas, Liberation Mono, Menlo, Courier, monospace;
     font-size: inherit;
