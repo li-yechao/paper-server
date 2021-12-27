@@ -1,6 +1,6 @@
 {
   "name": "@paper/editor",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Editor powered by ProseMirror",
   "author": "LiYechao <liyechao@yechao.xyz>",
   "license": "Apache-2.0",

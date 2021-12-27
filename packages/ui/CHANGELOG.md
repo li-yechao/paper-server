@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.2.0](https://github.com/li-yechao/paper/compare/@paper/ui@0.1.3...@paper/ui@0.2.0) (2021-12-27)
+
+### Bug Fixes
+
+- save paper on object id changed ([cdb2328](https://github.com/li-yechao/paper/commit/cdb2328398732d71ece2661b455bff84d2aa16b0))
+- store before and after query to state ([61f0dc1](https://github.com/li-yechao/paper/commit/61f0dc1f7b5a184f1ba554b91657752e6a8d99d2))
+
+### Features
+
+- new layout on large screen ([ceed3f8](https://github.com/li-yechao/paper/commit/ceed3f8a896f3cf23ed0749f295c5caa1278023c))
+
 ## [0.1.3](https://github.com/li-yechao/paper/compare/@paper/ui@0.1.2...@paper/ui@0.1.3) (2021-12-23)
 
 **Note:** Version bump only for package @paper/ui
