@@ -159,6 +159,8 @@ class AccountImpl extends StrictEventEmitter<{}, {}, AccountEvents> implements A
   private async _sync(options: { skipDownload?: boolean } = {}) {
     if (!this._syncTask) {
       this._syncTask = (async () => {
+        let localCID: string | undefined
+
         this.emitReserved('sync', { syncing: true, cid: await this.cid })
         try {
           const cid = await resolveName(this.user.id, this.options)
@@ -167,7 +169,7 @@ class AccountImpl extends StrictEventEmitter<{}, {}, AccountEvents> implements A
           }
 
           // publish
-          const localCID = (await this.cid)?.toString()
+          localCID = (await this.cid)?.toString()
           if (localCID && localCID !== cid) {
             await withIPFSReconnect(
               this.ipfs,
@@ -175,9 +177,12 @@ class AccountImpl extends StrictEventEmitter<{}, {}, AccountEvents> implements A
               publishName(localCID, this.user.password, this.options)
             )
           }
-          this.emitReserved('sync', { syncing: false, cid: await this.cid })
+          this.emitReserved('sync', { syncing: false, cid: localCID })
+          if (localCID) {
+            await this.ipfs.pin.add(localCID, { recursive: true })
+          }
         } catch (error: any) {
-          this.emitReserved('sync', { syncing: false, error: error.message, cid: await this.cid })
+          this.emitReserved('sync', { syncing: false, error: error.message, cid: localCID })
           this.emitReserved('error', { message: error.message })
         }
       })()
