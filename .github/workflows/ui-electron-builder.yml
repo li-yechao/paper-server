@@ -52,5 +52,5 @@ jobs:
 
       - name: Deploy
         run: |
-          deploy_url=$(echo ${{ secrets.WEB_DEPLOY_HOOK_URL }} | sed -e "s~{{tag}}~${GITHUB_REF#refs/*/}~")
+          deploy_url=$(echo "${{ secrets.WEB_DEPLOY_HOOK_URL }}" | sed -e "s~{{tag}}~${GITHUB_REF#refs/*/}~")
           [[ "$deploy_url" == https://* ]] && curl "$deploy_url"
