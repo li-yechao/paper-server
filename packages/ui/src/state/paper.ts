@@ -13,11 +13,15 @@
 // limitations under the License.
 
 import { Account, Object, ObjectInfo, objectInfoSchema } from '@paper/core'
-import { DocJson } from '@paper/editor'
+import { DocJson, State } from '@paper/editor'
 import Ajv, { JTDSchemaType } from 'ajv/dist/jtd'
-import { memoize } from 'lodash'
+import { debounce, memoize } from 'lodash'
 import { customAlphabet } from 'nanoid'
 import { atom, useRecoilValue } from 'recoil'
+import { defaultMarks, defaultNodes, defaultPlugins } from '../editor/schema'
+
+const AUTO_SAVE_WAIT_MS = 5 * 1000
+const AUTO_SAVE_MAX_WAIT_MS = 30 * 1000
 
 export class Paper {
   constructor(readonly object: Object) {}
@@ -84,6 +88,73 @@ export class Paper {
   async getResource(cid: string, filename: string): Promise<File> {
     const buffer = await this.object.read(`files/${cid}/${filename}`)
     return new File([new Blob([buffer])], filename)
+  }
+
+  private _version: number = 0
+
+  private _savedVersion: number = 0
+
+  get changed() {
+    return this._version !== this._savedVersion
+  }
+
+  private _state?: State
+
+  get state() {
+    if (!this._state) {
+      this._state = (() => {
+        const uploadOptions: Parameters<typeof defaultNodes>[0]['imageBlockOptions'] = {
+          upload: async (file: File) => {
+            const files = [new File([file], 'image'), new File([file], `original/${file.name}`)]
+            return this.addResource(files)
+          },
+          getSrc: async cid => {
+            const file = await this.getResource(cid, 'image')
+            return URL.createObjectURL(file)
+          },
+          thumbnail: {
+            maxSize: 1024,
+          },
+        }
+
+        return new State([
+          ...defaultNodes({ imageBlockOptions: uploadOptions }),
+          ...defaultMarks(),
+          ...defaultPlugins({
+            imageBlockOptions: uploadOptions,
+            valueOptions: {
+              defaultValue: this.getContent(),
+              editable: true,
+              onDispatchTransaction: (_, tr) => {
+                if (tr.docChanged) {
+                  this._version += 1
+                  this.autoSave()
+                }
+              },
+            },
+          }),
+        ])
+      })()
+    }
+    return this._state
+  }
+
+  autoSave = debounce(this.save, AUTO_SAVE_WAIT_MS, { maxWait: AUTO_SAVE_MAX_WAIT_MS })
+
+  async save() {
+    const doc = this._state?.doc
+    const { _savedVersion, _version } = this
+
+    if (!doc || _savedVersion === _version) {
+      return
+    }
+
+    const title = doc.firstChild?.textContent.slice(0, 100)
+
+    await this.setContent(doc.toJSON())
+    await this.setInfo({ title })
+
+    this._savedVersion = _version
   }
 }
 

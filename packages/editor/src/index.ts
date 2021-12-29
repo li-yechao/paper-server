@@ -47,11 +47,13 @@ export * from 'prosemirror-markdown'
 export * from 'prosemirror-model'
 export * from 'prosemirror-state'
 
+export default Editor
+
 export type { EditorProps, EditorElement } from './Editor'
 
-export { default as Extension } from './Editor/lib/Extension'
+export { default as State } from './Editor/lib/State'
 
-export { default as ExtensionManager } from './Editor/lib/ExtensionManager'
+export { default as Extension } from './Editor/lib/Extension'
 
 export type { DocJson } from './Editor/plugins/Value'
 
@@ -60,8 +62,6 @@ export { defaultMarkdownSerializer } from './utils/markdown'
 export { default as StrictNode } from './Editor/nodes/Node'
 
 export { default as StrictMark } from './Editor/marks/Mark'
-
-export default Editor
 
 export const nodes = {
   Text,

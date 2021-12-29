@@ -23,8 +23,8 @@ import Node, { ChildNode } from '../nodes/Node'
 import Extension from './Extension'
 import { MenuComponentType } from './FloatingToolbar'
 
-export default class ExtensionManager {
-  constructor(public extensions: Extension[] = []) {
+export default class State {
+  constructor(readonly extensions: Extension[] = []) {
     this.schema = new Schema({
       nodes: this.nodeSpecs,
       marks: this.markSpecs,
@@ -123,6 +123,12 @@ export default class ExtensionManager {
     return this.extensions.find(i => i.editable)?.editable
   }
 
+  private _editorState?: EditorState
+
+  get doc() {
+    return this._editorState?.doc
+  }
+
   async createEditor(
     place:
       | globalThis.Node
@@ -132,10 +138,11 @@ export default class ExtensionManager {
     props: Omit<DirectEditorProps, 'state' | 'nodeViews'>
   ): Promise<{ view: EditorView; menus: MenuComponentType[] }> {
     const { dispatchTransactionHandlers, editable } = this
+    const _this = this
 
     const view = new EditorView(place, {
       ...props,
-      state: await this.createState(),
+      state: this._editorState ?? (await this.createState()),
       nodeViews: this.nodeViews,
       editable,
       dispatchTransaction: function (tr) {
@@ -146,6 +153,8 @@ export default class ExtensionManager {
         for (const f of dispatchTransactionHandlers) {
           f(view, tr)
         }
+
+        _this._editorState = view.state
       },
     })
 

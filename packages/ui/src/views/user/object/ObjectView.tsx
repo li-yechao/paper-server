@@ -15,30 +15,22 @@
 import styled from '@emotion/styled'
 import { CloudDownload } from '@mui/icons-material'
 import { IconButton, ListItemIcon, ListSubheader, MenuItem } from '@mui/material'
-import Editor, { EditorState } from '@paper/editor'
+import Editor from '@paper/editor'
 import FileSaver from 'file-saver'
-import { debounce } from 'lodash'
 import { useSnackbar } from 'notistack'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
-import { useBeforeUnload, useMountedState, useToggle } from 'react-use'
+import { useBeforeUnload } from 'react-use'
 import ArrowMenu from '../../../components/ArrowMenu'
 import Markdown from '../../../components/Icons/Markdown'
-import NetworkIndicator, { useToggleNetworkIndicator } from '../../../components/NetworkIndicator'
-import { defaultMarks, defaultNodes, defaultPlugins } from '../../../editor/schema'
+import { useToggleNetworkIndicator } from '../../../components/NetworkIndicator'
 import toMarkdown from '../../../editor/toMarkdown'
 import { useAccount } from '../../../state/account'
 import { HeaderAction, useHeaderActionsCtrl } from '../../../state/header'
 import { Paper, usePaper } from '../../../state/paper'
-import useAsync from '../../../utils/useAsync'
 import useOnSave from '../../../utils/useOnSave'
 
-const AUTO_SAVE_WAIT_MS = 5 * 1000
-const AUTO_SAVE_MAX_WAIT_MS = 30 * 1000
-
 export default function ObjectView() {
-  const mounted = useMountedState()
-
   const { userId, objectId } = useParams<'userId' | 'objectId'>()
   if (!userId) {
     throw new Error('Required params userId is not present')
@@ -51,47 +43,20 @@ export default function ObjectView() {
   if (account.user.id !== userId) {
     throw new Error('Forbidden')
   }
+
   const paper = usePaper({ account, objectId })
-
-  const ref = useRef<{ state?: EditorState; version: number; savedVersion: number }>({
-    state: undefined,
-    version: 0,
-    savedVersion: 0,
-  })
-
-  const [changed, toggleChanged] = useToggle(false)
-
-  const save = useCallback(async () => {
-    if (!mounted()) {
-      return
-    }
-    const { state, version, savedVersion } = ref.current
-    if (paper && state && version !== savedVersion) {
-      const title = state.doc.firstChild?.textContent.slice(0, 100)
-
-      await paper.setContent(state.doc.toJSON())
-      await paper.setInfo({ title })
-
-      ref.current.savedVersion = version
-      if (mounted()) {
-        toggleChanged(false)
-      }
-    }
-  }, [paper])
 
   useEffect(() => {
     return () => {
-      save()
+      paper.save()
     }
-  }, [userId, objectId])
+  }, [paper])
 
-  useEffect(() => {
-    if (changed) {
-      document.title = document.title.replace(/^\**/, '*')
-    } else {
-      document.title = document.title.replace(/^\**/, '')
-    }
-  }, [changed])
+  useOnSave(() => paper.save(), [paper])
+
+  useBeforeUnload(() => {
+    return paper.changed
+  }, 'Discard changes?')
 
   const headerActionsCtrl = useHeaderActionsCtrl()
 
@@ -106,57 +71,7 @@ export default function ObjectView() {
     return () => headerActionsCtrl.remove(exportButton)
   }, [paper])
 
-  const extensions = useAsync(async () => {
-    const autoSave = debounce(save, AUTO_SAVE_WAIT_MS, { maxWait: AUTO_SAVE_MAX_WAIT_MS })
-
-    const content = await paper.getContent()
-
-    const uploadOptions: Parameters<typeof defaultNodes>[0]['imageBlockOptions'] = {
-      upload: async (file: File) => {
-        const files = [new File([file], 'image'), new File([file], `original/${file.name}`)]
-        return paper.addResource(files)
-      },
-      getSrc: async cid => {
-        const file = await paper.getResource(cid, 'image')
-        return URL.createObjectURL(file)
-      },
-      thumbnail: {
-        maxSize: 1024,
-      },
-    }
-
-    return [
-      ...defaultNodes({ imageBlockOptions: uploadOptions }),
-      ...defaultMarks(),
-      ...defaultPlugins({
-        imageBlockOptions: uploadOptions,
-        valueOptions: {
-          defaultValue: content,
-          editable: true,
-          onDispatchTransaction: (view, tr) => {
-            if (tr.docChanged) {
-              ref.current.version += 1
-              ref.current.state = view.state
-              toggleChanged(true)
-              autoSave()
-            }
-          },
-        },
-      }),
-    ]
-  }, [paper])
-
-  useOnSave(save, [save])
-
-  useBeforeUnload(() => {
-    return ref.current.version !== ref.current.savedVersion
-  }, 'Discard changes?')
-
-  if (extensions.error) {
-    throw extensions.error
-  }
-
-  return extensions.loading ? <NetworkIndicator in /> : <_Editor extensions={extensions.value} />
+  return <_Editor state={paper.state} />
 }
 
 const _Editor = styled(Editor)`

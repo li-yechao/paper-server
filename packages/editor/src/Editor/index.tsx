@@ -15,22 +15,22 @@
 import { css, cx } from '@emotion/css'
 import { TextSelection } from 'prosemirror-state'
 import { EditorView } from 'prosemirror-view'
-import React, { forwardRef, useMemo, useState } from 'react'
+import React, { forwardRef, useState } from 'react'
 import { useEffect } from 'react'
 import { useImperativeHandle } from 'react'
 import { useRef } from 'react'
 import { useSafeUpdate } from '../utils/useSafeUpdate'
 import CupertinoActivityIndicator from './lib/CupertinoActivityIndicator'
-import Extension from './lib/Extension'
-import ExtensionManager from './lib/ExtensionManager'
-import FloatingToolbar, { MenuComponentType } from './lib/FloatingToolbar'
+import State from './lib/State'
+import FloatingToolbar from './lib/FloatingToolbar'
 import BlockMenu from './plugins/BlockMenu'
 import { proseMirrorStyle } from './style'
+import useAsync from '../utils/useAsync'
 
 export interface EditorProps {
   className?: string
   autoFocus?: boolean
-  extensions: Extension[]
+  state: State
 }
 
 export interface EditorElement {
@@ -43,78 +43,76 @@ const Editor = React.memo(
     const update = useSafeUpdate()
 
     const container = useRef<HTMLDivElement>(null)
-    const editor = useRef<{ view: EditorView; menus: MenuComponentType[] }>()
+    const previousView = useRef<EditorView>()
 
     const [blockMenuKeyword, setBlockMenuKeyword] = useState<string | null>(null)
+
+    const state = useAsync(async () => {
+      if (previousView.current) {
+        previousView.current.destroy()
+      }
+
+      const { view, menus } = await props.state.createEditor(
+        { mount: container.current! },
+        { dispatchTransaction: () => update() }
+      )
+
+      previousView.current = view
+
+      const blockMenu = props.state.extensions.find<BlockMenu>(
+        (i): i is BlockMenu => i instanceof BlockMenu
+      )
+      blockMenu?.setOptions({
+        onOpen: setBlockMenuKeyword,
+        onClose: () => setBlockMenuKeyword(null),
+      })
+
+      return { view, menus, blockMenu }
+    }, [props.state])
+
+    const view = state.value?.view
 
     useImperativeHandle(
       ref,
       () => ({
-        focus: () => editor.current?.view.focus(),
+        focus: () => view?.focus(),
         get view() {
-          return editor.current?.view
+          return view
         },
       }),
       []
     )
 
     useEffect(() => {
-      ;(async () => {
-        if (editor.current) {
-          editor.current.view.destroy()
-          editor.current = undefined
-        }
-
-        if (!container.current) {
-          return
-        }
-
-        editor.current = await new ExtensionManager(props.extensions).createEditor(
-          { mount: container.current },
-          {
-            dispatchTransaction: () => update(),
-          }
-        )
-        update()
-      })()
-    }, [props.extensions])
-
-    useEffect(() => {
-      const view = editor.current?.view
       if (view && props.autoFocus) {
         const { tr, doc } = view.state
         view.dispatch(tr.setSelection(TextSelection.atEnd(doc)))
         view.focus()
       }
-    }, [])
+    }, [props.autoFocus, view])
 
-    const blockMenu = useMemo(() => {
-      const e = props.extensions.find<BlockMenu>((i): i is BlockMenu => i instanceof BlockMenu)
-      e?.setOptions({
-        onOpen: setBlockMenuKeyword,
-        onClose: () => setBlockMenuKeyword(null),
-      })
-      return e
-    }, [props.extensions])
+    if (state.error) {
+      throw state.error
+    }
 
     return (
       <div className={rootCSS}>
         <div ref={container} className={cx(props.className, proseMirrorStyle)} />
-        {editor.current ? (
+        {state.loading ? (
+          <div className={loadingCSS}>
+            <CupertinoActivityIndicator />
+          </div>
+        ) : (
           <>
-            <FloatingToolbar view={editor.current.view} menus={editor.current.menus} />
-            {blockMenu && (
-              <blockMenu.Menus
+            <FloatingToolbar view={state.value.view} menus={state.value.menus} />
+            {state.value.blockMenu && (
+              <state.value.blockMenu.Menus
                 keyword={blockMenuKeyword}
-                view={editor.current.view}
+                view={state.value.view}
                 onClose={() => setBlockMenuKeyword(null)}
               />
             )}
           </>
-        ) : (
-          <div className={loadingCSS}>
-            <CupertinoActivityIndicator />
-          </div>
         )}
       </div>
     )
@@ -128,7 +126,7 @@ const rootCSS = css`
 `
 
 const loadingCSS = css`
-  position: fixed;
+  position: absolute;
   left: 0;
   top: 0;
   width: 100%;
