@@ -27,13 +27,6 @@ import FloatingToolbar, { MenuComponentType } from './lib/FloatingToolbar'
 import BlockMenu from './plugins/BlockMenu'
 import { proseMirrorStyle } from './style'
 
-// import ExtensionManager from './lib/ExtensionManager'
-// import { proseMirrorStyle } from './style'
-// import styled from '@emotion/styled'
-// import { useSafeUpdate } from '../utils/useSafeUpdate'
-// import CupertinoActivityIndicator from './lib/CupertinoActivityIndicator'
-// import BlockMenu from './plugins/BlockMenu'
-
 export interface EditorProps {
   className?: string
   autoFocus?: boolean
