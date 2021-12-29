@@ -385,18 +385,19 @@ class AccountImpl extends StrictEventEmitter<{}, {}, AccountEvents> implements A
   }
 
   async object(objectId?: string | ObjectId): Promise<Object> {
-    objectId = ObjectId.parse(
-      objectId ??
-        (await (async () => {
-          const objectId = ObjectId.create()
-          await this.ipfs.files.mkdir(this.getObjectPath(objectId), { parents: true })
-          return objectId
-        })())
-    )
-    const objectIdString = ObjectId.toString(objectId)
+    let id: ObjectId
+    if (objectId) {
+      id = ObjectId.parse(objectId)
+      await this.ipfs.files.stat(this.getObjectPath(id))
+    } else {
+      id = ObjectId.create()
+      await this.ipfs.files.mkdir(this.getObjectPath(id), { parents: true })
+    }
+
+    const objectIdString = ObjectId.toString(id)
     let object = this.objectsCache.get(objectIdString)
     if (!object) {
-      object = this.createObject(objectId)
+      object = this.createObject(id)
       this.objectsCache.set(objectIdString, object)
     }
     return object

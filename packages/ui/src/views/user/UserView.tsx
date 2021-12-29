@@ -15,7 +15,8 @@
 import styled from '@emotion/styled'
 import { useMediaQuery } from '@mui/material'
 import { Route, Routes } from 'react-router'
-import { NotFoundViewLazy } from '../error'
+import ErrorBoundary from '../../components/ErrorBoundary'
+import { ErrorViewLazy, NotFoundViewLazy } from '../error'
 import { UserHomeViewLazy } from './home'
 import { ObjectViewLazy } from './object'
 
@@ -33,11 +34,13 @@ export default function UserView() {
           </Routes>
         </aside>
         <main>
-          <Routes>
-            <Route index element={<HomeView />} />
-            <Route path=":objectId" element={<ObjectViewLazy />} />
-            <Route path="*" element={<NotFoundViewLazy />} />
-          </Routes>
+          <ErrorBoundary fallback={ErrorViewLazy}>
+            <Routes>
+              <Route index element={<HomeView />} />
+              <Route path=":objectId" element={<ObjectViewLazy />} />
+              <Route path="*" element={<NotFoundViewLazy />} />
+            </Routes>
+          </ErrorBoundary>
         </main>
       </LargeContainer>
     )
