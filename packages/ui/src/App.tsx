@@ -55,8 +55,7 @@ import useMyTheme from './theme'
 import useAsync from './utils/useAsync'
 import useIsElectron from './utils/useIsEelectron'
 import { AuthViewLazy } from './views/auth'
-import { NotFoundViewLazy } from './views/error'
-import ErrorView from './views/error/ErrorView'
+import { ErrorViewLazy, NotFoundViewLazy } from './views/error'
 import { HomeViewLazy } from './views/home'
 import { UserViewLazy } from './views/user'
 
@@ -64,7 +63,7 @@ export default function App() {
   const theme = useMyTheme()
 
   return (
-    <ErrorBoundary fallback={ErrorView}>
+    <ErrorBoundary.Root fallback={ErrorViewLazy}>
       <NetworkIndicator.Provider>
         <IntlProvider locale={navigator.language}>
           <RecoilRoot>
@@ -96,7 +95,7 @@ export default function App() {
           </RecoilRoot>
         </IntlProvider>
       </NetworkIndicator.Provider>
-    </ErrorBoundary>
+    </ErrorBoundary.Root>
   )
 }
 
@@ -140,7 +139,7 @@ const AppRoutes = () => {
       <_AppBar />
 
       <_Body>
-        <ErrorBoundary fallback={ErrorView}>
+        <ErrorBoundary fallback={ErrorViewLazy}>
           <ErrorBoundary fallback={UnauthorizedErrorBoundary}>
             <Routes>
               <Route index element={<HomeViewLazy />} />

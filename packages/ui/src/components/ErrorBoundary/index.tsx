@@ -12,10 +12,32 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import * as React from 'react'
+import { ComponentType, PureComponent, ReactNode, useEffect, useRef } from 'react'
+import { useLocation } from 'react-router-dom'
 
-export default class ErrorBoundary extends React.PureComponent<
-  { fallback: React.ComponentType<{ error: Error; reset: () => void }> },
+export default function ErrorBoundary({
+  children,
+  fallback,
+}: {
+  children: ReactNode
+  fallback: ComponentType<{ error: Error; reset: () => void }>
+}) {
+  const boundary = useRef<_ErrorBoundary>(null)
+  const location = useLocation()
+
+  useEffect(() => {
+    boundary.current?.reset()
+  }, [location])
+
+  return (
+    <_ErrorBoundary ref={boundary} fallback={fallback}>
+      {children}
+    </_ErrorBoundary>
+  )
+}
+
+class _ErrorBoundary extends PureComponent<
+  { fallback: ComponentType<{ error: Error; reset: () => void }> },
   { error?: Error }
 > {
   state = {
@@ -34,3 +56,5 @@ export default class ErrorBoundary extends React.PureComponent<
     return error ? <Fallback error={error} reset={this.reset} /> : this.props.children
   }
 }
+
+ErrorBoundary.Root = _ErrorBoundary

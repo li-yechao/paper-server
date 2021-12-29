@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import styled from '@emotion/styled'
 import { Box, Typography } from '@mui/material'
 
 export default function ErrorView({ error }: { error?: Error }) {
@@ -21,9 +22,14 @@ export default function ErrorView({ error }: { error?: Error }) {
         {error?.name || 'Error'}
       </Typography>
 
-      <Typography variant="h6" align="center" color="textSecondary">
+      <_Message variant="h6" align="center" color="textSecondary">
         {error?.message || 'Unknown Error'}
-      </Typography>
+      </_Message>
     </Box>
   )
 }
+
+const _Message = styled(Typography)`
+  word-wrap: break-word;
+  margin: ${props => props.theme.spacing(8)};
+`
