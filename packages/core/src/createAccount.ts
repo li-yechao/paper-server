@@ -397,7 +397,9 @@ class AccountImpl extends StrictEventEmitter<{}, {}, AccountEvents> implements A
     const objectIdString = ObjectId.toString(id)
     let object = this.objectsCache.get(objectIdString)
     if (!object) {
-      object = this.createObject(id)
+      const files = new ObjectFilesImpl(this.ipfs, this.getObjectPath(id))
+      files.on('change', e => this.emitReserved('objectChange', { ...e, objectId: objectIdString }))
+      object = new ObjectImpl(files, this.crypto, id)
       this.objectsCache.set(objectIdString, object)
     }
     return object
@@ -567,13 +569,6 @@ class AccountImpl extends StrictEventEmitter<{}, {}, AccountEvents> implements A
         }
       }
     }
-  }
-
-  private createObject(objectId: ObjectId): Object {
-    const files = new ObjectFilesImpl(this.ipfs, this.getObjectPath(objectId))
-    const objectIdString = ObjectId.toString(objectId)
-    files.on('change', e => this.emitReserved('objectChange', { ...e, objectId: objectIdString }))
-    return new ObjectImpl(files, this.crypto, objectId)
   }
 }
 
