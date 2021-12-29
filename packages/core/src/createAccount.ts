@@ -406,9 +406,11 @@ class AccountImpl extends StrictEventEmitter<{}, {}, AccountEvents> implements A
     objectId = ObjectId.parse(objectId ?? ObjectId.create())
     const key = ObjectId.toString(objectId)
     this.objectsCache.delete(key)
-    await this.ipfs.files.mv(this.getObjectPath(objectId), this.getObjectTrashPath(objectId), {
-      parents: true,
-    })
+    await fileUtils.ignoreErrNotFound(
+      this.ipfs.files.mv(this.getObjectPath(objectId), this.getObjectTrashPath(objectId), {
+        parents: true,
+      })
+    )
   }
 
   async objects({

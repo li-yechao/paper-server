@@ -28,6 +28,11 @@ export namespace fileUtils {
   export const ERR_NOT_FOUND = 'ERR_NOT_FOUND'
 
   export function isErrNotFound(e: any): e is Error & { code: typeof ERR_NOT_FOUND } {
+    if (e.code === 'ERR_INVALID_PARAMS') {
+      if (e.message?.endsWith('does not exist')) {
+        return true
+      }
+    }
     return e.code === ERR_NOT_FOUND
   }
 
