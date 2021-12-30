@@ -1,6 +1,6 @@
 {
   "name": "@paper/core",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "description": "Core api for paper",
   "main": "src/index.ts",
   "author": "LiYechao <liyechao@yechao.xyz>",

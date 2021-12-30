@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.2.1](https://github.com/li-yechao/paper/compare/@paper/ui@0.2.0...@paper/ui@0.2.1) (2021-12-30)
+
+### Bug Fixes
+
+- auto reset error boundary when route changed ([cbb093b](https://github.com/li-yechao/paper/commit/cbb093be59f5abf77132918b4e5d5cdf5966b72b))
+- save paper correctly ([5ed749c](https://github.com/li-yechao/paper/commit/5ed749c211b68cbe8de5c58bd5d269076998b347))
+- show error page when object is not exist ([021d768](https://github.com/li-yechao/paper/commit/021d7689bf50f4ca2c0ab9cd9c98ca06ae03f160))
+
 # [0.2.0](https://github.com/li-yechao/paper/compare/@paper/ui@0.1.3...@paper/ui@0.2.0) (2021-12-27)
 
 ### Bug Fixes

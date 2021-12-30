@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.1.4](https://github.com/li-yechao/paper/compare/@paper/core@0.1.3...@paper/core@0.1.4) (2021-12-30)
+
+### Bug Fixes
+
+- ignore not found error ([b9cc781](https://github.com/li-yechao/paper/commit/b9cc781188958ba3868fe37d9a7b419f76c3bace))
+- init object directory ([cb7ecbf](https://github.com/li-yechao/paper/commit/cb7ecbf27efed6a09bca2072026afb77a779e00a))
+- show error page when object is not exist ([021d768](https://github.com/li-yechao/paper/commit/021d7689bf50f4ca2c0ab9cd9c98ca06ae03f160))
+
 ## [0.1.3](https://github.com/li-yechao/paper/compare/@paper/core@0.1.2...@paper/core@0.1.3) (2021-12-27)
 
 **Note:** Version bump only for package @paper/core

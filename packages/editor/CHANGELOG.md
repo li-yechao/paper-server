@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.1.4](https://github.com/li-yechao/paper/compare/@paper/editor@0.1.3...@paper/editor@0.1.4) (2021-12-30)
+
+### Bug Fixes
+
+- save paper correctly ([5ed749c](https://github.com/li-yechao/paper/commit/5ed749c211b68cbe8de5c58bd5d269076998b347))
+
 ## [0.1.3](https://github.com/li-yechao/paper/compare/@paper/editor@0.1.2...@paper/editor@0.1.3) (2021-12-27)
 
 ### Bug Fixes
