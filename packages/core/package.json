@@ -1,6 +1,6 @@
 {
   "name": "@paper/core",
-  "version": "0.1.4",
+  "version": "0.2.0",
   "description": "Core api for paper",
   "main": "src/index.ts",
   "author": "LiYechao <liyechao@yechao.xyz>",
@@ -8,7 +8,7 @@
   "type": "module",
   "dependencies": {
     "@paper/ipfs": "^0.1.1",
-    "@paper/ipfs-http-client": "^0.0.1",
+    "@paper/ipfs-http-client": "^0.1.0",
     "ajv": "^8.6.3",
     "it-all": "^1.0.6",
     "it-first": "^1.0.7",
