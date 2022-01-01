@@ -12,18 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-/// <reference types="vite-plugin-pwa/client" />
+import * as IpfsHttpClient from 'ipfs-http-client'
 
-interface ImportMetaEnv extends Readonly<Record<string, string | boolean>> {
-  DEV: boolean
-  PROD: boolean
-
-  VITE_IPFS_API: string
-  VITE_IPFS_SWARM: string
-  VITE_IPFS_LIBP2P_TRANSPORT_FILTER: 'all' | 'dnsWss' | 'dnsWsOrWss'
-  VITE_AUTO_REFRESH_INTERVAL: string
-}
-
-interface ImportMeta {
-  readonly env: ImportMetaEnv
-}
+export default IpfsHttpClient

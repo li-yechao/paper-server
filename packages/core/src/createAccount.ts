@@ -13,10 +13,12 @@
 // limitations under the License.
 
 import Ipfs, { IPFS } from '@paper/ipfs'
+import IpfsHttpClient from '@paper/ipfs-http-client'
 import * as IPFSFiles from 'ipfs-core-types/src/files'
 import { IPFSEntry } from 'ipfs-core-types/src/root'
 import { PrivateKey } from 'ipfs-core/src/components/ipns'
 import all from 'it-all'
+import first from 'it-first'
 import debounce from 'lodash/debounce'
 import { nanoid } from 'nanoid'
 import { Account, AccountEvents } from './Account'
@@ -37,10 +39,9 @@ import { StrictEventEmitter } from './utils/StrictEventEmitter'
 const keyPath = (id: string) => `/${id}/keystore/main`
 
 export interface AccountOptions {
+  api: string
   swarm: string
   libp2pTransportFilter: 'all' | 'dnsWss' | 'dnsWsOrWss'
-  ipnsGateway: string
-  accountGateway: string
   autoRefreshInterval?: number
 }
 
@@ -90,6 +91,15 @@ export default async function createAccount(
       const decrypted = await crypto.aes.decrypt(user.password, raw)
       key = await Ipfs.crypto.keys.unmarshalPrivateKey(new Uint8Array(decrypted))
     }
+
+    try {
+      await ipfs.key.rm('main')
+    } catch {}
+    try {
+      const pwd = '123456'
+      const k = await key.export(pwd)
+      await ipfs.key.import('main', k, pwd)
+    } catch {}
 
     return new AccountImpl(ipfs, { id, key, password: user.password }, options)
   } catch (error) {
@@ -174,7 +184,7 @@ class AccountImpl extends StrictEventEmitter<{}, {}, AccountEvents> implements A
             await withIPFSReconnect(
               this.ipfs,
               this.options,
-              publishName(localCID, this.user.password, this.options)
+              publishName(this.ipfs, this.user.id, localCID, this.options)
             )
           }
           this.emitReserved('sync', { syncing: false, cid: localCID })
@@ -598,6 +608,9 @@ async function createIPFS({
         },
       },
     },
+    EXPERIMENTAL: {
+      ipnsPubsub: true,
+    },
   })
 
   const { chmod, cp, mkdir, stat, touch, rm, read, write, mv, flush, ls } = ipfs.files
@@ -672,28 +685,27 @@ async function createIPFS({
 
 async function resolveName(
   userId: string,
-  options: Pick<AccountOptions, 'accountGateway'>
+  options: Pick<AccountOptions, 'api'>
 ): Promise<string | null> {
-  const url = `${options.accountGateway}/account/resolve?name=${userId}`
-  const json = await fetch(url).then(res => res.json())
-  if (typeof json.cid === 'string' || json.cid === null) {
-    return json.cid
+  const client = IpfsHttpClient.create({ url: options.api })
+  for await (const cid of client.name.resolve(userId)) {
+    return cid.replace(/\/ipfs\//, '')
   }
+
   throw new Error(`Resolve ${userId} failed`)
 }
 
 async function publishName(
+  ipfs: IPFS,
+  userId: string,
   cid: string,
-  password: string,
-  options: Pick<AccountOptions, 'accountGateway'>
+  options: Pick<AccountOptions, 'api' | 'swarm'>
 ): Promise<void> {
-  const query = new URLSearchParams({ cid, password }).toString()
-  const url = `${options.accountGateway}/account/publish?${query}`
-  await fetch(url, { method: 'POST' }).then(res => {
-    if (res.status !== 200 && res.status !== 201) {
-      throw new Error(`publish account return status: ${res.status}`)
-    }
-  })
+  const client = IpfsHttpClient.create({ url: options.api })
+  await first(client.name.resolve(userId))
+  await ensureSwarmConnection(ipfs, options)
+  await client.pin.add(cid, { recursive: true })
+  await ipfs.name.publish(`/ipfs/${cid}`, { key: 'main' })
 }
 
 const SWARM_CONNECTION_CHECK_LIFETIME = 10000

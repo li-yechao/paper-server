@@ -15,9 +15,8 @@
 import { AccountOptions } from '@paper/core'
 
 export const accountOptions: AccountOptions = {
-  accountGateway: import.meta.env.VITE_ACCOUNT_GATEWAY,
-  ipnsGateway: import.meta.env.VITE_IPNS_GATEWAY,
-  libp2pTransportFilter: import.meta.env.VITE_LIBP2P_TRANSPORT_FILTER,
-  swarm: import.meta.env.VITE_SWARM,
+  api: import.meta.env.VITE_IPFS_API,
+  swarm: import.meta.env.VITE_IPFS_SWARM,
+  libp2pTransportFilter: import.meta.env.VITE_IPFS_LIBP2P_TRANSPORT_FILTER,
   autoRefreshInterval: parseInt(import.meta.env.VITE_AUTO_REFRESH_INTERVAL) || 0,
 }
