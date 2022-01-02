@@ -50,4 +50,4 @@ jobs:
       - name: Deploy
         run: |
           deploy_url="${{ secrets.SERVER_DEPLOY_HOOK_URL }}"
-          [[ "$deploy_url" == https://* ]] && curl "$deploy_url"
+          [[ "$deploy_url" == https://* ]] && curl "$deploy_url" || :
