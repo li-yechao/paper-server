@@ -688,7 +688,7 @@ async function resolveName(
   options: Pick<AccountOptions, 'api'>
 ): Promise<string | null> {
   const client = IpfsHttpClient.create({ url: options.api })
-  for await (const cid of client.name.resolve(userId)) {
+  for await (const cid of client.name.resolve(userId, { nocache: true, recursive: true })) {
     return cid.replace(/\/ipfs\//, '')
   }
 
@@ -702,7 +702,7 @@ async function publishName(
   options: Pick<AccountOptions, 'api' | 'swarm'>
 ): Promise<void> {
   const client = IpfsHttpClient.create({ url: options.api })
-  await first(client.name.resolve(userId))
+  await first(client.name.resolve(userId, { nocache: true, recursive: true }))
   await ensureSwarmConnection(ipfs, options)
   await client.pin.add(cid, { recursive: true })
   await ipfs.name.publish(`/ipfs/${cid}`, { key: 'main' })
