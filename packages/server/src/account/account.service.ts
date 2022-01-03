@@ -39,10 +39,12 @@ export class AccountService {
       CONFIG_ADDRESSES
     )}`
 
-    $`IPFS_PATH=${config.repo} ipfs daemon`.catch(error => {
-      console.error(error)
-      process.exit(1)
-    })
+    $`IPFS_PATH=${config.repo} ipfs daemon --enable-pubsub-experiment --enable-namesys-pubsub`.catch(
+      error => {
+        console.error(error)
+        process.exit(1)
+      }
+    )
 
     while (true) {
       await sleep(500)
