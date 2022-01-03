@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.2.1](https://github.com/li-yechao/paper/compare/@paper/core@0.2.0...@paper/core@0.2.1) (2022-01-12)
+
+### Bug Fixes
+
+- resolve name nocache flag ([d1d1c05](https://github.com/li-yechao/paper/commit/d1d1c051cd8d28f9be00bfdd91ce82a199baefef))
+
 # [0.2.0](https://github.com/li-yechao/paper/compare/@paper/core@0.1.4...@paper/core@0.2.0) (2022-01-11)
 
 - feat!: use ipns directly ([ad527f4](https://github.com/li-yechao/paper/commit/ad527f4b40354ab2ff7dacf33f0bfd320505a436))

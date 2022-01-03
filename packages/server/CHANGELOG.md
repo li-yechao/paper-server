@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.1.3](https://github.com/li-yechao/paper/compare/@paper/server@0.1.2...@paper/server@0.1.3) (2022-01-12)
+
+### Bug Fixes
+
+- enable name over pubsub ([ea713ac](https://github.com/li-yechao/paper/commit/ea713ac530039c577bf688e678b6b387369754c9))
+
 ## [0.1.2](https://github.com/li-yechao/paper/compare/@paper/server@0.1.1...@paper/server@0.1.2) (2021-12-21)
 
 **Note:** Version bump only for package @paper/server
