@@ -13,7 +13,7 @@
 // limitations under the License.
 
 import Ipfs, { IPFS } from '@paper/ipfs'
-import IpfsHttpClient from '@paper/ipfs-http-client'
+import * as IpfsHttpClient from '@paper/ipfs-http-client'
 import * as IPFSFiles from 'ipfs-core-types/src/files'
 import { IPFSEntry } from 'ipfs-core-types/src/root'
 import { PrivateKey } from 'ipfs-core/src/components/ipns'
