@@ -5,10 +5,11 @@
   "author": "LiYechao <liyechao@yechao.xyz>",
   "license": "Apache-2.0",
   "main": "index.min.js",
-  "types": "src/index.ts",
+  "types": "index.d.ts",
   "scripts": {},
   "dependencies": {
-    "ipfs": "^0.61.0"
+    "ipfs": "^0.61.0",
+    "ipfs-core": "^0.13.0"
   },
   "devDependencies": {
     "typescript": "^4.5.2"

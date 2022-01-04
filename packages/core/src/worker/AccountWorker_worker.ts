@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import Ipfs from '@paper/ipfs'
+import * as Ipfs from '@paper/ipfs'
 import all from 'it-all'
 import { Account } from '../Account'
 import createAccount from '../createAccount'

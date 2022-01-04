@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import Ipfs, { IPFS } from '@paper/ipfs'
+import * as Ipfs from '@paper/ipfs'
 import * as IpfsHttpClient from '@paper/ipfs-http-client'
 import * as IPFSFiles from 'ipfs-core-types/src/files'
 import { IPFSEntry } from 'ipfs-core-types/src/root'
@@ -53,7 +53,7 @@ export default async function createAccount(
     return typeof (a as any).key !== 'undefined'
   }
 
-  let key: PrivateKey, id: string, ipfs: IPFS | undefined, account: Account | undefined
+  let key: PrivateKey, id: string, ipfs: Ipfs.IPFS | undefined, account: Account | undefined
 
   try {
     if (isKey(user)) {
@@ -110,7 +110,7 @@ export default async function createAccount(
 
 class AccountImpl extends StrictEventEmitter<{}, {}, AccountEvents> implements Account {
   constructor(
-    readonly ipfs: IPFS,
+    readonly ipfs: Ipfs.IPFS,
     readonly user: { id: string; key: PrivateKey; password: string },
     readonly options: AccountOptions
   ) {
@@ -696,7 +696,7 @@ async function resolveName(
 }
 
 async function publishName(
-  ipfs: IPFS,
+  ipfs: Ipfs.IPFS,
   userId: string,
   cid: string,
   options: Pick<AccountOptions, 'api' | 'swarm'>
@@ -711,7 +711,7 @@ async function publishName(
 const SWARM_CONNECTION_CHECK_LIFETIME = 10000
 
 async function* withIPFSReconnectIterable<T>(
-  ipfs: IPFS,
+  ipfs: Ipfs.IPFS,
   options: Pick<AccountOptions, 'swarm'>,
   task: AsyncIterable<T>
 ): AsyncIterable<T> {
@@ -727,7 +727,7 @@ async function* withIPFSReconnectIterable<T>(
 }
 
 async function withIPFSReconnect<T>(
-  ipfs: IPFS,
+  ipfs: Ipfs.IPFS,
   options: Pick<AccountOptions, 'swarm'>,
   task: Promise<T>
 ): Promise<T> {
@@ -743,7 +743,7 @@ async function withIPFSReconnect<T>(
 }
 
 async function ensureSwarmConnection(
-  ipfs: IPFS & { _ensureSwarmConnection?: Promise<void> },
+  ipfs: Ipfs.IPFS & { _ensureSwarmConnection?: Promise<void> },
   options: Pick<AccountOptions, 'swarm'>
 ) {
   if (!ipfs._ensureSwarmConnection) {
@@ -890,7 +890,7 @@ class ObjectImpl implements Object {
 }
 
 class ObjectFilesImpl extends StrictEventEmitter<{}, {}, ObjectFileEvents> implements ObjectFiles {
-  constructor(private ipfs: IPFS, private base: string) {
+  constructor(private ipfs: Ipfs.IPFS, private base: string) {
     super()
     if (!base.startsWith('/')) {
       throw new Error(`Base must be starts with /, but got "${base}"`)
