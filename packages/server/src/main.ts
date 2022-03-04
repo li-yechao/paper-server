@@ -14,50 +14,21 @@
 
 import { NestFactory } from '@nestjs/core'
 import { program } from 'commander'
-import { AccountService } from './account/account.service'
 import { AppModule } from './app.module'
-import { Config } from './config'
 
 program
-  .command('serve')
+  .command('serve', { isDefault: true })
   .description('Start server')
   .option('--cors', 'Enable cors', false)
   .requiredOption('-p, --port <port>', 'Listening port', '8080')
-  .requiredOption('--ipfs-repo <ipfs repo path>', 'Ipfs repo path', './ipfs')
-  .option('--ipfs-api <api>', 'Ipfs api address', '/ip4/127.0.0.1/tcp/5001')
-  .option('--ipfs-gateway <gateway>', 'Ipfs gateway address', '/ip4/127.0.0.1/tcp/8081')
-  .requiredOption('--ipfs-swarm <addrs...>', 'Ipfs swarm address', ['/ip4/0.0.0.0/tcp/4001'] as any)
-  .action(
-    async ({
-      cors,
-      port,
-      ipfsRepo,
-      ipfsApi,
-      ipfsGateway,
-      ipfsSwarm,
-    }: {
-      cors: boolean
-      port: string
-      ipfsRepo: string
-      ipfsApi: string
-      ipfsGateway: string
-      ipfsSwarm: string[]
-    }) => {
-      Config.init({
-        port,
-        ipfs: { repo: ipfsRepo, api: ipfsApi, gateway: ipfsGateway, swarm: ipfsSwarm },
-      })
+  .action(async ({ cors, port }: { cors: boolean; port: string }) => {
+    const app = await NestFactory.create(AppModule)
 
-      await AccountService.startIpfs(Config.shared.ipfs)
-
-      const app = await NestFactory.create(AppModule)
-
-      if (cors) {
-        app.enableCors()
-      }
-
-      await app.listen(port)
+    if (cors) {
+      app.enableCors()
     }
-  )
+
+    await app.listen(port)
+  })
 
 program.parse(process.argv)

@@ -13,16 +13,6 @@
 // limitations under the License.
 
 import { Module } from '@nestjs/common'
-import { ConfigModule } from '@nestjs/config'
-import { AccountModule } from './account/account.module'
-import { Config } from './config'
 
-@Module({
-  imports: [
-    ConfigModule.forRoot({
-      load: [() => Config.shared],
-    }),
-    AccountModule,
-  ],
-})
+@Module({})
 export class AppModule {}
