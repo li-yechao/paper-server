@@ -15,20 +15,24 @@
 import { NestFactory } from '@nestjs/core'
 import { program } from 'commander'
 import { AppModule } from './app.module'
+import { Config } from './config'
 
 program
   .command('serve', { isDefault: true })
   .description('Start server')
   .option('--cors', 'Enable cors', false)
-  .requiredOption('-p, --port <port>', 'Listening port', '8080')
-  .action(async ({ cors, port }: { cors: boolean; port: string }) => {
+  .option('-p, --port <port>', 'Listening port')
+  .action(async ({ cors, port }: { cors?: boolean; port?: string }) => {
+    if (typeof cors === 'boolean') process.env['cors'] = cors.toString()
+    if (port) process.env['port'] = port
+
     const app = await NestFactory.create(AppModule)
 
-    if (cors) {
+    if (app.get(Config).cors) {
       app.enableCors()
     }
 
-    await app.listen(port)
+    await app.listen(app.get(Config).port)
   })
 
 program.parse(process.argv)

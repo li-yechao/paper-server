@@ -13,6 +13,11 @@
 // limitations under the License.
 
 import { Module } from '@nestjs/common'
+import { ConfigModule } from '@nestjs/config'
+import { Config } from './config'
 
-@Module({})
+@Module({
+  imports: [ConfigModule.forRoot({ envFilePath: ['.env.local', '.env'] })],
+  providers: [Config],
+})
 export class AppModule {}
