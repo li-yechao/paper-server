@@ -1,10 +1,5 @@
 FROM node:16-slim AS build
 
-ARG TARGETARCH
-
-# Set env TARGET_ARCH for install go-ipfs
-ENV TARGET_ARCH=${TARGETARCH}
-
 WORKDIR /app
 
 COPY . /app
@@ -15,7 +10,6 @@ RUN yarn install && \
 	rm -rf /target && \
 	mkdir -p /target && \
 	cp -r /app/package.json /app/node_modules /app/dist /target/
-
 
 FROM node:16-slim
 
