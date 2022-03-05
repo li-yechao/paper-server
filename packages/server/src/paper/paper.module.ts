@@ -1,4 +1,4 @@
-// Copyright 2021 LiYechao
+// Copyright 2022 LiYechao
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -13,23 +13,16 @@
 // limitations under the License.
 
 import { Module } from '@nestjs/common'
-import { ConfigModule, ConfigService } from '@nestjs/config'
+import { ConfigModule } from '@nestjs/config'
 import { MongooseModule } from '@nestjs/mongoose'
-import { Config } from './config'
-import { PaperModule } from './paper/paper.module'
+import { Config } from '../config'
+import { PaperController } from './paper.controller'
+import { Paper, PaperSchema } from './paper.schema'
+import { PaperService } from './paper.service'
 
 @Module({
-  imports: [
-    ConfigModule.forRoot({ envFilePath: ['.env.local', '.env'] }),
-    MongooseModule.forRootAsync({
-      imports: [ConfigModule],
-      useFactory: async (configService: ConfigService) => ({
-        uri: new Config(configService).mongo.uri,
-      }),
-      inject: [ConfigService],
-    }),
-    PaperModule,
-  ],
-  providers: [Config],
+  imports: [ConfigModule, MongooseModule.forFeature([{ name: Paper.name, schema: PaperSchema }])],
+  controllers: [PaperController],
+  providers: [Config, PaperService],
 })
-export class AppModule {}
+export class PaperModule {}

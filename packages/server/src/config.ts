@@ -27,6 +27,28 @@ export class Config {
     return this.getBoolean('cors')
   }
 
+  get mongo() {
+    const config = this
+
+    return {
+      get uri() {
+        return config.getString('mongo.uri')
+      },
+    }
+  }
+
+  get ipfs() {
+    const config = this
+
+    return {
+      httpClient: {
+        get uri() {
+          return config.getString('ipfs.httpClient.uri')
+        },
+      },
+    }
+  }
+
   private get(key: string): string | undefined {
     return this.configService.get<string>(key) || undefined
   }

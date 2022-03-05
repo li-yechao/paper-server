@@ -22,17 +22,21 @@ program
   .description('Start server')
   .option('--cors', 'Enable cors', false)
   .option('-p, --port <port>', 'Listening port')
-  .action(async ({ cors, port }: { cors?: boolean; port?: string }) => {
-    if (typeof cors === 'boolean') process.env['cors'] = cors.toString()
-    if (port) process.env['port'] = port
+  .option('--mongo-uri <uri>', 'MongoDB uri')
+  .action(
+    async ({ cors, port, mongoUri }: { cors?: boolean; port?: string; mongoUri?: string }) => {
+      if (typeof cors === 'boolean') process.env['cors'] = cors.toString()
+      if (port) process.env['port'] = port
+      if (mongoUri) process.env['mongo.uri'] = mongoUri
 
-    const app = await NestFactory.create(AppModule)
+      const app = await NestFactory.create(AppModule)
 
-    if (app.get(Config).cors) {
-      app.enableCors()
+      if (app.get(Config).cors) {
+        app.enableCors()
+      }
+
+      await app.listen(app.get(Config).port)
     }
-
-    await app.listen(app.get(Config).port)
-  })
+  )
 
 program.parse(process.argv)
