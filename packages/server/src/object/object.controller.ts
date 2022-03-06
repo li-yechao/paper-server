@@ -57,7 +57,7 @@ export class ObjectController {
 
     const publicKey = crypto.keys.unmarshalPublicKey(Buffer.from(key, 'base64'))
 
-    await this.verifySignature(publicKey, uid, `cid=${cid}&oid=${oid}&timestamp=${timestamp}`, sig)
+    await this.verifySignature(publicKey, uid, { cid, oid, timestamp }, sig)
 
     return this.objectService.create({ uid, oid: oid, cid })
   }
@@ -75,7 +75,7 @@ export class ObjectController {
 
     const publicKey = crypto.keys.unmarshalPublicKey(Buffer.from(key, 'base64'))
 
-    await this.verifySignature(publicKey, uid, `oid=${oid}&timestamp=${timestamp}`, sig)
+    await this.verifySignature(publicKey, uid, { oid, timestamp }, sig)
 
     await this.objectService.delete({ uid, oid: oid })
   }
@@ -91,14 +91,17 @@ export class ObjectController {
   private async verifySignature(
     publicKey: ReturnType<typeof crypto.keys.unmarshalPublicKey>,
     uid: string,
-    data: string,
+    data: Record<string, string>,
     sig: string
   ) {
     if (uid !== (await publicKeyId(publicKey))) {
       throw new HttpException('Invalid public key', HttpStatus.BAD_REQUEST)
     }
 
-    if (!(await publicKey.verify(Buffer.from(data), Buffer.from(sig, 'base64')))) {
+    const qs = new URLSearchParams(data)
+    qs.sort()
+
+    if (!(await publicKey.verify(Buffer.from(qs.toString()), Buffer.from(sig, 'base64')))) {
       throw new HttpException('Invalid signature', HttpStatus.BAD_REQUEST)
     }
   }
