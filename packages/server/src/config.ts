@@ -41,10 +41,8 @@ export class Config {
     const config = this
 
     return {
-      httpClient: {
-        get uri() {
-          return config.getString('ipfs.httpClient.uri')
-        },
+      get api() {
+        return config.getString('ipfs.api')
       },
     }
   }

@@ -23,11 +23,23 @@ program
   .option('--cors', 'Enable cors', false)
   .option('-p, --port <port>', 'Listening port')
   .option('--mongo-uri <uri>', 'MongoDB uri')
+  .option('--ipfs-api <url>', 'Ipfs api url')
   .action(
-    async ({ cors, port, mongoUri }: { cors?: boolean; port?: string; mongoUri?: string }) => {
+    async ({
+      cors,
+      port,
+      mongoUri,
+      ipfsApi,
+    }: {
+      cors?: boolean
+      port?: string
+      mongoUri?: string
+      ipfsApi?: string
+    }) => {
       if (typeof cors === 'boolean') process.env['cors'] = cors.toString()
       if (port) process.env['port'] = port
       if (mongoUri) process.env['mongo.uri'] = mongoUri
+      if (ipfsApi) process.env['ipfs.api'] = ipfsApi
 
       const app = await NestFactory.create(AppModule)
 

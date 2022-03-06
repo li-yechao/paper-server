@@ -25,7 +25,7 @@ import { Paper } from './paper.schema'
 @Injectable()
 export class PaperService {
   constructor(config: Config, @InjectModel(Paper.name) private readonly paperModel: Model<Paper>) {
-    this.ipfsClient = createIpfsHttpClient({ url: config.ipfs.httpClient.uri })
+    this.ipfsClient = createIpfsHttpClient({ url: config.ipfs.api })
   }
 
   private ipfsClient: IPFSHTTPClient
