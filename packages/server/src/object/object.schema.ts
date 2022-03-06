@@ -15,7 +15,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose'
 
 @Schema()
-export class Paper {
+export class Object_ {
   @Prop({ required: true })
   createdAt!: string
 
@@ -26,7 +26,7 @@ export class Paper {
   deletedAt?: string
 
   @Prop({ required: true, unique: true })
-  pid!: string
+  oid!: string
 
   @Prop({ required: true })
   uid!: string
@@ -35,4 +35,4 @@ export class Paper {
   cid!: string
 }
 
-export const PaperSchema = SchemaFactory.createForClass(Paper)
+export const ObjectSchema = SchemaFactory.createForClass(Object_)

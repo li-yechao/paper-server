@@ -16,13 +16,16 @@ import { Module } from '@nestjs/common'
 import { ConfigModule } from '@nestjs/config'
 import { MongooseModule } from '@nestjs/mongoose'
 import { Config } from '../config'
-import { PaperController } from './paper.controller'
-import { Paper, PaperSchema } from './paper.schema'
-import { PaperService } from './paper.service'
+import { ObjectController } from './object.controller'
+import { Object_, ObjectSchema } from './object.schema'
+import { ObjectService } from './object.service'
 
 @Module({
-  imports: [ConfigModule, MongooseModule.forFeature([{ name: Paper.name, schema: PaperSchema }])],
-  controllers: [PaperController],
-  providers: [Config, PaperService],
+  imports: [
+    ConfigModule,
+    MongooseModule.forFeature([{ name: Object_.name, schema: ObjectSchema }]),
+  ],
+  controllers: [ObjectController],
+  providers: [Config, ObjectService],
 })
-export class PaperModule {}
+export class ObjectModule {}

@@ -16,7 +16,7 @@ import { Module } from '@nestjs/common'
 import { ConfigModule, ConfigService } from '@nestjs/config'
 import { MongooseModule } from '@nestjs/mongoose'
 import { Config } from './config'
-import { PaperModule } from './paper/paper.module'
+import { ObjectModule } from './object/object.module'
 
 @Module({
   imports: [
@@ -28,7 +28,7 @@ import { PaperModule } from './paper/paper.module'
       }),
       inject: [ConfigService],
     }),
-    PaperModule,
+    ObjectModule,
   ],
   providers: [Config],
 })

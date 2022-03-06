@@ -25,49 +25,49 @@ import {
   Query,
 } from '@nestjs/common'
 import { crypto } from 'ipfs-core'
-import { Paper } from './paper.schema'
-import { PaperService, publicKeyId } from './paper.service'
+import { Object_ } from './object.schema'
+import { ObjectService, publicKeyId } from './object.service'
 
 const TIMESTAMP_EXPIRES_IN = 30
 
-@Controller('/:uid/papers')
-export class PaperController {
-  constructor(private readonly paperService: PaperService) {}
+@Controller('/:uid/objects')
+export class ObjectController {
+  constructor(private readonly objectService: ObjectService) {}
 
   @Get()
-  async list(@Param('uid') uid: string): Promise<Paper[]> {
-    return this.paperService.find({ uid })
+  async list(@Param('uid') uid: string): Promise<Object_[]> {
+    return this.objectService.find({ uid })
   }
 
-  @Get(':pid')
-  async detail(@Param('uid') uid: string, @Param('pid') pid: string): Promise<Paper> {
-    return this.paperService.findOne({ uid, pid })
+  @Get(':oid')
+  async detail(@Param('uid') uid: string, @Param('oid') oid: string): Promise<Object_> {
+    return this.objectService.findOne({ uid, oid })
   }
 
-  @Post(':pid')
+  @Post(':oid')
   async create(
     @Headers('pubkey') key: string,
     @Param('uid') uid: string,
-    @Param('pid') pid: string,
+    @Param('oid') oid: string,
     @Query('cid') cid: string,
     @Query('timestamp') timestamp: string,
     @Query('sig') sig: string
-  ): Promise<Paper> {
+  ): Promise<Object_> {
     this.checkTimestamp(timestamp)
 
     const publicKey = crypto.keys.unmarshalPublicKey(Buffer.from(key, 'base64'))
 
-    this.verifySignature(publicKey, uid, `cid=${cid}&pid=${pid}&timestamp=${timestamp}`, sig)
+    this.verifySignature(publicKey, uid, `cid=${cid}&oid=${oid}&timestamp=${timestamp}`, sig)
 
-    return this.paperService.create({ uid, pid, cid })
+    return this.objectService.create({ uid, oid: oid, cid })
   }
 
-  @Delete(':pid')
+  @Delete(':oid')
   @HttpCode(HttpStatus.NO_CONTENT)
   async delete(
     @Headers('pubkey') key: string,
     @Param('uid') uid: string,
-    @Param('pid') pid: string,
+    @Param('oid') oid: string,
     @Query('timestamp') timestamp: string,
     @Query('sig') sig: string
   ): Promise<void> {
@@ -75,9 +75,9 @@ export class PaperController {
 
     const publicKey = crypto.keys.unmarshalPublicKey(Buffer.from(key, 'base64'))
 
-    this.verifySignature(publicKey, uid, `pid=${pid}&timestamp=${timestamp}`, sig)
+    this.verifySignature(publicKey, uid, `oid=${oid}&timestamp=${timestamp}`, sig)
 
-    await this.paperService.delete({ uid, pid })
+    await this.objectService.delete({ uid, oid: oid })
   }
 
   private checkTimestamp(timestamp: string) {

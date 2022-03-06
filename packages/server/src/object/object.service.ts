@@ -20,56 +20,59 @@ import { Model } from 'mongoose'
 import { identity } from 'multiformats/hashes/identity'
 import { toString as uint8arraysToString } from 'uint8arrays'
 import { Config } from '../config'
-import { Paper } from './paper.schema'
+import { Object_ } from './object.schema'
 
 @Injectable()
-export class PaperService {
-  constructor(config: Config, @InjectModel(Paper.name) private readonly paperModel: Model<Paper>) {
+export class ObjectService {
+  constructor(
+    config: Config,
+    @InjectModel(Object_.name) private readonly objectModel: Model<Object_>
+  ) {
     this.ipfsClient = createIpfsHttpClient({ url: config.ipfs.api })
   }
 
   private ipfsClient: IPFSHTTPClient
 
-  async find({ uid }: { uid: string }): Promise<Paper[]> {
-    return this.paperModel.find({ uid, deletedAt: null }).sort({ _id: -1 })
+  async find({ uid }: { uid: string }): Promise<Object_[]> {
+    return this.objectModel.find({ uid, deletedAt: null }).sort({ _id: -1 })
   }
 
-  async findOne({ uid, pid }: { uid: string; pid: string }): Promise<Paper> {
-    const paper = await this.paperModel.findOne({ uid, pid, deletedAt: null })
-    if (!paper) {
-      throw new Error(`Paper ${pid} not found`)
+  async findOne({ uid, oid }: { uid: string; oid: string }): Promise<Object_> {
+    const object = await this.objectModel.findOne({ uid, oid, deletedAt: null })
+    if (!object) {
+      throw new Error(`Object ${oid} not found`)
     }
-    return paper
+    return object
   }
 
-  async create({ uid, pid, cid }: { pid: string; uid: string; cid: string }): Promise<Paper> {
+  async create({ uid, oid, cid }: { oid: string; uid: string; cid: string }): Promise<Object_> {
     await this.ipfsClient.pin.add(cid, { recursive: true })
-    return this.paperModel.create({ createdAt: Date.now(), pid, uid, cid })
+    return this.objectModel.create({ createdAt: Date.now(), oid, uid, cid })
   }
 
-  async update({ uid, pid, cid }: { pid: string; uid: string; cid: string }): Promise<Paper> {
+  async update({ uid, oid, cid }: { oid: string; uid: string; cid: string }): Promise<Object_> {
     await this.ipfsClient.pin.add(cid, { recursive: true })
-    const paper = await this.paperModel.findOneAndUpdate(
-      { pid, deletedAt: null },
+    const object = await this.objectModel.findOneAndUpdate(
+      { oid, deletedAt: null },
       { $set: { updatedAt: Date.now(), uid, cid } },
       { new: true }
     )
-    if (!paper) {
-      throw new Error(`Paper ${pid} not found`)
+    if (!object) {
+      throw new Error(`Object ${oid} not found`)
     }
-    return paper
+    return object
   }
 
-  async delete({ uid, pid }: { uid: string; pid: string }): Promise<Paper> {
-    const paper = await this.paperModel.findOneAndUpdate(
-      { uid, pid, deletedAt: null },
+  async delete({ uid, oid }: { uid: string; oid: string }): Promise<Object_> {
+    const object = await this.objectModel.findOneAndUpdate(
+      { uid, oid, deletedAt: null },
       { $set: { deletedAt: Date.now() } },
       { new: true }
     )
-    if (!paper) {
-      throw new Error(`Paper ${pid} not found`)
+    if (!object) {
+      throw new Error(`Object ${oid} not found`)
     }
-    return paper
+    return object
   }
 }
 
