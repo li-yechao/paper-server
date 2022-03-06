@@ -57,7 +57,7 @@ export class ObjectController {
 
     const publicKey = crypto.keys.unmarshalPublicKey(Buffer.from(key, 'base64'))
 
-    this.verifySignature(publicKey, uid, `cid=${cid}&oid=${oid}&timestamp=${timestamp}`, sig)
+    await this.verifySignature(publicKey, uid, `cid=${cid}&oid=${oid}&timestamp=${timestamp}`, sig)
 
     return this.objectService.create({ uid, oid: oid, cid })
   }
@@ -75,7 +75,7 @@ export class ObjectController {
 
     const publicKey = crypto.keys.unmarshalPublicKey(Buffer.from(key, 'base64'))
 
-    this.verifySignature(publicKey, uid, `oid=${oid}&timestamp=${timestamp}`, sig)
+    await this.verifySignature(publicKey, uid, `oid=${oid}&timestamp=${timestamp}`, sig)
 
     await this.objectService.delete({ uid, oid: oid })
   }
