@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.2.0-alpha.2](https://github.com/li-yechao/paper/compare/@paper/server@0.2.0-alpha.1...@paper/server@0.2.0-alpha.2) (2022-03-08)
+
+### Bug Fixes
+
+- await signature verification ([ad663e4](https://github.com/li-yechao/paper/commit/ad663e4a6ce7752c80ef0acd50014b9d411da2c9))
+- strict check timestamp ([38b6bd9](https://github.com/li-yechao/paper/commit/38b6bd96b84668050621b63692b50ac21be4d5d2))
+
 # [0.2.0-alpha.1](https://github.com/li-yechao/paper/compare/@paper/server@0.2.0-alpha.0...@paper/server@0.2.0-alpha.1) (2022-03-08)
 
 ### Features
