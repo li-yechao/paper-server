@@ -83,7 +83,7 @@ export class ObjectController {
   private checkTimestamp(timestamp: string) {
     const now = Math.floor(Date.now() / 1000)
     const time = parseInt(timestamp)
-    if (Math.abs(now - time) > TIMESTAMP_EXPIRES_IN) {
+    if (!Number.isSafeInteger(time) || time <= 0 || Math.abs(now - time) > TIMESTAMP_EXPIRES_IN) {
       throw new Error(`Invalid timestamp`)
     }
   }
