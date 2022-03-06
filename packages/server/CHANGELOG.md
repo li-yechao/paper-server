@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.2.0-alpha.1](https://github.com/li-yechao/paper/compare/@paper/server@0.2.0-alpha.0...@paper/server@0.2.0-alpha.1) (2022-03-08)
+
+### Features
+
+- add paper controller ([03d5f06](https://github.com/li-yechao/paper/commit/03d5f06391f1221e5800633c03a1e8e9ec23cdd7))
+- allow config via .env ([db550cb](https://github.com/li-yechao/paper/commit/db550cb606bfb1be2a55be903bc4f06810c52bba))
+
 # [0.2.0-alpha.0](https://github.com/li-yechao/paper/compare/@paper/server@0.1.3...@paper/server@0.2.0-alpha.0) (2022-03-07)
 
 **Note:** Version bump only for package @paper/server
