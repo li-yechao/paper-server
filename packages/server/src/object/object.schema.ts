@@ -14,7 +14,7 @@
 
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose'
 
-@Schema()
+@Schema({ collection: 'objects' })
 export class Object_ {
   @Prop({ required: true })
   createdAt!: string
