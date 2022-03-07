@@ -20,7 +20,7 @@ import { Config } from './config'
 program
   .command('serve', { isDefault: true })
   .description('Start server')
-  .option('--cors', 'Enable cors', false)
+  .option('--cors', 'Enable cors')
   .option('-p, --port <port>', 'Listening port')
   .option('--mongo-uri <uri>', 'MongoDB uri')
   .option('--ipfs-api <url>', 'Ipfs api url')
