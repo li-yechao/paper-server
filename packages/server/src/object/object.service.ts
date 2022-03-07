@@ -45,17 +45,23 @@ export class ObjectService {
     return object
   }
 
-  async create({ uid, oid, cid }: { oid: string; uid: string; cid: string }): Promise<Object_> {
-    await this.ipfsClient.pin.add(cid, { recursive: true })
-    return this.objectModel.create({ createdAt: Date.now(), oid, uid, cid })
-  }
-
-  async update({ uid, oid, cid }: { oid: string; uid: string; cid: string }): Promise<Object_> {
+  async createOrUpdate({
+    uid,
+    oid,
+    cid,
+  }: {
+    oid: string
+    uid: string
+    cid: string
+  }): Promise<Object_> {
     await this.ipfsClient.pin.add(cid, { recursive: true })
     const object = await this.objectModel.findOneAndUpdate(
-      { oid, deletedAt: null },
-      { $set: { updatedAt: Date.now(), uid, cid } },
-      { new: true }
+      { oid, uid, deletedAt: null },
+      {
+        $set: { cid, updatedAt: Date.now() },
+        $setOnInsert: { createdAt: Date.now() },
+      },
+      { upsert: true, new: true }
     )
     if (!object) {
       throw new Error(`Object ${oid} not found`)

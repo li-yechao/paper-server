@@ -45,7 +45,7 @@ export class ObjectController {
   }
 
   @Post(':oid')
-  async create(
+  async createOrUpdate(
     @Headers('pubkey') key: string,
     @Param('uid') uid: string,
     @Param('oid') oid: string,
@@ -59,7 +59,7 @@ export class ObjectController {
 
     await this.verifySignature(publicKey, uid, { cid, oid, timestamp }, sig)
 
-    return this.objectService.create({ uid, oid: oid, cid })
+    return this.objectService.createOrUpdate({ uid, oid, cid })
   }
 
   @Delete(':oid')
