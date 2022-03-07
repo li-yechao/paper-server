@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.2.0-alpha.4](https://github.com/li-yechao/paper/compare/@paper/server@0.2.0-alpha.3...@paper/server@0.2.0-alpha.4) (2022-03-08)
+
+### Bug Fixes
+
+- remove default value for cors ([947cadc](https://github.com/li-yechao/paper/commit/947cadc81fbcada9b55cb50560363f4923e329ca))
+
 # [0.2.0-alpha.3](https://github.com/li-yechao/paper/compare/@paper/server@0.2.0-alpha.2...@paper/server@0.2.0-alpha.3) (2022-03-08)
 
 **Note:** Version bump only for package @paper/server
