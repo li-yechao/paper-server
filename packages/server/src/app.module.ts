@@ -12,11 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import { ApolloDriver } from '@nestjs/apollo'
 import { Module } from '@nestjs/common'
 import { ConfigModule, ConfigService } from '@nestjs/config'
+import { GraphQLModule } from '@nestjs/graphql'
 import { MongooseModule } from '@nestjs/mongoose'
 import { Config } from './config'
-import { ObjectModule } from './object/object.module'
+import { AuthModule } from './auth/auth.module'
 
 @Module({
   imports: [
@@ -28,7 +30,11 @@ import { ObjectModule } from './object/object.module'
       }),
       inject: [ConfigService],
     }),
-    ObjectModule,
+    GraphQLModule.forRoot({
+      driver: ApolloDriver,
+      autoSchemaFile: true,
+    }),
+    AuthModule,
   ],
   providers: [Config],
 })

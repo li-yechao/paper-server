@@ -37,16 +37,6 @@ export class Config {
     }
   }
 
-  get ipfs() {
-    const config = this
-
-    return {
-      get api() {
-        return config.getString('ipfs.api')
-      },
-    }
-  }
-
   private get(key: string): string | undefined {
     return this.configService.get<string>(key) || undefined
   }

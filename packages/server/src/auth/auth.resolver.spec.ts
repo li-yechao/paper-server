@@ -1,4 +1,4 @@
-// Copyright 2021 LiYechao
+// Copyright 2022 LiYechao
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -13,27 +13,20 @@
 // limitations under the License.
 
 import { Test, TestingModule } from '@nestjs/testing'
-import { INestApplication } from '@nestjs/common'
-import * as request from 'supertest'
-import { AppModule } from './../src/app.module'
+import { AuthResolver } from './auth.resolver'
 
-describe('AppController (e2e)', () => {
-  let app: INestApplication
+describe('AuthResolver', () => {
+  let resolver: AuthResolver
 
   beforeEach(async () => {
-    const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [AppModule],
+    const module: TestingModule = await Test.createTestingModule({
+      providers: [AuthResolver],
     }).compile()
 
-    app = moduleFixture.createNestApplication()
-    await app.init()
+    resolver = module.get<AuthResolver>(AuthResolver)
   })
 
-  afterAll(async () => {
-    await app.close()
-  })
-
-  it('/ (GET)', () => {
-    return request(app.getHttpServer()).get('/').expect(404)
+  it('should be defined', () => {
+    expect(resolver).toBeDefined()
   })
 })
