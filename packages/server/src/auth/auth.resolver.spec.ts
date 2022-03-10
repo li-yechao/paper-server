@@ -26,7 +26,7 @@ describe('AuthResolver', () => {
     resolver = module.get<AuthResolver>(AuthResolver)
   })
 
-  it('should be defined', () => {
-    expect(resolver).toBeDefined()
+  it('should return viewer', async () => {
+    expect(await resolver.viewer({ id: '123' })).toEqual({ id: '123' })
   })
 })
