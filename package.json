@@ -1,6 +1,5 @@
 {
   "name": "paper",
-  "version": "0.0.1",
   "license": "Apache-2.0",
   "private": true,
   "author": {
@@ -15,11 +14,20 @@
     "packages/*"
   ],
   "scripts": {
-    "prepare": "husky install"
+    "prepare": "husky install",
+    "lint": "eslint .",
+    "format": "prettier --check .",
+    "test": "yarn workspace @paper/server test",
+    "build": "yarn workspaces run build"
   },
   "devDependencies": {
     "@commitlint/cli": "^15.0.0",
     "@commitlint/config-conventional": "^15.0.0",
+    "@typescript-eslint/eslint-plugin": "^5.14.0",
+    "@typescript-eslint/parser": "^5.14.0",
+    "eslint": "^8.10.0",
+    "eslint-config-prettier": "^8.5.0",
+    "eslint-plugin-prettier": "^4.0.0",
     "husky": "^7.0.0",
     "lerna": "^4.0.0",
     "lint-staged": "^12.1.2",

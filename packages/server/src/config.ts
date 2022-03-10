@@ -28,21 +28,12 @@ export class Config {
   }
 
   get mongo() {
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
     const config = this
 
     return {
       get uri() {
         return config.getString('mongo.uri')
-      },
-    }
-  }
-
-  get ipfs() {
-    const config = this
-
-    return {
-      get api() {
-        return config.getString('ipfs.api')
       },
     }
   }
