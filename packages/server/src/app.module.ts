@@ -19,6 +19,7 @@ import { GraphQLModule } from '@nestjs/graphql'
 import { MongooseModule } from '@nestjs/mongoose'
 import { Config } from './config'
 import { AuthModule } from './auth/auth.module'
+import { UserModule } from './user/user.module'
 
 @Module({
   imports: [
@@ -35,6 +36,7 @@ import { AuthModule } from './auth/auth.module'
       autoSchemaFile: true,
     }),
     AuthModule,
+    UserModule,
   ],
   providers: [Config],
 })

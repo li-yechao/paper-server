@@ -27,7 +27,7 @@ import { toString as uint8arraysToString } from 'uint8arrays'
 
 export const EXPIRES_IN = 10
 
-export interface User {
+export interface CurrentUser {
   id: string
 }
 
@@ -35,7 +35,7 @@ export interface User {
 export class AuthGuard implements CanActivate {
   async canActivate(context: ExecutionContext) {
     const ctx = GqlExecutionContext.create(context)
-    const req: Request & { user?: User } = ctx.getContext().req
+    const req: Request & { user?: CurrentUser } = ctx.getContext().req
 
     const publickey = req.get('publickey')
     const timestamp = req.get('timestamp')
@@ -89,7 +89,7 @@ export class AuthGuard implements CanActivate {
 
 export const CurrentUser = createParamDecorator((_: unknown, context: ExecutionContext) => {
   const ctx = GqlExecutionContext.create(context)
-  const req: Request & { user?: User } = ctx.getContext().req
+  const req: Request & { user?: CurrentUser } = ctx.getContext().req
   if (!req.user?.id) {
     throw new UnauthorizedException('The user is not in req')
   }

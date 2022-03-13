@@ -12,16 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { UseGuards } from '@nestjs/common'
-import { Query, Resolver } from '@nestjs/graphql'
-import { AuthGuard, CurrentUser } from './auth.guard'
-import { User } from '../user/user.schema'
+import { Module } from '@nestjs/common'
+import { UserResolver } from './user.resolver'
 
-@Resolver()
-export class AuthResolver {
-  @Query(() => User)
-  @UseGuards(AuthGuard)
-  async viewer(@CurrentUser() user: CurrentUser): Promise<User> {
-    return { id: user.id }
-  }
-}
+@Module({
+  providers: [UserResolver],
+})
+export class UserModule {}

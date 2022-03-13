@@ -15,7 +15,7 @@
 import { Field, ObjectType } from '@nestjs/graphql'
 
 @ObjectType()
-export class Viewer {
+export class User {
   @Field()
   id!: string
 }
