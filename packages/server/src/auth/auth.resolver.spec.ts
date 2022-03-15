@@ -12,7 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import { ConfigModule } from '@nestjs/config'
 import { Test, TestingModule } from '@nestjs/testing'
+import { Config } from '../config'
 import { AuthResolver } from './auth.resolver'
 
 describe('AuthResolver', () => {
@@ -20,7 +22,8 @@ describe('AuthResolver', () => {
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [AuthResolver],
+      imports: [ConfigModule.forRoot({ envFilePath: ['.env.local', '.env'] })],
+      providers: [Config, AuthResolver],
     }).compile()
 
     resolver = module.get<AuthResolver>(AuthResolver)

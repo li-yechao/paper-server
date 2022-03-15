@@ -13,9 +13,12 @@
 // limitations under the License.
 
 import { Module } from '@nestjs/common'
+import { ConfigModule } from '@nestjs/config'
+import { Config } from '../config'
 import { AuthResolver } from './auth.resolver'
 
 @Module({
-  providers: [AuthResolver],
+  imports: [ConfigModule],
+  providers: [Config, AuthResolver],
 })
 export class AuthModule {}

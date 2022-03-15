@@ -27,6 +27,17 @@ export class Config {
     return this.getBoolean('cors')
   }
 
+  get signature() {
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
+    const config = this
+
+    return {
+      get expiresIn() {
+        return config.getNumber('signature.expiresIn')
+      },
+    }
+  }
+
   get mongo() {
     // eslint-disable-next-line @typescript-eslint/no-this-alias
     const config = this

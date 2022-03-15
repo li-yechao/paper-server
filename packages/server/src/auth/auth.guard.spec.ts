@@ -14,10 +14,24 @@
 
 import { createMock } from '@golevelup/ts-jest'
 import { ExecutionContext } from '@nestjs/common'
+import { ConfigModule } from '@nestjs/config'
+import { Test } from '@nestjs/testing'
 import { keys } from 'libp2p-crypto'
-import { AuthGuard, EXPIRES_IN } from './auth.guard'
+import { Config } from '../config'
+import { AuthGuard } from './auth.guard'
 
 describe('AuthGuard', () => {
+  let guard: AuthGuard
+
+  beforeEach(async () => {
+    const module = await Test.createTestingModule({
+      imports: [ConfigModule.forRoot({ envFilePath: ['.env.local', '.env'] })],
+      providers: [Config, AuthGuard],
+    }).compile()
+
+    guard = module.get(AuthGuard)
+  })
+
   it('it should be success', async () => {
     const key = await keys.generateKeyPair('Ed25519')
     const publickey = Buffer.from(key.public.bytes).toString('base64')
@@ -26,7 +40,6 @@ describe('AuthGuard', () => {
       await key.sign(Buffer.from(new URLSearchParams({ timestamp }).toString()))
     ).toString('base64')
 
-    const guard = new AuthGuard()
     await expect(
       guard.canActivate(mockContext({ headers: { publickey, timestamp, signature } }))
     ).resolves.toBeTruthy()
@@ -35,12 +48,10 @@ describe('AuthGuard', () => {
   it('missing publickey or timestamp or signature', async () => {
     const key = await keys.generateKeyPair('Ed25519')
     const publickey = Buffer.from(key.public.bytes).toString('base64')
-    const timestamp = (Math.floor(Date.now() / 1000) - EXPIRES_IN - 1).toString()
+    const timestamp = (Math.floor(Date.now() / 1000) - guard.expiresIn - 1).toString()
     const signature = Buffer.from(
       await key.sign(Buffer.from(new URLSearchParams({ timestamp }).toString()))
     ).toString('base64')
-
-    const guard = new AuthGuard()
 
     await expect(() =>
       guard.canActivate(mockContext({ headers: { timestamp, signature } }))
@@ -63,7 +74,6 @@ describe('AuthGuard', () => {
       await key.sign(Buffer.from(new URLSearchParams({ timestamp }).toString()))
     ).toString('base64')
 
-    const guard = new AuthGuard()
     await expect(() =>
       guard.canActivate(mockContext({ headers: { publickey, timestamp, signature } }))
     ).rejects.toThrowError(/timestamp/i)
@@ -82,7 +92,6 @@ describe('AuthGuard', () => {
       3,
     ]).toString('base64')
 
-    const guard = new AuthGuard()
     await expect(() =>
       guard.canActivate(mockContext({ headers: { publickey, timestamp, signature } }))
     ).rejects.toThrowError(/signature/i)
@@ -105,12 +114,11 @@ describe('AuthGuard', () => {
   it('timestamp expired', async () => {
     const key = await keys.generateKeyPair('Ed25519')
     const publickey = Buffer.from(key.public.bytes).toString('base64')
-    const timestamp = (Math.floor(Date.now() / 1000) - EXPIRES_IN - 1).toString()
+    const timestamp = (Math.floor(Date.now() / 1000) - guard.expiresIn - 1).toString()
     const signature = Buffer.from(
       await key.sign(Buffer.from(new URLSearchParams({ timestamp }).toString()))
     ).toString('base64')
 
-    const guard = new AuthGuard()
     await expect(() =>
       guard.canActivate(mockContext({ headers: { publickey, timestamp, signature } }))
     ).rejects.toThrowError(/expired/i)
@@ -124,7 +132,6 @@ describe('AuthGuard', () => {
       await key.sign(Buffer.from(new URLSearchParams({ timestamp }).toString()))
     ).toString('base64')
 
-    const guard = new AuthGuard()
     await expect(() =>
       guard.canActivate(mockContext({ headers: { publickey, timestamp, signature } }))
     ).rejects.toThrowError(/unsupported/i)
