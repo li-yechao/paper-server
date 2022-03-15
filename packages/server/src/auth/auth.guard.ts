@@ -24,8 +24,7 @@ import { Request } from 'express'
 import { keys, PublicKey } from 'libp2p-crypto'
 import { identity } from 'multiformats/hashes/identity'
 import { toString as uint8arraysToString } from 'uint8arrays'
-
-export const EXPIRES_IN = 10
+import { Config } from '../config'
 
 export interface CurrentUser {
   id: string
@@ -33,6 +32,12 @@ export interface CurrentUser {
 
 @Injectable()
 export class AuthGuard implements CanActivate {
+  constructor(private readonly config: Config) {
+    this.expiresIn = this.config.signature.expiresIn
+  }
+
+  readonly expiresIn: number
+
   async canActivate(context: ExecutionContext) {
     const ctx = GqlExecutionContext.create(context)
     const req: Request & { user?: CurrentUser } = ctx.getContext().req
@@ -56,7 +61,7 @@ export class AuthGuard implements CanActivate {
     if (!Number.isSafeInteger(time)) {
       throw new UnauthorizedException('Invalid timestamp')
     }
-    if (Math.abs(time - now) > EXPIRES_IN) {
+    if (Math.abs(time - now) > this.expiresIn) {
       throw new UnauthorizedException('Timestamp expired')
     }
 
