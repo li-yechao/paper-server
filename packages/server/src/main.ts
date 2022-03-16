@@ -22,12 +22,24 @@ program
   .description('Start server')
   .option('--cors', 'Enable cors')
   .option('-p, --port <port>', 'Listening port')
+  .option('--signature-expires-in <number>', 'Signature expires in seconds')
   .option('--mongo-uri <uri>', 'MongoDB uri')
   .action(
-    async ({ cors, port, mongoUri }: { cors?: boolean; port?: string; mongoUri?: string }) => {
+    async ({
+      cors,
+      port,
+      mongoUri,
+      signatureExpiresIn,
+    }: {
+      cors?: boolean
+      port?: string
+      mongoUri?: string
+      signatureExpiresIn?: string
+    }) => {
       if (typeof cors === 'boolean') process.env['cors'] = cors.toString()
       if (port) process.env['port'] = port
       if (mongoUri) process.env['mongo.uri'] = mongoUri
+      if (signatureExpiresIn) process.env['signature.expiresIn'] = signatureExpiresIn
 
       const app = await NestFactory.create(AppModule)
 
