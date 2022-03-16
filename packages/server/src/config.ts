@@ -20,11 +20,11 @@ export class Config {
   constructor(private readonly configService: ConfigService) {}
 
   get port() {
-    return this.getNumber('port')
+    return this.getInt('port', 8080)
   }
 
   get cors() {
-    return this.getBoolean('cors')
+    return this.getBoolean('cors', false)
   }
 
   get signature() {
@@ -33,7 +33,7 @@ export class Config {
 
     return {
       get expiresIn() {
-        return config.getNumber('signature.expiresIn')
+        return config.getInt('signature.expiresIn', 10)
       },
     }
   }
@@ -50,23 +50,56 @@ export class Config {
   }
 
   private get(key: string): string | undefined {
-    return this.configService.get<string>(key) || undefined
+    return this.configService.get<string>(key)?.trim() || undefined
   }
 
-  private getString(key: string): string {
-    const v = this.get(key)
-    if (!v) {
-      throw new Error(`Required config ${key} is missing`)
+  private getString(key: string, d?: string): string {
+    const s = this.get(key)
+    if (!s) {
+      if (d !== undefined) {
+        return d
+      }
+      throw new Error(`Missing required config \`${key}\``)
     }
-    return v
+    return s
   }
 
-  private getNumber(key: string): number {
-    const v = this.getString(key)
-    return Number(v)
+  private getInt(key: string, d?: number): number {
+    const s = this.get(key)
+    if (!s) {
+      if (d !== undefined) {
+        return d
+      }
+      throw new Error(`Missing required config \`${key}\``)
+    }
+    try {
+      if (!/^\d+$/.test(s)) {
+        throw new Error('Invalid number')
+      }
+      const n = parseInt(s)
+      if (!Number.isSafeInteger(n)) {
+        throw new Error('Invalid int')
+      }
+      return n
+    } catch (error) {
+      throw new Error(`Invalid config ${key}, require \`number\``)
+    }
   }
 
-  private getBoolean(key: string): boolean {
-    return this.getString(key) === 'true'
+  private getBoolean(key: string, d?: boolean): boolean {
+    const s = this.get(key)
+    if (!s) {
+      if (d !== undefined) {
+        return d
+      }
+      throw new Error(`Missing required config \`${key}\``)
+    }
+    if (s === 'true') {
+      return true
+    }
+    if (s === 'false') {
+      return false
+    }
+    throw new Error(`Invalid config ${key}, require \`true\` or \`false\``)
   }
 }
