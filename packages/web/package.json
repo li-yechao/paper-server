@@ -1,0 +1,53 @@
+{
+  "name": "@paper/web",
+  "version": "1.0.0-alpha.0",
+  "description": "paper web",
+  "author": "LiYechao <liyechao@yechao.xyz>",
+  "license": "Apache-2.0",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "test": "jest"
+  },
+  "dependencies": {
+    "@emotion/react": "^11.8.2",
+    "@emotion/styled": "^11.8.1",
+    "antd": "^4.19.2",
+    "react": "^17.0.2",
+    "react-dom": "^17.0.2",
+    "react-router-dom": "^6.2.2",
+    "react-use": "^17.3.2",
+    "recoil": "^0.6.1"
+  },
+  "devDependencies": {
+    "@testing-library/jest-dom": "^5.16.2",
+    "@testing-library/react": "^12.1.4",
+    "@types/jest": "^27.4.1",
+    "@types/react": "^17.0.40",
+    "@types/react-dom": "^17.0.13",
+    "@vitejs/plugin-react": "^1.2.0",
+    "jest": "^27.5.1",
+    "ts-jest": "^27.1.3",
+    "typescript": "^4.5.2",
+    "vite": "^2.8.6"
+  },
+  "jest": {
+    "moduleFileExtensions": [
+      "js",
+      "json",
+      "ts",
+      "tsx"
+    ],
+    "rootDir": "src",
+    "testRegex": ".*\\.spec\\.tsx?$",
+    "transform": {
+      "^.+\\.(t|j)sx?$": "ts-jest"
+    },
+    "collectCoverageFrom": [
+      "**/*.(t|j)s",
+      "**/*.(t|j)sx"
+    ],
+    "coverageDirectory": "../coverage",
+    "testEnvironment": "jsdom"
+  }
+}
