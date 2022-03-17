@@ -12,28 +12,55 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import { ApolloProvider } from '@apollo/client'
 import { ConfigProvider } from 'antd'
 import zhCN from 'antd/lib/locale/zh_CN'
+import { ReactNode, Suspense, useMemo } from 'react'
 import { HashRouter, Route, Routes } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
+import { createClient } from './apollo'
+import AppBar from './components/AppBar'
+import { useAccount } from './state/account'
+import { AuthViewLazy } from './views/auth'
 
 export default function App() {
+  const apolloClient = useMemo(() => createClient(), [])
+
   return (
     <ConfigProvider locale={zhCN}>
       <RecoilRoot>
-        <HashRouter>
-          <AppRoutes />
-        </HashRouter>
+        <ApolloProvider client={apolloClient}>
+          <HashRouter>
+            <Suspense fallback={<div />}>
+              <AuthGuard>
+                <AppRoutes />
+              </AuthGuard>
+            </Suspense>
+          </HashRouter>
+        </ApolloProvider>
       </RecoilRoot>
     </ConfigProvider>
   )
 }
 
+export const AuthGuard = ({ children }: { children?: ReactNode }) => {
+  const account = useAccount()
+
+  if (!account) {
+    return <AuthViewLazy />
+  }
+
+  return <>{children}</>
+}
+
 const AppRoutes = () => {
   return (
-    <Routes>
-      <Route index element={<div>HOME</div>} />
-      <Route path="*" element={<div>NOT FOUND</div>} />
-    </Routes>
+    <>
+      <AppBar />
+      <Routes>
+        <Route index element={<div>HOME</div>} />
+        <Route path="*" element={<div>NOT FOUND</div>} />
+      </Routes>
+    </>
   )
 }

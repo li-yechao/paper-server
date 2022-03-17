@@ -12,13 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-interface ImportMetaEnv extends Readonly<Record<string, string | boolean>> {
-  DEV: boolean
-  PROD: boolean
+import { lazy } from 'react'
+import LazyView from '../../components/LazyView'
 
-  VITE_GRAPHQL_URI: string
-}
-
-interface ImportMeta {
-  readonly env: ImportMetaEnv
-}
+export const AuthViewLazy = LazyView(lazy(() => import('./AuthView')))

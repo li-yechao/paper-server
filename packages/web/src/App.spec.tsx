@@ -12,12 +12,33 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import '@testing-library/jest-dom/extend-expect'
 import { act, render } from '@testing-library/react'
-import App from './App'
+import { keys } from 'libp2p-crypto'
+import { Suspense } from 'react'
+import { RecoilRoot } from 'recoil'
 
-it('App', async () => {
-  const result = render(<App />)
-  await act(() => new Promise(resolve => setTimeout(resolve, 200)))
-  expect(result).toBeTruthy()
+describe('AuthGuard', () => {
+  let storage: { getPrivateKey: jest.Mock }
+
+  beforeEach(() => {
+    storage = { getPrivateKey: jest.fn() }
+
+    jest.mock('./Storage', () => storage)
+  })
+
+  it('should be signed', async () => {
+    storage.getPrivateKey.mockReturnValue(keys.generateKeyPair('Ed25519'))
+
+    const { AuthGuard } = await import('./App')
+
+    const result = render(
+      <RecoilRoot>
+        <Suspense fallback={<div />}>
+          <AuthGuard>auth success</AuthGuard>
+        </Suspense>
+      </RecoilRoot>
+    )
+    await act(() => new Promise(resolve => setTimeout(resolve, 100)))
+    expect(result.baseElement).toHaveTextContent('auth success')
+  })
 })

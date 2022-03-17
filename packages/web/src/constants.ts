@@ -12,13 +12,4 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-interface ImportMetaEnv extends Readonly<Record<string, string | boolean>> {
-  DEV: boolean
-  PROD: boolean
-
-  VITE_GRAPHQL_URI: string
-}
-
-interface ImportMeta {
-  readonly env: ImportMetaEnv
-}
+export const GRAPHQL_URI = import.meta.env.VITE_GRAPHQL_URI

@@ -12,13 +12,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-interface ImportMetaEnv extends Readonly<Record<string, string | boolean>> {
-  DEV: boolean
-  PROD: boolean
+import { ComponentType, LazyExoticComponent, PropsWithoutRef, Suspense } from 'react'
 
-  VITE_GRAPHQL_URI: string
+export default function LazyView<P>(C: LazyExoticComponent<ComponentType<P>>) {
+  return (props: PropsWithoutRef<P>) => {
+    return (
+      <Suspense fallback={<Loading />}>
+        <C {...props} />
+      </Suspense>
+    )
+  }
 }
 
-interface ImportMeta {
-  readonly env: ImportMetaEnv
+const Loading = () => {
+  return <></>
 }
