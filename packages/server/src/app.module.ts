@@ -17,8 +17,9 @@ import { Module } from '@nestjs/common'
 import { ConfigModule, ConfigService } from '@nestjs/config'
 import { GraphQLModule } from '@nestjs/graphql'
 import { MongooseModule } from '@nestjs/mongoose'
-import { Config } from './config'
 import { AuthModule } from './auth/auth.module'
+import { Config } from './config'
+import { ObjectModule } from './object/object.module'
 import { UserModule } from './user/user.module'
 
 @Module({
@@ -37,6 +38,7 @@ import { UserModule } from './user/user.module'
     }),
     AuthModule,
     UserModule,
+    ObjectModule,
   ],
   providers: [Config],
 })
