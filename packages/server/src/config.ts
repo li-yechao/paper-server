@@ -49,6 +49,17 @@ export class Config {
     }
   }
 
+  get ipfs() {
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
+    const config = this
+
+    return {
+      get api() {
+        return config.getString('ipfs.api')
+      },
+    }
+  }
+
   private get(key: string): string | undefined {
     return this.configService.get<string>(key)?.trim() || undefined
   }
