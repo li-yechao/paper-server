@@ -1,0 +1,52 @@
+{
+  "name": "@paper/editor",
+  "version": "1.0.0-alpha.0",
+  "description": "paper editor",
+  "author": "LiYechao <liyechao@yechao.xyz>",
+  "license": "Apache-2.0",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "test": "jest"
+  },
+  "dependencies": {},
+  "peerDependencies": {
+    "react": "^17.0.2",
+    "react-dom": "^17.0.2"
+  },
+  "devDependencies": {
+    "@testing-library/jest-dom": "^5.16.2",
+    "@testing-library/react": "^12.1.4",
+    "@types/jest": "^27.4.1",
+    "@types/react": "^17.0.40",
+    "@types/react-dom": "^17.0.13",
+    "@vitejs/plugin-react": "^1.2.0",
+    "jest": "^27.5.1",
+    "ts-jest": "^27.1.3",
+    "typescript": "^4.5.2",
+    "vite": "^2.8.6"
+  },
+  "jest": {
+    "moduleFileExtensions": [
+      "js",
+      "json",
+      "ts",
+      "tsx"
+    ],
+    "rootDir": "src",
+    "testRegex": ".*\\.spec\\.tsx?$",
+    "transform": {
+      "^.+\\.(t|j)sx?$": "ts-jest"
+    },
+    "collectCoverageFrom": [
+      "**/*.(t|j)s",
+      "**/*.(t|j)sx",
+      "!constants.ts"
+    ],
+    "coverageDirectory": "../coverage",
+    "testEnvironment": "jsdom",
+    "setupFilesAfterEnv": [
+      "./jest.setup.ts"
+    ]
+  }
+}
