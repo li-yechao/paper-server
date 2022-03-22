@@ -13,3 +13,35 @@
 // limitations under the License.
 
 export { default } from './Editor'
+
+export { default as State } from './lib/State'
+
+export type { Extension } from './lib/Extension'
+
+export type { Node } from './lib/Node'
+
+export type { Mark } from './lib/Mark'
+
+export * from './nodes'
+
+export * from './marks'
+
+export * from './plugins'
+
+export * from 'prosemirror-commands'
+
+export * from 'prosemirror-dropcursor'
+
+export * from 'prosemirror-gapcursor'
+
+export * from 'prosemirror-history'
+
+export * from 'prosemirror-inputrules'
+
+export * from 'prosemirror-keymap'
+
+export * from 'prosemirror-markdown'
+
+export * from 'prosemirror-model'
+
+export * from 'prosemirror-state'

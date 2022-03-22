@@ -12,12 +12,89 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { render } from '@testing-library/react'
-import Editor from '.'
+import { act, render } from '@testing-library/react'
+import Editor, {
+  baseKeymap,
+  Blockquote,
+  Bold,
+  BulletList,
+  Code,
+  Doc,
+  dropCursor,
+  gapCursor,
+  Heading,
+  Highlight,
+  history,
+  Italic,
+  keymap,
+  Link,
+  OrderedList,
+  Paragraph,
+  Plugins,
+  redo,
+  State,
+  Strikethrough,
+  Text,
+  Underline,
+  undo,
+  undoInputRule,
+  Value,
+} from '.'
 
 describe('Editor', () => {
+  let state: State
+
+  beforeEach(() => {
+    state = new State({
+      nodes: [
+        new Doc(),
+        new Text(),
+        new Paragraph(),
+        new Heading(),
+        new Blockquote(),
+        new OrderedList(),
+        new BulletList(),
+      ],
+      marks: [
+        new Bold(),
+        new Code(),
+        new Highlight(),
+        new Italic(),
+        new Link(),
+        new Strikethrough(),
+        new Underline(),
+      ],
+      extensions: [
+        new Plugins([
+          keymap({
+            'Mod-z': undo,
+            'Shift-Mod-z': redo,
+            'Mod-y': redo,
+            Backspace: undoInputRule,
+          }),
+          keymap(baseKeymap),
+          history(),
+          gapCursor(),
+          dropCursor({ color: 'currentColor' }),
+        ]),
+        new Value({
+          defaultValue: {
+            type: 'doc',
+            content: [
+              { type: 'heading', attrs: { level: 1 }, content: [{ type: 'text', text: 'HELLO' }] },
+            ],
+          },
+        }),
+      ],
+    })
+  })
+
   it('Editor', async () => {
-    const result = render(<Editor />)
-    expect(result.baseElement).toHaveTextContent(/editor/i)
+    const result = render(<Editor state={state} />)
+    await act(() => new Promise(resolve => setTimeout(resolve, 100)))
+    const editor = result.getByTestId('prosemirror-editor')
+    expect(editor).toBeInTheDocument()
+    expect(editor).toHaveAttribute('contenteditable', 'true')
+    expect(editor).toHaveTextContent('HELLO')
   })
 })
