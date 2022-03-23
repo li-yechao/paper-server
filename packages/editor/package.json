@@ -4,6 +4,7 @@
   "description": "paper editor",
   "author": "LiYechao <liyechao@yechao.xyz>",
   "license": "Apache-2.0",
+  "main": "src/index.ts",
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
