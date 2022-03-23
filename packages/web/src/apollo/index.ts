@@ -14,6 +14,7 @@
 
 import { ApolloClient, ApolloLink, InMemoryCache, Observable } from '@apollo/client'
 import { BatchHttpLink } from '@apollo/client/link/batch-http'
+import { relayStylePagination } from '@apollo/client/utilities'
 import { toString } from 'uint8arrays/to-string'
 import { GRAPHQL_URI } from '../constants'
 import Storage from '../Storage'
@@ -67,7 +68,15 @@ export function createClient() {
 
   const client = new ApolloClient({
     link: authLink.concat(httpLink),
-    cache: new InMemoryCache(),
+    cache: new InMemoryCache({
+      typePolicies: {
+        User: {
+          fields: {
+            objects: relayStylePagination(),
+          },
+        },
+      },
+    }),
   })
   return client
 }

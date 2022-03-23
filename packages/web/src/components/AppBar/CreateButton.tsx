@@ -25,7 +25,7 @@ export default function CreateButton() {
   const [createObject] = useCreateObject()
 
   const handleCreateObject = useCallback(async () => {
-    createObject({ variables: { input: {} }, refetchQueries: ['Objects'] }).then(res => {
+    createObject({ variables: { input: {} } }).then(res => {
       const object = res.data?.createObject
       if (object) {
         navigate(`/me/${object.id}`)
