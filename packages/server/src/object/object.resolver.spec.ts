@@ -15,6 +15,7 @@
 import { ConfigModule } from '@nestjs/config'
 import { getModelToken } from '@nestjs/mongoose'
 import { Test, TestingModule } from '@nestjs/testing'
+import { PubSub } from 'graphql-subscriptions'
 import mongoose from 'mongoose'
 import { Config } from '../config'
 import { IpfsService } from './ipfs.service'
@@ -34,6 +35,7 @@ describe('ObjectResolver', () => {
         Config,
         ObjectResolver,
         ObjectService,
+        { provide: 'PUB_SUB', useValue: new PubSub() },
         { provide: IpfsService, useFactory: () => ({ add: jest.fn(), cat: jest.fn() }) },
         {
           provide: getModelToken(Object_.name),
