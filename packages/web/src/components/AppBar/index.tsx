@@ -16,12 +16,14 @@ import { LogoutOutlined, UserOutlined } from '@ant-design/icons'
 import styled from '@emotion/styled'
 import { Button, Dropdown, Menu, Space } from 'antd'
 import { useAccount, useSignOut } from '../../state/account'
+import CreateButton from './CreateButton'
 
 export default function AppBar() {
   return (
     <_Header>
       <_Logo>Paper</_Logo>
       <Space>
+        <CreateButton />
         <AccountButton />
       </Space>
     </_Header>
@@ -29,12 +31,19 @@ export default function AppBar() {
 }
 
 const _Header = styled.header`
+  position: fixed;
+  left: 0;
+  top: 0;
+  right: 0;
+  width: 100%;
   height: 48px;
   border-bottom: 1px solid #efefef;
   padding: 0 16px;
   display: flex;
   align-items: center;
   justify-content: space-between;
+  background-color: #ffffff;
+  z-index: 100;
 `
 
 const _Logo = styled.div`

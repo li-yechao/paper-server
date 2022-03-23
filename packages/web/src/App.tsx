@@ -16,12 +16,13 @@ import { ApolloProvider } from '@apollo/client'
 import { ConfigProvider } from 'antd'
 import zhCN from 'antd/lib/locale/zh_CN'
 import { ReactNode, Suspense, useMemo } from 'react'
-import { HashRouter, Route, Routes } from 'react-router-dom'
+import { HashRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
 import { createClient } from './apollo'
 import AppBar from './components/AppBar'
 import { useAccount } from './state/account'
 import { AuthViewLazy } from './views/auth'
+import { MainViewLazy } from './views/main'
 
 export default function App() {
   const apolloClient = useMemo(() => createClient(), [])
@@ -58,7 +59,9 @@ const AppRoutes = () => {
     <>
       <AppBar />
       <Routes>
-        <Route index element={<div>HOME</div>} />
+        <Route index element={<Navigate to="/me" replace />} />
+        <Route path="/me" element={<MainViewLazy />} />
+        <Route path="/me/:objectId" element={<MainViewLazy />} />
         <Route path="*" element={<div>NOT FOUND</div>} />
       </Routes>
     </>
