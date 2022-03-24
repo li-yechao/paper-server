@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { gql, QueryHookOptions, useQuery } from '@apollo/client'
+import { gql, QueryHookOptions, useQuery, useSubscription } from '@apollo/client'
 import styled from '@emotion/styled'
 import { useCallback, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
@@ -21,6 +21,24 @@ import { useVirtual } from 'react-virtual'
 export default function ObjectList({ objectId }: { objectId?: string }) {
   const navigate = useNavigate()
   const { data: { viewer } = {}, fetchMore, loading } = useObjects({ variables: { first: 10 } })
+
+  const { data: { objectCreated } = {} } = useSubscription<{
+    objectCreated: { id: string; meta?: { title?: string } }
+  }>(
+    gql`
+      subscription ObjectCreated {
+        objectCreated {
+          id
+        }
+      }
+    `
+  )
+  useEffect(() => {
+    const first = viewer?.objects.edges.at(0)
+    if (objectCreated && first) {
+      fetchMore({ variables: { before: first.cursor, last: 10, first: null } })
+    }
+  }, [objectCreated, viewer])
 
   const parentRef = useRef<HTMLDivElement>(null)
 
@@ -102,11 +120,11 @@ const _Item = styled.div`
 `
 
 const OBJECTS_QUERY = gql`
-  query Objects($first: Int, $after: String) {
+  query Objects($before: String, $after: String, $first: Int, $last: Int) {
     viewer {
       id
 
-      objects(first: $first, after: $after) {
+      objects(before: $before, after: $after, first: $first, last: $last) {
         edges {
           cursor
           node {
@@ -141,7 +159,7 @@ const useObjects = (
         }
       }
     },
-    { after?: string; first?: number }
+    { before?: string; after?: string; first?: number; last?: number }
   >
 ) => {
   return useQuery(OBJECTS_QUERY, options)

@@ -12,44 +12,46 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { ApolloClient, ApolloLink, InMemoryCache, Observable } from '@apollo/client'
+import { ApolloClient, ApolloLink, InMemoryCache, Observable, split } from '@apollo/client'
 import { BatchHttpLink } from '@apollo/client/link/batch-http'
-import { relayStylePagination } from '@apollo/client/utilities'
+import { GraphQLWsLink } from '@apollo/client/link/subscriptions'
+import { getMainDefinition, relayStylePagination } from '@apollo/client/utilities'
+import { PrivateKey } from 'libp2p-crypto'
+import { createClient as createGraphqlWsClient } from 'graphql-ws'
 import { toString } from 'uint8arrays/to-string'
 import { GRAPHQL_URI } from '../constants'
 import Storage from '../Storage'
 
 export function createClient() {
+  const getAuthParams = async (key: PrivateKey) => {
+    const publickey = toString(key.public.bytes, 'base64')
+    const timestamp = Math.floor(Date.now() / 1000).toString()
+    const signature = toString(
+      await key.sign(
+        new TextEncoder().encode(
+          new URLSearchParams({
+            timestamp,
+          }).toString()
+        )
+      ),
+      'base64'
+    )
+
+    return {
+      publickey,
+      timestamp,
+      signature,
+    }
+  }
+
   const authLink = new ApolloLink((operation, forward) => {
     return new Observable(observer => {
       ;(async () => {
         try {
           const key = await Storage.getPrivateKey()
-
           if (key) {
-            const publickey = toString(key.public.bytes, 'base64')
-            const timestamp = Math.floor(Date.now() / 1000).toString()
-            const signature = toString(
-              await key.sign(
-                new TextEncoder().encode(
-                  new URLSearchParams({
-                    timestamp,
-                  }).toString()
-                )
-              ),
-              'base64'
-            )
-
-            operation.setContext(({ headers = {} }) => {
-              return {
-                headers: {
-                  ...headers,
-                  publickey,
-                  timestamp,
-                  signature,
-                },
-              }
-            })
+            const params = await getAuthParams(key)
+            operation.setContext(({ headers = {} }) => ({ headers: { ...headers, ...params } }))
           }
 
           forward(operation).subscribe(observer)
@@ -66,8 +68,30 @@ export function createClient() {
     batchInterval: 100,
   })
 
+  const webSocketLink = new GraphQLWsLink(
+    createGraphqlWsClient({
+      url: GRAPHQL_URI.replace(/^https/, 'wss').replace(/^http/, 'ws'),
+      connectionParams: async () => {
+        const key = await Storage.getPrivateKey()
+        if (key) {
+          return getAuthParams(key)
+        }
+        return {}
+      },
+    })
+  )
+
+  const link = split(
+    ({ query }) => {
+      const definition = getMainDefinition(query)
+      return definition.kind === 'OperationDefinition' && definition.operation === 'subscription'
+    },
+    webSocketLink,
+    authLink.concat(httpLink)
+  )
+
   const client = new ApolloClient({
-    link: authLink.concat(httpLink),
+    link,
     cache: new InMemoryCache({
       typePolicies: {
         User: {
