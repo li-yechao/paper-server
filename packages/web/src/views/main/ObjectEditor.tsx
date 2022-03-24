@@ -82,7 +82,12 @@ const _ObjectEditor = ({ object }: { object: { id: string; data?: string } }) =>
       return
     }
     const data = JSON.stringify(doc.current.toJSON())
-    updateObject({ variables: { objectId: object.id, input: { data } } })
+    updateObject({
+      variables: {
+        objectId: object.id,
+        input: { meta: { title: doc.current.content.maybeChild(0)?.textContent }, data },
+      },
+    })
       .then(() => {
         message.success('Save Success')
       })
@@ -202,7 +207,7 @@ const useUpdateObject = (
     {
       objectId: string
       input: {
-        meta?: unknown
+        meta?: { title?: string }
         data?: string
       }
     }
