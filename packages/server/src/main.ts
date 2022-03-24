@@ -24,22 +24,26 @@ program
   .option('-p, --port <port>', 'Listening port')
   .option('--signature-expires-in <number>', 'Signature expires in seconds')
   .option('--mongo-uri <uri>', 'MongoDB uri')
+  .option('--ipfs-api <api>', 'Ipfs api url')
   .action(
     async ({
       cors,
       port,
       mongoUri,
       signatureExpiresIn,
+      ipfsApi,
     }: {
       cors?: boolean
       port?: string
       mongoUri?: string
       signatureExpiresIn?: string
+      ipfsApi?: string
     }) => {
       if (typeof cors === 'boolean') process.env['cors'] = cors.toString()
       if (port) process.env['port'] = port
       if (mongoUri) process.env['mongo.uri'] = mongoUri
       if (signatureExpiresIn) process.env['signature.expiresIn'] = signatureExpiresIn
+      if (ipfsApi) process.env['ipfs.api'] = ipfsApi
 
       const app = await NestFactory.create(AppModule)
 
