@@ -12,16 +12,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { ApolloDriver } from '@nestjs/apollo'
-import { Module } from '@nestjs/common'
+import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo'
+import { Global, Module } from '@nestjs/common'
 import { ConfigModule, ConfigService } from '@nestjs/config'
 import { GraphQLModule } from '@nestjs/graphql'
 import { MongooseModule } from '@nestjs/mongoose'
+import { PubSub } from 'graphql-subscriptions'
 import { AuthModule } from './auth/auth.module'
 import { Config } from './config'
 import { ObjectModule } from './object/object.module'
 import { UserModule } from './user/user.module'
 
+@Global()
 @Module({
   imports: [
     ConfigModule.forRoot({ envFilePath: ['.env.local', '.env'] }),
@@ -32,14 +34,29 @@ import { UserModule } from './user/user.module'
       }),
       inject: [ConfigService],
     }),
-    GraphQLModule.forRoot({
+    GraphQLModule.forRoot<ApolloDriverConfig>({
       driver: ApolloDriver,
       autoSchemaFile: true,
+      subscriptions: {
+        'graphql-ws': {
+          onConnect: ({ connectionParams, extra }) => {
+            Object.assign(extra, connectionParams)
+          },
+        },
+      },
+      context: ({ extra, req }) => {
+        return {
+          publickey: req?.get('publickey') ?? extra?.publickey,
+          timestamp: req?.get('timestamp') ?? extra?.timestamp,
+          signature: req?.get('signature') ?? extra?.signature,
+        }
+      },
     }),
     AuthModule,
     UserModule,
     ObjectModule,
   ],
-  providers: [Config],
+  providers: [Config, { provide: 'PUB_SUB', useValue: new PubSub() }],
+  exports: ['PUB_SUB'],
 })
 export class AppModule {}

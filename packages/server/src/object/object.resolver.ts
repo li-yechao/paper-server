@@ -12,9 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { UseGuards } from '@nestjs/common'
-import { Args, Mutation, Parent, ResolveField, Resolver } from '@nestjs/graphql'
+import { Inject, UseGuards } from '@nestjs/common'
+import { Args, Mutation, Parent, ResolveField, Resolver, Subscription } from '@nestjs/graphql'
+import { PubSub } from 'graphql-subscriptions'
 import { AuthGuard, CurrentUser } from '../auth/auth.guard'
+import { GraphqlContext } from '../GraphqlContext'
 import { CreateObjectInput, UpdateObjectInput } from './object.input'
 import { Object_ } from './object.schema'
 import { ObjectService } from './object.service'
@@ -22,7 +24,10 @@ import { ObjectService } from './object.service'
 @Resolver(() => Object_)
 @UseGuards(AuthGuard)
 export class ObjectResolver {
-  constructor(private readonly objectService: ObjectService) {}
+  constructor(
+    @Inject('PUB_SUB') private readonly pubSub: PubSub,
+    private readonly objectService: ObjectService
+  ) {}
 
   @ResolveField(() => String, { nullable: true })
   async data(@Parent() object: Object_): Promise<string | null> {
@@ -37,7 +42,9 @@ export class ObjectResolver {
     @CurrentUser() user: CurrentUser,
     @Args('input') input: CreateObjectInput
   ): Promise<Object_> {
-    return this.objectService.create({ userId: user.id, input })
+    const object = await this.objectService.create({ userId: user.id, input })
+    this.pubSub.publish('objectCreated', { objectCreated: object })
+    return object
   }
 
   @Mutation(() => Object_)
@@ -56,5 +63,14 @@ export class ObjectResolver {
   ): Promise<boolean> {
     await this.objectService.delete({ userId: user.id, objectId })
     return true
+  }
+
+  @Subscription(() => Object_, {
+    filter: (payload: { objectCreated?: Object_ }, _, context: GraphqlContext) => {
+      return !!context.user && payload.objectCreated?.userId === context.user?.id
+    },
+  })
+  objectCreated() {
+    return this.pubSub.asyncIterator('objectCreated')
   }
 }

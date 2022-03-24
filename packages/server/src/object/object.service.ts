@@ -50,8 +50,14 @@ export class ObjectService {
     return this.objectModel.find({ userId, deletedAt: null, ...filter }, null, { sort, limit })
   }
 
-  async count({ userId }: { userId: string }): Promise<number> {
-    return this.objectModel.count({ userId, deletedAt: null })
+  async count({
+    userId,
+    filter,
+  }: {
+    userId: string
+    filter?: mongoose.FilterQuery<Omit<Object_, 'userId' | 'deletedAt'>>
+  }): Promise<number> {
+    return this.objectModel.count({ userId, deletedAt: null, ...filter })
   }
 
   async create({ userId, input }: { userId: string; input: CreateObjectInput }): Promise<Object_> {

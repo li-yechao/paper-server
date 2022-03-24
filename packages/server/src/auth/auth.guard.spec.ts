@@ -41,7 +41,7 @@ describe('AuthGuard', () => {
     ).toString('base64')
 
     await expect(
-      guard.canActivate(mockContext({ headers: { publickey, timestamp, signature } }))
+      guard.canActivate(mockContext({ params: { publickey, timestamp, signature } }))
     ).resolves.toBeTruthy()
   })
 
@@ -54,15 +54,15 @@ describe('AuthGuard', () => {
     ).toString('base64')
 
     await expect(() =>
-      guard.canActivate(mockContext({ headers: { timestamp, signature } }))
+      guard.canActivate(mockContext({ params: { timestamp, signature } }))
     ).rejects.toThrowError(/publickey/i)
 
     await expect(() =>
-      guard.canActivate(mockContext({ headers: { publickey, signature } }))
+      guard.canActivate(mockContext({ params: { publickey, signature } }))
     ).rejects.toThrowError(/timestamp/i)
 
     await expect(() =>
-      guard.canActivate(mockContext({ headers: { publickey, timestamp } }))
+      guard.canActivate(mockContext({ params: { publickey, timestamp } }))
     ).rejects.toThrowError(/signature/i)
   })
 
@@ -75,7 +75,7 @@ describe('AuthGuard', () => {
     ).toString('base64')
 
     await expect(() =>
-      guard.canActivate(mockContext({ headers: { publickey, timestamp, signature } }))
+      guard.canActivate(mockContext({ params: { publickey, timestamp, signature } }))
     ).rejects.toThrowError(/timestamp/i)
   })
 
@@ -93,13 +93,13 @@ describe('AuthGuard', () => {
     ]).toString('base64')
 
     await expect(() =>
-      guard.canActivate(mockContext({ headers: { publickey, timestamp, signature } }))
+      guard.canActivate(mockContext({ params: { publickey, timestamp, signature } }))
     ).rejects.toThrowError(/signature/i)
 
     await expect(async () =>
       guard.canActivate(
         mockContext({
-          headers: {
+          params: {
             publickey,
             timestamp,
             signature: Buffer.from(
@@ -120,7 +120,7 @@ describe('AuthGuard', () => {
     ).toString('base64')
 
     await expect(() =>
-      guard.canActivate(mockContext({ headers: { publickey, timestamp, signature } }))
+      guard.canActivate(mockContext({ params: { publickey, timestamp, signature } }))
     ).rejects.toThrowError(/expired/i)
   })
 
@@ -133,15 +133,15 @@ describe('AuthGuard', () => {
     ).toString('base64')
 
     await expect(() =>
-      guard.canActivate(mockContext({ headers: { publickey, timestamp, signature } }))
+      guard.canActivate(mockContext({ params: { publickey, timestamp, signature } }))
     ).rejects.toThrowError(/unsupported/i)
   })
 })
 
-function mockContext({ headers }: { headers: Record<string, string> }) {
+function mockContext({ params }: { params: Record<string, string> }) {
   return createMock<ExecutionContext>({
     getArgs: () =>
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      <any[]>[{}, { req: { get: (key: string) => headers[key] } }, {}],
+      <any[]>[{}, { ...params }, {}],
   })
 }
