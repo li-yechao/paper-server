@@ -30,6 +30,7 @@ import Editor, {
   Italic,
   keymap,
   Link,
+  Math,
   OrderedList,
   Paragraph,
   Plugins,
@@ -54,6 +55,7 @@ const App = () => {
         new Blockquote(),
         new OrderedList(),
         new BulletList(),
+        new Math(),
       ],
       marks: [
         new Bold(),
