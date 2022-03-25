@@ -44,8 +44,9 @@ import Editor, {
 } from '@paper/editor'
 import { ProsemirrorNode } from '@paper/editor/src/Editor/lib/Node'
 import { message, Spin } from 'antd'
-import { useMemo, useRef } from 'react'
+import { useMemo, useState } from 'react'
 import useOnSave from '../../utils/useOnSave'
+import { usePrompt } from '../../utils/usePrompt'
 
 export default function ObjectEditor({ objectId }: { objectId: string }) {
   const object = useObject({ variables: { objectId } })
@@ -73,29 +74,32 @@ const _Loading = styled.div`
 `
 
 const _ObjectEditor = ({ object }: { object: { id: string; data?: string } }) => {
-  const doc = useRef<ProsemirrorNode>()
-
   const [updateObject] = useUpdateObject()
+  const [doc, setDoc] = useState<ProsemirrorNode>()
+  const [savedDoc, setSavedDoc] = useState<ProsemirrorNode>()
 
   useOnSave(() => {
-    if (!doc.current) {
+    if (!doc) {
       return
     }
-    const data = JSON.stringify(doc.current.toJSON())
+    const data = JSON.stringify(doc.toJSON())
     updateObject({
       variables: {
         objectId: object.id,
-        input: { meta: { title: doc.current.content.maybeChild(0)?.textContent }, data },
+        input: { meta: { title: doc.content.maybeChild(0)?.textContent }, data },
       },
     })
       .then(() => {
         message.success('Save Success')
+        setSavedDoc(doc)
       })
       .catch(error => {
         message.error(error.message)
         throw error
       })
-  }, [object])
+  }, [object, doc])
+
+  usePrompt('Discard changes?', doc !== savedDoc)
 
   const state = useMemo(() => {
     return new State({
@@ -132,7 +136,7 @@ const _ObjectEditor = ({ object }: { object: { id: string; data?: string } }) =>
         ]),
         new Value({
           defaultValue: object.data ? JSON.parse(object.data) : undefined,
-          onDispatchTransaction: view => (doc.current = view.state.doc),
+          onDispatchTransaction: view => setDoc(view.state.doc),
         }),
       ],
     })
