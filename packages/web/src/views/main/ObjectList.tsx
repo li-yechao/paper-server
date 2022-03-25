@@ -101,6 +101,7 @@ const _List = styled.div`
 const _Item = styled.div`
   overflow: hidden;
   text-overflow: ellipsis;
+  white-space: nowrap;
   padding: 0 8px;
   cursor: pointer;
   position: absolute;
