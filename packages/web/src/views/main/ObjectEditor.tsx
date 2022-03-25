@@ -60,7 +60,7 @@ export default function ObjectEditor({ objectId }: { objectId: string }) {
       </_Loading>
     )
   } else if (object.data) {
-    return <_ObjectEditor object={object.data.viewer.object} />
+    return <_ObjectEditor key={objectId} object={object.data.viewer.object} />
   }
   return null
 }
@@ -76,13 +76,14 @@ const _Loading = styled.div`
 const _ObjectEditor = ({ object }: { object: { id: string; data?: string } }) => {
   const [updateObject] = useUpdateObject()
   const [doc, setDoc] = useState<ProsemirrorNode>()
-  const [savedDoc, setSavedDoc] = useState<ProsemirrorNode>()
+  const [changed, setChanged] = useState(false)
 
   useOnSave(() => {
     if (!doc) {
       return
     }
     const data = JSON.stringify(doc.toJSON())
+    setChanged(false)
     updateObject({
       variables: {
         objectId: object.id,
@@ -91,7 +92,6 @@ const _ObjectEditor = ({ object }: { object: { id: string; data?: string } }) =>
     })
       .then(() => {
         message.success('Save Success')
-        setSavedDoc(doc)
       })
       .catch(error => {
         message.error(error.message)
@@ -99,7 +99,7 @@ const _ObjectEditor = ({ object }: { object: { id: string; data?: string } }) =>
       })
   }, [object, doc])
 
-  usePrompt('Discard changes?', doc !== savedDoc)
+  usePrompt('Discard changes?', changed)
 
   const state = useMemo(() => {
     return new State({
@@ -136,7 +136,12 @@ const _ObjectEditor = ({ object }: { object: { id: string; data?: string } }) =>
         ]),
         new Value({
           defaultValue: object.data ? JSON.parse(object.data) : undefined,
-          onDispatchTransaction: view => setDoc(view.state.doc),
+          onDispatchTransaction: (view, tr) => {
+            if (tr.docChanged) {
+              setDoc(view.state.doc)
+              setChanged(true)
+            }
+          },
         }),
       ],
     })
