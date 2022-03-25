@@ -37,6 +37,9 @@ jobs:
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Copy yarn.lock
+        run: cp yarn.lock packages/server/
+
       - name: Build and push
         uses: docker/build-push-action@v2
         with:
