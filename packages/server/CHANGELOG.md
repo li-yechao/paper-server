@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.0.0-alpha.2](https://github.com/li-yechao/paper/compare/@paper/server@1.0.0-alpha.1...@paper/server@1.0.0-alpha.2) (2022-03-25)
+
+### Bug Fixes
+
+- add `--ipfs-api` args ([7f95937](https://github.com/li-yechao/paper/commit/7f9593719f74e00f86068f03d421772c971fb01f))
+- disable graphql cors option ([81cffdb](https://github.com/li-yechao/paper/commit/81cffdb498bbba982e27af460717d1889269db85))
+
 # [1.0.0-alpha.1](https://github.com/li-yechao/paper/compare/@paper/server@0.2.0-alpha.4...@paper/server@1.0.0-alpha.1) (2022-03-24)
 
 ### Bug Fixes

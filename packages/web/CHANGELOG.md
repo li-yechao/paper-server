@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.0.0-alpha.2](https://github.com/li-yechao/paper/compare/@paper/web@1.0.0-alpha.1...@paper/web@1.0.0-alpha.2) (2022-03-25)
+
+### Features
+
+- prompt when leave editing ([b3e333e](https://github.com/li-yechao/paper/commit/b3e333e514e8b4b5ad483f978ee24bb5e7cb3a98))
+
 # 1.0.0-alpha.1 (2022-03-24)
 
 ### Features
