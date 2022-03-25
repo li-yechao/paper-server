@@ -23,13 +23,13 @@ describe('AuthGuard', () => {
   beforeEach(() => {
     storage = { getPrivateKey: jest.fn() }
 
-    jest.mock('./Storage', () => storage)
+    jest.mock('../Storage', () => storage)
   })
 
   it('should be signed', async () => {
     storage.getPrivateKey.mockReturnValue(keys.generateKeyPair('Ed25519'))
 
-    const { AuthGuard } = await import('./App')
+    const { AuthGuard } = await import('../App')
 
     const result = render(
       <RecoilRoot>
