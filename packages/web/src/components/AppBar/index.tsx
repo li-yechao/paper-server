@@ -62,7 +62,7 @@ const AccountButton = () => {
   const menu = (
     <Menu>
       <Menu.Item key="logout" icon={<LogoutOutlined />} onClick={signOut}>
-        注销登录
+        Sign out
       </Menu.Item>
     </Menu>
   )
