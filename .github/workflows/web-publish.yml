@@ -1,5 +1,10 @@
 name: Publish web
 
+env:
+  # 7 GiB by default on GitHub, setting to 6 GiB
+  # https://docs.github.com/en/actions/using-github-hosted-runners/about-github-hosted-runners#supported-runners-and-hardware-resources
+  NODE_OPTIONS: --max-old-space-size=6144
+
 on:
   push:
     tags:
@@ -24,7 +29,7 @@ jobs:
 
       - name: Build web
         run: |
-          NODE_OPTIONS="--max_old_space_size=4096" yarn workspace @paper/web build
+          yarn workspace @paper/web build
           tar -cvzf packages/web/web.tar.gz -C packages/web/dist .
 
       - name: Release
