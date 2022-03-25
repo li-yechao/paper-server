@@ -16,7 +16,7 @@ import { act, fireEvent, render, RenderResult, waitFor } from '@testing-library/
 import { keys } from 'libp2p-crypto'
 import { RecoilRoot } from 'recoil'
 import { toString } from 'uint8arrays/to-string'
-import AuthView from './AuthView'
+import AuthView from '../AuthView'
 
 describe('AuthView', () => {
   const onSuccess = jest.fn()

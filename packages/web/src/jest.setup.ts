@@ -16,6 +16,8 @@ import '@testing-library/jest-dom/extend-expect'
 import 'cross-fetch/polyfill'
 import { TextEncoder, TextDecoder } from 'util'
 
+jest.setTimeout(10e3)
+
 globalThis.TextEncoder = TextEncoder
 globalThis.TextDecoder = TextDecoder as typeof globalThis.TextDecoder
 
