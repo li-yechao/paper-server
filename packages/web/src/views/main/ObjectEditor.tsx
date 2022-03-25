@@ -30,6 +30,7 @@ import Editor, {
   Italic,
   keymap,
   Link,
+  Math,
   OrderedList,
   Paragraph,
   Plugins,
@@ -111,6 +112,7 @@ const _ObjectEditor = ({ object }: { object: { id: string; data?: string } }) =>
         new Blockquote(),
         new OrderedList(),
         new BulletList(),
+        new Math(),
       ],
       marks: [
         new Bold(),
