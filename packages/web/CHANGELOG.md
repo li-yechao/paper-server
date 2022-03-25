@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.0.0-alpha.4](https://github.com/li-yechao/paper/compare/@paper/web@1.0.0-alpha.3...@paper/web@1.0.0-alpha.4) (2022-03-25)
+
+### Features
+
+- add math support ([#24](https://github.com/li-yechao/paper/issues/24)) ([be52305](https://github.com/li-yechao/paper/commit/be5230550f28b4aa7de4320e209a0ba208e10cab))
+
 # [1.0.0-alpha.3](https://github.com/li-yechao/paper/compare/@paper/web@1.0.0-alpha.2...@paper/web@1.0.0-alpha.3) (2022-03-25)
 
 ### Bug Fixes
