@@ -28,6 +28,7 @@ import Editor, {
   Italic,
   keymap,
   Link,
+  Math,
   OrderedList,
   Paragraph,
   Plugins,
@@ -54,6 +55,7 @@ describe('Editor', () => {
         new Blockquote(),
         new OrderedList(),
         new BulletList(),
+        new Math(),
       ],
       marks: [
         new Bold(),
