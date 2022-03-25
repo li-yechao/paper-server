@@ -37,6 +37,7 @@ import { UserModule } from './user/user.module'
     GraphQLModule.forRoot<ApolloDriverConfig>({
       driver: ApolloDriver,
       autoSchemaFile: true,
+      cors: false,
       subscriptions: {
         'graphql-ws': {
           onConnect: ({ connectionParams, extra }) => {
