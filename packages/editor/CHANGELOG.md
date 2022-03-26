@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.0.0-alpha.3](https://github.com/li-yechao/paper/compare/@paper/editor@1.0.0-alpha.2...@paper/editor@1.0.0-alpha.3) (2022-03-26)
+
+### Features
+
+- add ImageBlock node ([#27](https://github.com/li-yechao/paper/issues/27)) ([9d5e1ec](https://github.com/li-yechao/paper/commit/9d5e1ec63ab3d69e48d01d2947269d7aeedc5e91))
+
 # [1.0.0-alpha.2](https://github.com/li-yechao/paper/compare/@paper/editor@1.0.0-alpha.1...@paper/editor@1.0.0-alpha.2) (2022-03-25)
 
 ### Features

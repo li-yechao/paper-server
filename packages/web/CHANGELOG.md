@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.0.0-alpha.5](https://github.com/li-yechao/paper/compare/@paper/web@1.0.0-alpha.4...@paper/web@1.0.0-alpha.5) (2022-03-26)
+
+### Bug Fixes
+
+- nowrap title ([#25](https://github.com/li-yechao/paper/issues/25)) ([9b48965](https://github.com/li-yechao/paper/commit/9b489650ae474ab70af9847259fda6cfe570d031))
+
+### Features
+
+- support upload image ([#31](https://github.com/li-yechao/paper/issues/31)) ([2876ebe](https://github.com/li-yechao/paper/commit/2876ebe5510dc4bd7fc99b6e839726770e2a4b4e))
+
 # [1.0.0-alpha.4](https://github.com/li-yechao/paper/compare/@paper/web@1.0.0-alpha.3...@paper/web@1.0.0-alpha.4) (2022-03-25)
 
 ### Features

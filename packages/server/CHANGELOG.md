@@ -3,6 +3,15 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.0.0-alpha.3](https://github.com/li-yechao/paper/compare/@paper/server@1.0.0-alpha.2...@paper/server@1.0.0-alpha.3) (2022-03-26)
+
+### Features
+
+- add uri field for object ([#29](https://github.com/li-yechao/paper/issues/29)) ([149d8af](https://github.com/li-yechao/paper/commit/149d8af895134c8aa5480fc7c09eb8fc84b9c67c))
+- object data support encoding by base64 ([#28](https://github.com/li-yechao/paper/issues/28)) ([bcb27bb](https://github.com/li-yechao/paper/commit/bcb27bbd883cfb83367de05a0263c8ff1a6daf99))
+- object tree structure ([#26](https://github.com/li-yechao/paper/issues/26)) ([86018b9](https://github.com/li-yechao/paper/commit/86018b9ba078ace5be3b4dfa15d3a2bd251ffc15))
+- support config json limit ([#30](https://github.com/li-yechao/paper/issues/30)) ([3ea4627](https://github.com/li-yechao/paper/commit/3ea46278e9f2339a3bd8191e97c9ede3b2b57805))
+
 # [1.0.0-alpha.2](https://github.com/li-yechao/paper/compare/@paper/server@1.0.0-alpha.1...@paper/server@1.0.0-alpha.2) (2022-03-25)
 
 ### Bug Fixes
