@@ -16,6 +16,7 @@ import { Inject, UseGuards } from '@nestjs/common'
 import { Args, Int, Mutation, Parent, ResolveField, Resolver, Subscription } from '@nestjs/graphql'
 import { PubSub } from 'graphql-subscriptions'
 import { AuthGuard, CurrentUser } from '../auth/auth.guard'
+import { Config } from '../config'
 import { GraphqlContext } from '../GraphqlContext'
 import { CreateObjectInput, ObjectOrder, UpdateObjectInput } from './object.input'
 import { Object_ } from './object.schema'
@@ -27,6 +28,7 @@ import { ObjectConnection } from './user-object.resolver'
 export class ObjectResolver {
   constructor(
     @Inject('PUB_SUB') private readonly pubSub: PubSub,
+    private readonly config: Config,
     private readonly objectService: ObjectService
   ) {}
 
@@ -87,6 +89,14 @@ export class ObjectResolver {
       count: options =>
         this.objectService.count({ userId: object.userId, parentId: object.id, ...options }),
     })
+  }
+
+  @ResolveField(() => String, { nullable: true })
+  async uri(@Parent() object: Object_): Promise<string | undefined> {
+    if (!object.cid) {
+      return
+    }
+    return `${this.config.ipfs.uri}/${object.cid}`
   }
 
   @Subscription(() => Object_, {
