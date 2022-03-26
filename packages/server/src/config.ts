@@ -57,6 +57,9 @@ export class Config {
       get api() {
         return config.getString('ipfs.api')
       },
+      get uri() {
+        return config.getString('ipfs.uri')
+      },
     }
   }
 
