@@ -13,7 +13,15 @@
 // limitations under the License.
 
 import { LoadingOutlined } from '@ant-design/icons'
-import { gql, MutationHookOptions, QueryHookOptions, useMutation, useQuery } from '@apollo/client'
+import {
+  gql,
+  LazyQueryHookOptions,
+  MutationHookOptions,
+  QueryHookOptions,
+  useLazyQuery,
+  useMutation,
+  useQuery,
+} from '@apollo/client'
 import styled from '@emotion/styled'
 import Editor, {
   baseKeymap,
@@ -23,10 +31,12 @@ import Editor, {
   Code,
   Doc,
   dropCursor,
+  DropPasteFile,
   gapCursor,
   Heading,
   Highlight,
   history,
+  ImageBlock,
   Italic,
   keymap,
   Link,
@@ -46,6 +56,7 @@ import Editor, {
 import { ProsemirrorNode } from '@paper/editor/src/Editor/lib/Node'
 import { message, Spin } from 'antd'
 import { useMemo, useState } from 'react'
+import { toString } from 'uint8arrays'
 import useOnSave from '../../utils/useOnSave'
 import { usePrompt } from '../../utils/usePrompt'
 
@@ -102,6 +113,9 @@ const _ObjectEditor = ({ object }: { object: { id: string; data?: string } }) =>
 
   usePrompt('Discard changes?', changed)
 
+  const [createObject] = useCreateObject()
+  const [queryObjectCid] = useObjectUriLazy()
+
   const state = useMemo(() => {
     return new State({
       nodes: [
@@ -113,6 +127,37 @@ const _ObjectEditor = ({ object }: { object: { id: string; data?: string } }) =>
         new OrderedList(),
         new BulletList(),
         new Math(),
+        new ImageBlock({
+          upload: async file => {
+            const data = toString(new Uint8Array(await file.arrayBuffer()), 'base64')
+            const res = await createObject({
+              variables: {
+                parentId: object.id,
+                input: {
+                  meta: { type: 'image' },
+                  data,
+                  encoding: 'BASE64',
+                },
+              },
+            })
+            if (res.errors || !res.data) {
+              throw new Error(res.errors?.[0]?.message || 'upload file failed')
+            }
+            return res.data.createObject.id
+          },
+          source: async src => {
+            const res = await queryObjectCid({ variables: { objectId: src } })
+            if (!res.data || res.error) {
+              throw res.error || new Error('query object cid failed')
+            }
+            const uri = res.data.viewer.object.uri
+            if (!uri) {
+              throw new Error('object cid not found')
+            }
+            return uri
+          },
+          thumbnail: { maxSize: 1024 },
+        }),
       ],
       marks: [
         new Bold(),
@@ -143,6 +188,15 @@ const _ObjectEditor = ({ object }: { object: { id: string; data?: string } }) =>
               setDoc(view.state.doc)
               setChanged(true)
             }
+          },
+        }),
+        new DropPasteFile({
+          create: (view, file) => {
+            const imageBlock = view.state.schema.nodes['image_block']
+            if (imageBlock && file.type.startsWith('image/')) {
+              return ImageBlock.create(view.state.schema, file, imageBlock.spec.options)
+            }
+            return
           },
         }),
       ],
@@ -225,4 +279,66 @@ const useUpdateObject = (
   >
 ) => {
   return useMutation(UPDATE_OBJECT_MUTATION, options)
+}
+
+const CREATE_OBJECT_MUTATION = gql`
+  mutation CreateObject($parentId: String, $input: CreateObjectInput!) {
+    createObject(parentId: $parentId, input: $input) {
+      id
+      meta
+      cid
+    }
+  }
+`
+
+const useCreateObject = (
+  options?: MutationHookOptions<
+    {
+      createObject: {
+        id: string
+        meta?: unknown
+        cid?: string
+      }
+    },
+    {
+      parentId?: string
+      input: {
+        meta?: unknown
+        data?: string
+        encoding?: 'BASE64'
+      }
+    }
+  >
+) => {
+  return useMutation(CREATE_OBJECT_MUTATION, options)
+}
+
+const OBJECT_URI_QUERY = gql`
+  query Object($objectId: String!) {
+    viewer {
+      id
+
+      object(objectId: $objectId) {
+        id
+        uri
+      }
+    }
+  }
+`
+
+const useObjectUriLazy = (
+  options?: LazyQueryHookOptions<
+    {
+      viewer: {
+        id: string
+        object: {
+          id: string
+          uri?: string
+        }
+      }
+    },
+    { objectId: string }
+  >
+) => {
+  return useLazyQuery(OBJECT_URI_QUERY, options)
 }
