@@ -20,6 +20,7 @@ import mongoose from 'mongoose'
 import { Config } from '../config'
 import { Cursor } from '../utils/Connection'
 import { IpfsService } from './ipfs.service'
+import { ObjectDataEncoding } from './object.input'
 import { ObjectResolver } from './object.resolver'
 import { Object_ } from './object.schema'
 import { ObjectService } from './object.service'
@@ -134,6 +135,51 @@ describe('ObjectResolver', () => {
         createdAt: expect.any(Number),
         updatedAt: expect.any(Number),
         meta: { title: 'title' },
+      })
+    )
+  })
+
+  it('create object with data encoding by base64', async () => {
+    objectModel.create.mockReturnValue({
+      id: '123',
+      userId: '456',
+      createdAt: 1,
+      updatedAt: 2,
+      cid: 'cid',
+      meta: { title: 'title' },
+    })
+
+    ipfsService.add.mockReturnValue({ cid: 'cid' })
+
+    await expect(
+      resolver.createObject(
+        { id: '456' },
+        {
+          meta: { title: 'title' },
+          data: Buffer.from('HELLO').toString('base64'),
+          encoding: ObjectDataEncoding.BASE64,
+        }
+      )
+    ).resolves.toEqual(
+      expect.objectContaining({
+        id: '123',
+        userId: '456',
+        createdAt: 1,
+        updatedAt: 2,
+        cid: 'cid',
+        meta: { title: 'title' },
+      })
+    )
+
+    expect(ipfsService.add.mock.calls[0]?.[0]).toEqual(Buffer.from('HELLO'))
+
+    expect(objectModel.create.mock.calls[0]?.[0]).toEqual(
+      expect.objectContaining({
+        userId: '456',
+        createdAt: expect.any(Number),
+        updatedAt: expect.any(Number),
+        meta: { title: 'title' },
+        cid: 'cid',
       })
     )
   })
