@@ -38,29 +38,44 @@ export class ObjectService {
 
   async find({
     userId,
+    parentId,
     filter,
     sort,
     limit,
   }: {
     userId: string
+    parentId?: string | null
     filter?: mongoose.FilterQuery<Omit<Object_, 'userId' | 'deletedAt'>>
     sort?: { [key in keyof Object_]?: 1 | -1 }
     limit?: number
   }): Promise<Object_[]> {
-    return this.objectModel.find({ userId, deletedAt: null, ...filter }, null, { sort, limit })
+    return this.objectModel.find({ userId, parentId, deletedAt: null, ...filter }, null, {
+      sort,
+      limit,
+    })
   }
 
   async count({
     userId,
+    parentId,
     filter,
   }: {
     userId: string
+    parentId?: string | null
     filter?: mongoose.FilterQuery<Omit<Object_, 'userId' | 'deletedAt'>>
   }): Promise<number> {
-    return this.objectModel.count({ userId, deletedAt: null, ...filter })
+    return this.objectModel.count({ userId, parentId, deletedAt: null, ...filter })
   }
 
-  async create({ userId, input }: { userId: string; input: CreateObjectInput }): Promise<Object_> {
+  async create({
+    parentId,
+    userId,
+    input,
+  }: {
+    parentId?: string
+    userId: string
+    input: CreateObjectInput
+  }): Promise<Object_> {
     const now = Date.now()
 
     const cid = input.data
@@ -68,6 +83,7 @@ export class ObjectService {
       : undefined
 
     return this.objectModel.create({
+      parentId,
       userId,
       createdAt: now,
       updatedAt: now,

@@ -13,13 +13,14 @@
 // limitations under the License.
 
 import { Inject, UseGuards } from '@nestjs/common'
-import { Args, Mutation, Parent, ResolveField, Resolver, Subscription } from '@nestjs/graphql'
+import { Args, Int, Mutation, Parent, ResolveField, Resolver, Subscription } from '@nestjs/graphql'
 import { PubSub } from 'graphql-subscriptions'
 import { AuthGuard, CurrentUser } from '../auth/auth.guard'
 import { GraphqlContext } from '../GraphqlContext'
-import { CreateObjectInput, UpdateObjectInput } from './object.input'
+import { CreateObjectInput, ObjectOrder, UpdateObjectInput } from './object.input'
 import { Object_ } from './object.schema'
 import { ObjectService } from './object.service'
+import { ObjectConnection } from './user-object.resolver'
 
 @Resolver(() => Object_)
 @UseGuards(AuthGuard)
@@ -40,9 +41,10 @@ export class ObjectResolver {
   @Mutation(() => Object_)
   async createObject(
     @CurrentUser() user: CurrentUser,
-    @Args('input') input: CreateObjectInput
+    @Args('input') input: CreateObjectInput,
+    @Args('parentId', { nullable: true }) parentId?: string
   ): Promise<Object_> {
-    const object = await this.objectService.create({ userId: user.id, input })
+    const object = await this.objectService.create({ parentId, userId: user.id, input })
     this.pubSub.publish('objectCreated', { objectCreated: object })
     return object
   }
@@ -63,6 +65,28 @@ export class ObjectResolver {
   ): Promise<boolean> {
     await this.objectService.delete({ userId: user.id, objectId })
     return true
+  }
+
+  @ResolveField(() => ObjectConnection)
+  async objects(
+    @Parent() object: Object_,
+    @Args('before', { nullable: true }) before?: string,
+    @Args('after', { nullable: true }) after?: string,
+    @Args('first', { type: () => Int, nullable: true }) first?: number,
+    @Args('last', { type: () => Int, nullable: true }) last?: number,
+    @Args('orderBy', { nullable: true }) orderBy?: ObjectOrder
+  ): Promise<ObjectConnection> {
+    return new ObjectConnection({
+      before,
+      after,
+      first,
+      last,
+      orderBy,
+      find: options =>
+        this.objectService.find({ userId: object.userId, parentId: object.id, ...options }),
+      count: options =>
+        this.objectService.count({ userId: object.userId, parentId: object.id, ...options }),
+    })
   }
 
   @Subscription(() => Object_, {

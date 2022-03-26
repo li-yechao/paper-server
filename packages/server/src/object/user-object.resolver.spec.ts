@@ -70,6 +70,7 @@ describe('UserObjectResolver', () => {
       { id: userId },
       undefined,
       undefined,
+      undefined,
       2,
       undefined,
       undefined
