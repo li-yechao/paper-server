@@ -18,7 +18,7 @@ import all from 'it-all'
 import mongoose from 'mongoose'
 import { Model } from 'mongoose'
 import { IpfsService } from './ipfs.service'
-import { CreateObjectInput, UpdateObjectInput } from './object.input'
+import { CreateObjectInput, ObjectDataEncoding, UpdateObjectInput } from './object.input'
 import { Object_ } from './object.schema'
 
 @Injectable()
@@ -78,9 +78,7 @@ export class ObjectService {
   }): Promise<Object_> {
     const now = Date.now()
 
-    const cid = input.data
-      ? (await this.ipfsService.add(Buffer.from(input.data))).cid.toString()
-      : undefined
+    const cid = (await this.ipfsAdd(input))?.cid.toString()
 
     return this.objectModel.create({
       parentId,
@@ -103,9 +101,7 @@ export class ObjectService {
   }): Promise<Object_> {
     const now = Date.now()
 
-    const cid = input.data
-      ? (await this.ipfsService.add(Buffer.from(input.data))).cid.toString()
-      : undefined
+    const cid = (await this.ipfsAdd(input))?.cid.toString()
 
     const object = await this.objectModel.findOneAndUpdate(
       { _id: objectId, userId, deletedAt: null },
@@ -144,5 +140,19 @@ export class ObjectService {
 
   async objectData({ cid }: { cid: string }): Promise<string> {
     return Buffer.concat(await all(this.ipfsService.cat(cid))).toString()
+  }
+
+  private async ipfsAdd(input: Pick<CreateObjectInput, 'data' | 'encoding'>) {
+    if (!input.data) {
+      return
+    }
+    return this.ipfsService.add(
+      Buffer.from(
+        input.data,
+        input.encoding !== undefined
+          ? ({ [ObjectDataEncoding.BASE64]: 'base64' } as const)[input.encoding]
+          : undefined
+      )
+    )
   }
 }

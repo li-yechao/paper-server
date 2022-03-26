@@ -23,10 +23,15 @@ export class CreateObjectInput {
 
   @Field(() => String, { nullable: true })
   data?: string
+
+  @Field(() => ObjectDataEncoding, { nullable: true })
+  encoding?: ObjectDataEncoding
 }
 
 @InputType()
-export class UpdateObjectInput extends PartialType(PickType(CreateObjectInput, ['data', 'meta'])) {}
+export class UpdateObjectInput extends PartialType(
+  PickType(CreateObjectInput, ['meta', 'data', 'encoding'])
+) {}
 
 @InputType()
 export class ObjectOrder {
@@ -43,3 +48,9 @@ export enum ObjectOrderField {
 }
 
 registerEnumType(ObjectOrderField, { name: 'ObjectOrderField' })
+
+export enum ObjectDataEncoding {
+  BASE64,
+}
+
+registerEnumType(ObjectDataEncoding, { name: 'ObjectDataEncoding' })
