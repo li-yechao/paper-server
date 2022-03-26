@@ -23,6 +23,9 @@ export class Object_ {
   @Field()
   id!: string
 
+  @Prop()
+  parentId?: string
+
   @Field()
   @Prop({ required: true })
   userId!: string

@@ -16,7 +16,7 @@ import { UseGuards } from '@nestjs/common'
 import { Args, Field, Int, ObjectType, Parent, ResolveField, Resolver } from '@nestjs/graphql'
 import { AuthGuard } from '../auth/auth.guard'
 import { User } from '../user/user.schema'
-import { Connection, PageInfo } from '../utils/Connection'
+import { Connection, ConnectionOptions, PageInfo } from '../utils/Connection'
 import { ObjectOrder, ObjectOrderField } from './object.input'
 import { Object_ } from './object.schema'
 import { ObjectService } from './object.service'
@@ -29,6 +29,7 @@ export class UserObjectResolver {
   @ResolveField(() => ObjectConnection)
   async objects(
     @Parent() user: User,
+    @Args('parentId', { nullable: true }) parentId?: string,
     @Args('before', { nullable: true }) before?: string,
     @Args('after', { nullable: true }) after?: string,
     @Args('first', { type: () => Int, nullable: true }) first?: number,
@@ -40,17 +41,11 @@ export class UserObjectResolver {
       after,
       first,
       last,
-      orderBy: orderBy && {
-        field: (
-          {
-            [ObjectOrderField.CREATED_AT]: 'createdAt',
-            [ObjectOrderField.UPDATED_AT]: 'updatedAt',
-          } as const
-        )[orderBy.field],
-        direction: orderBy.direction,
-      },
-      find: options => this.objectService.find({ userId: user.id, ...options }),
-      count: options => this.objectService.count({ userId: user.id, ...options }),
+      orderBy,
+      find: options =>
+        this.objectService.find({ userId: user.id, parentId: parentId || null, ...options }),
+      count: options =>
+        this.objectService.count({ userId: user.id, parentId: parentId || null, ...options }),
     })
   }
 
@@ -62,6 +57,24 @@ export class UserObjectResolver {
 
 @ObjectType()
 export class ObjectConnection extends Connection<Object_> {
+  constructor({
+    orderBy,
+    ...options
+  }: Omit<ConnectionOptions<Object_>, 'orderBy'> & { orderBy?: ObjectOrder }) {
+    super({
+      ...options,
+      orderBy: orderBy && {
+        field: (
+          {
+            [ObjectOrderField.CREATED_AT]: 'createdAt',
+            [ObjectOrderField.UPDATED_AT]: 'updatedAt',
+          } as const
+        )[orderBy.field],
+        direction: orderBy.direction,
+      },
+    })
+  }
+
   @Field(() => [Object_])
   override get nodes(): Promise<Object_[]> {
     return super.nodes
