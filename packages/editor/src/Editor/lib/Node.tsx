@@ -23,6 +23,7 @@ import {
 } from 'prosemirror-model'
 import { Plugin } from 'prosemirror-state'
 import { Decoration, EditorView, NodeView as ProsemirrorNodeView } from 'prosemirror-view'
+import ReactDOM from 'react-dom'
 
 export { Node as ProsemirrorNode } from 'prosemirror-model'
 
@@ -94,4 +95,32 @@ export abstract class NodeView<T> {
   ignoreMutation?: (p: MutationRecord | { type: 'selection'; target: Element }) => boolean
 
   destroy?: () => void
+}
+
+export abstract class NodeViewReact<T> extends NodeView<T> {
+  constructor(public node: StrictProsemirrorNode<T>) {
+    super()
+    setTimeout(() => this._render())
+  }
+
+  abstract reactDOM: HTMLElement
+
+  override update = (updatedNode: StrictProsemirrorNode<T>) => {
+    if (updatedNode.type !== this.node.type) {
+      return false
+    }
+    this.node = updatedNode
+    this._render()
+    return true
+  }
+
+  override destroy = () => {
+    ReactDOM.unmountComponentAtNode(this.reactDOM)
+  }
+
+  abstract component: React.ComponentType<{ node: StrictProsemirrorNode<T> }>
+
+  _render() {
+    ReactDOM.render(<this.component node={this.node} />, this.reactDOM)
+  }
 }

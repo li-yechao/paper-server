@@ -12,6 +12,5 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-export { default as Plugins } from './Plugins'
-export { default as Value } from './Value'
-export { default as DropPasteFile } from './DropPasteFile'
+export { default } from './ImageBlock'
+export type { ImageBlockOptions } from './ImageBlock'
