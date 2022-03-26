@@ -14,6 +14,7 @@
 
 import { NestFactory } from '@nestjs/core'
 import { program } from 'commander'
+import { json } from 'express'
 import { AppModule } from './app.module'
 import { Config } from './config'
 
@@ -26,6 +27,7 @@ program
   .option('--mongo-uri <uri>', 'MongoDB uri')
   .option('--ipfs-api <api>', 'Ipfs api url')
   .option('--ipfs-uri <uri>', 'Ipfs url')
+  .option('--body-json-limit <limit>', 'Json body limit, like `20mb`')
   .action(
     async ({
       cors,
@@ -34,6 +36,7 @@ program
       signatureExpiresIn,
       ipfsApi,
       ipfsUri,
+      bodyJsonLimit,
     }: {
       cors?: boolean
       port?: string
@@ -41,6 +44,7 @@ program
       signatureExpiresIn?: string
       ipfsApi?: string
       ipfsUri?: string
+      bodyJsonLimit?: string
     }) => {
       if (typeof cors === 'boolean') process.env['cors'] = cors.toString()
       if (port) process.env['port'] = port
@@ -48,8 +52,15 @@ program
       if (signatureExpiresIn) process.env['signature.expiresIn'] = signatureExpiresIn
       if (ipfsApi) process.env['ipfs.api'] = ipfsApi
       if (ipfsUri) process.env['ipfs.uri'] = ipfsUri
+      if (bodyJsonLimit) process.env['body.json.limit'] = bodyJsonLimit
 
       const app = await NestFactory.create(AppModule)
+
+      const config = app.get(Config)
+
+      if (config.body.json.limit) {
+        app.use(json({ limit: config.body.json.limit }))
+      }
 
       if (app.get(Config).cors) {
         app.enableCors()

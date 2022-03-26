@@ -63,6 +63,19 @@ export class Config {
     }
   }
 
+  get body() {
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
+    const config = this
+
+    return {
+      json: {
+        get limit() {
+          return config.get('body.json.limit')
+        },
+      },
+    }
+  }
+
   private get(key: string): string | undefined {
     return this.configService.get<string>(key)?.trim() || undefined
   }
