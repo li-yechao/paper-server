@@ -23,10 +23,12 @@ import Editor, {
   Code,
   Doc,
   dropCursor,
+  DropPasteFile,
   gapCursor,
   Heading,
   Highlight,
   history,
+  ImageBlock,
   Italic,
   keymap,
   Link,
@@ -56,6 +58,11 @@ const App = () => {
         new OrderedList(),
         new BulletList(),
         new Math(),
+        new ImageBlock({
+          upload: file => URL.createObjectURL(file),
+          source: src => src,
+          thumbnail: { maxSize: 4096 },
+        }),
       ],
       marks: [
         new Bold(),
@@ -85,6 +92,15 @@ const App = () => {
             content: [
               { type: 'heading', attrs: { level: 1 }, content: [{ type: 'text', text: 'HELLO' }] },
             ],
+          },
+        }),
+        new DropPasteFile({
+          create: (view, file) => {
+            const imageBlock = view.state.schema.nodes['image_block']
+            if (imageBlock && file.type.startsWith('image/')) {
+              return ImageBlock.create(view.state.schema, file, imageBlock.spec.options)
+            }
+            return
           },
         }),
       ],

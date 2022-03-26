@@ -13,3 +13,5 @@
 // limitations under the License.
 
 import '@testing-library/jest-dom/extend-expect'
+
+globalThis.IntersectionObserver = jest.fn()
