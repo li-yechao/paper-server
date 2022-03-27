@@ -19,6 +19,7 @@ import Editor, {
   Bold,
   BulletList,
   Code,
+  CodeBlock,
   Doc,
   dropCursor,
   DropPasteFile,
@@ -63,6 +64,7 @@ describe('Editor', () => {
           source: src => src,
           thumbnail: { maxSize: 1024 },
         }),
+        new CodeBlock(),
       ],
       marks: [
         new Bold(),

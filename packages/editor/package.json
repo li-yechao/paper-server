@@ -12,9 +12,11 @@
   },
   "dependencies": {
     "@benrbray/prosemirror-math": "^0.2.2",
+    "@convergencelabs/monaco-collab-ext": "^0.3.2",
     "@emotion/css": "^11.7.1",
     "@emotion/styled": "^11.8.1",
     "katex": "^0.13.0",
+    "monaco-editor": "^0.33.0",
     "prosemirror-commands": "^1.2.2",
     "prosemirror-dropcursor": "^1.4.0",
     "prosemirror-gapcursor": "^1.2.2",

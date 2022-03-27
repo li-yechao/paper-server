@@ -12,14 +12,5 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-export { default as Doc } from './Doc'
-export { default as Text } from './Text'
-export { default as Paragraph } from './Paragraph'
-export { default as Heading } from './Heading'
-export { default as Blockquote } from './Blockquote'
-export { default as OrderedList } from './OrderedList'
-export { default as BulletList } from './BulletList'
-export { default as Math } from './Math'
-export { default as ImageBlock } from './ImageBlock'
-export type { ImageBlockOptions } from './ImageBlock'
-export { default as CodeBlock } from './CodeBlock'
+export * from './CodeBlock'
+export { default } from './CodeBlock'

@@ -124,3 +124,26 @@ export abstract class NodeViewReact<T> extends NodeView<T> {
     ReactDOM.render(<this.component node={this.node} />, this.reactDOM)
   }
 }
+
+export abstract class NodeViewReactSelectable<T> extends NodeViewReact<T> {
+  constructor(node: StrictProsemirrorNode<T>) {
+    super(node)
+  }
+
+  selected = false
+
+  override selectNode = () => {
+    this.selected = true
+    this._render()
+  }
+
+  override deselectNode = () => {
+    this.selected = false
+    this._render()
+  }
+
+  override setSelection = () => {
+    this.selected = true
+    this._render()
+  }
+}
