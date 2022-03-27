@@ -207,8 +207,17 @@ const _ObjectEditor = ({ object }: { object: { id: string; data?: string } }) =>
     })
   }, [object])
 
-  return <_Editor state={state} />
+  return (
+    <_Container>
+      <_Editor state={state} />
+    </_Container>
+  )
 }
+
+const _Container = styled.div`
+  max-width: 800px;
+  margin: auto;
+`
 
 const _Editor = styled(Editor)`
   min-height: calc(100vh - 100px);
