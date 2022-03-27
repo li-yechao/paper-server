@@ -41,6 +41,7 @@ import Editor, {
   State,
   Strikethrough,
   Text,
+  TodoList,
   Underline,
   undo,
   undoInputRule,
@@ -65,6 +66,7 @@ const App = () => {
           thumbnail: { maxSize: 4096 },
         }),
         new CodeBlock(),
+        new TodoList(),
       ],
       marks: [
         new Bold(),
