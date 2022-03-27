@@ -60,13 +60,12 @@ export class ObjectResolver {
     return this.objectService.update({ userId: user.id, objectId, input })
   }
 
-  @Mutation(() => Boolean)
+  @Mutation(() => Object_)
   async deleteObject(
     @CurrentUser() user: CurrentUser,
     @Args('objectId') objectId: string
-  ): Promise<boolean> {
-    await this.objectService.delete({ userId: user.id, objectId })
-    return true
+  ): Promise<Object_> {
+    return this.objectService.delete({ userId: user.id, objectId })
   }
 
   @ResolveField(() => ObjectConnection)
