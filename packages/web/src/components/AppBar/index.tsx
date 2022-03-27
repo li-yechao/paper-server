@@ -17,12 +17,21 @@ import styled from '@emotion/styled'
 import { Button, Dropdown, Menu, Space } from 'antd'
 import { useAccount, useSignOut } from '../../state/account'
 import CreateButton from './CreateButton'
+import { useHeaderActions } from './state'
+
+export * from './state'
 
 export default function AppBar() {
+  const headerActions = useHeaderActions()
+
   return (
     <_Header>
       <_Logo>Paper</_Logo>
       <Space>
+        {headerActions.map(i => (
+          <i.component {...i.props} key={i.key} />
+        ))}
+
         <CreateButton />
         <AccountButton />
       </Space>
