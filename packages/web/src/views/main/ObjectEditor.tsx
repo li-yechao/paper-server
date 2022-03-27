@@ -55,7 +55,7 @@ import Editor, {
 } from '@paper/editor'
 import { ProsemirrorNode } from '@paper/editor/src/Editor/lib/Node'
 import { message, Spin } from 'antd'
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { toString } from 'uint8arrays'
 import useOnSave from '../../utils/useOnSave'
 import { usePrompt } from '../../utils/usePrompt'
@@ -72,7 +72,7 @@ export default function ObjectEditor({ objectId }: { objectId: string }) {
       </_Loading>
     )
   } else if (object.data) {
-    return <_ObjectEditor key={objectId} object={object.data.viewer.object} />
+    return <_ObjectEditor object={object.data.viewer.object} />
   }
   return null
 }
@@ -89,6 +89,10 @@ const _ObjectEditor = ({ object }: { object: { id: string; data?: string } }) =>
   const [updateObject] = useUpdateObject()
   const [doc, setDoc] = useState<ProsemirrorNode>()
   const [changed, setChanged] = useState(false)
+
+  useEffect(() => {
+    setChanged(false)
+  }, [object])
 
   useOnSave(() => {
     if (!doc) {
