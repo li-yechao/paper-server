@@ -38,28 +38,34 @@ const Editor = memo(
     const update = useUpdate()
 
     const container = useRef<HTMLDivElement>(null)
-    const previousView = useRef<EditorView>()
 
     const state = useAsync(async () => {
-      if (!container.current) {
-        throw new Error('Container element is not found in dom')
-      }
-
-      if (previousView.current) {
-        previousView.current.destroy()
-      }
-
-      const { view } = await props.state.createEditor(
-        { mount: container.current },
-        { dispatchTransaction: () => update() }
-      )
-
-      previousView.current = view
+      const { view } = await props.state.createEditor(undefined, {
+        dispatchTransaction: () => update(),
+      })
 
       return { view }
     }, [props.state])
 
     const view = state.value?.view
+
+    useEffect(() => {
+      if (!container.current) {
+        return
+      }
+      const dom = view?.dom
+
+      if (dom) {
+        dom.setAttribute('data-testid', 'prosemirror-editor')
+        dom.className = cx('ProseMirrorEditor', proseMirrorStyle)
+        container.current.prepend(dom)
+        return () => {
+          view.destroy()
+          dom.remove()
+        }
+      }
+      return
+    }, [view?.dom])
 
     useImperativeHandle(
       ref,
@@ -85,13 +91,7 @@ const Editor = memo(
     }
 
     return (
-      <div className={cx(props.className, rootCSS)}>
-        <div
-          data-testid="prosemirror-editor"
-          ref={container}
-          className={cx('ProseMirrorEditor', proseMirrorStyle)}
-        />
-
+      <div ref={container} className={cx(props.className, rootCSS)}>
         {state.loading ? (
           <div className={loadingCSS}>
             <CupertinoActivityIndicator />
