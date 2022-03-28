@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { LoadingOutlined } from '@ant-design/icons'
+import { DeleteOutlined, LoadingOutlined, MoreOutlined } from '@ant-design/icons'
 import {
   gql,
   LazyQueryHookOptions,
@@ -54,9 +54,12 @@ import Editor, {
   Value,
 } from '@paper/editor'
 import { ProsemirrorNode } from '@paper/editor/src/Editor/lib/Node'
-import { message, Spin } from 'antd'
+import { Button, Dropdown, Menu, message, Spin } from 'antd'
+import produce from 'immer'
 import { useEffect, useMemo, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { toString } from 'uint8arrays'
+import { useHeaderActionsCtrl } from '../../components/AppBar'
 import useOnSave from '../../utils/useOnSave'
 import { usePrompt } from '../../utils/usePrompt'
 
@@ -86,9 +89,54 @@ const _Loading = styled.div`
 `
 
 const _ObjectEditor = ({ object }: { object: { id: string; data?: string } }) => {
+  const headerCtl = useHeaderActionsCtrl()
+  const navigate = useNavigate()
   const [updateObject] = useUpdateObject()
+  const [deleteObject] = useDeleteObject()
   const [doc, setDoc] = useState<ProsemirrorNode>()
   const [changed, setChanged] = useState(false)
+
+  useEffect(() => {
+    const menu = (
+      <Menu>
+        <Menu.Item
+          key="logout"
+          icon={<DeleteOutlined />}
+          onClick={() => {
+            deleteObject({ variables: { objectId: object.id } })
+              .then(() => {
+                message.success('删除成功')
+                navigate('/me', { replace: true })
+              })
+              .catch(error => {
+                message.error(error.message)
+                throw error
+              })
+          }}
+        >
+          Move To Trash
+        </Menu.Item>
+      </Menu>
+    )
+
+    const action = {
+      key: 'objectHeaderAction',
+      component: () => (
+        <Dropdown overlay={menu} trigger={['click']} arrow>
+          <Button type="link">
+            <MoreOutlined />
+          </Button>
+        </Dropdown>
+      ),
+      props: {},
+    }
+
+    headerCtl.append(action)
+
+    return () => {
+      headerCtl.remove(action)
+    }
+  }, [object])
 
   useEffect(() => {
     setChanged(false)
@@ -354,4 +402,41 @@ const useObjectUriLazy = (
   >
 ) => {
   return useLazyQuery(OBJECT_URI_QUERY, options)
+}
+
+const DELETE_OBJECT_MUTATION = gql`
+  mutation DeleteObject($objectId: String!) {
+    deleteObject(objectId: $objectId) {
+      id
+      userId
+    }
+  }
+`
+
+const useDeleteObject = (
+  options?: MutationHookOptions<
+    { deleteObject: { id: string; userId: string } },
+    { objectId: string }
+  >
+) => {
+  return useMutation(DELETE_OBJECT_MUTATION, {
+    updateQueries: {
+      Objects(prev, { mutationResult }) {
+        return produce(prev, draft => {
+          if (!mutationResult.data) {
+            return
+          }
+
+          const { id: objectId } = mutationResult.data.deleteObject
+          const index = draft['viewer'].objects.edges.findIndex(
+            (i: { node: { id: string } }) => i.node.id === objectId
+          )
+          if (index >= 0) {
+            draft['viewer'].objects.edges.splice(index, 1)
+          }
+        })
+      },
+    },
+    ...options,
+  })
 }
