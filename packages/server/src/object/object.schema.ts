@@ -17,7 +17,7 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose'
 import { GraphQLJSONObject } from 'graphql-type-json'
 import mongoose from 'mongoose'
 
-@ObjectType()
+@ObjectType('Object')
 @Schema({ collection: 'objects' })
 export class Object_ {
   @Field()
