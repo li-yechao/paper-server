@@ -242,7 +242,7 @@ describe('ObjectResolver', () => {
     await expect(resolver.deleteObject({ id: '456' }, '123')).resolves.toEqual({
       id: '123',
       userId: '456',
-      deletedAt: Date.now(),
+      deletedAt: expect.any(Number),
     })
 
     expect(objectModel.findOneAndUpdate.mock.calls[0]?.[0]).toEqual(
