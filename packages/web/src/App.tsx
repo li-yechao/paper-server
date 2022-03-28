@@ -20,8 +20,10 @@ import { HashRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
 import { createClient } from './apollo'
 import AppBar from './components/AppBar'
+import ErrorBoundary from './components/ErrorBoundary'
 import { useAccount } from './state/account'
 import { AuthViewLazy } from './views/auth'
+import { ErrorViewLazy, NotFoundViewLazy } from './views/error'
 import { MainViewLazy } from './views/main'
 
 export default function App() {
@@ -33,9 +35,11 @@ export default function App() {
         <ApolloProvider client={apolloClient}>
           <HashRouter>
             <Suspense fallback={<div />}>
-              <AuthGuard>
-                <AppRoutes />
-              </AuthGuard>
+              <ErrorBoundary fallback={ErrorViewLazy}>
+                <AuthGuard>
+                  <AppRoutes />
+                </AuthGuard>
+              </ErrorBoundary>
             </Suspense>
           </HashRouter>
         </ApolloProvider>
@@ -58,12 +62,15 @@ const AppRoutes = () => {
   return (
     <>
       <AppBar />
-      <Routes>
-        <Route index element={<Navigate to="/me" replace />} />
-        <Route path="/me" element={<MainViewLazy />} />
-        <Route path="/me/:objectId" element={<MainViewLazy />} />
-        <Route path="*" element={<div>NOT FOUND</div>} />
-      </Routes>
+
+      <ErrorBoundary fallback={ErrorViewLazy}>
+        <Routes>
+          <Route index element={<Navigate to="/me" replace />} />
+          <Route path="/me" element={<MainViewLazy />} />
+          <Route path="/me/:objectId" element={<MainViewLazy />} />
+          <Route path="*" element={<NotFoundViewLazy />} />
+        </Routes>
+      </ErrorBoundary>
     </>
   )
 }

@@ -25,17 +25,20 @@ export default function AppBar() {
   const headerActions = useHeaderActions()
 
   return (
-    <_Header>
-      <_Logo>Paper</_Logo>
-      <Space>
-        {headerActions.map(i => (
-          <i.component {...i.props} key={i.key} />
-        ))}
+    <>
+      <_Header>
+        <_Logo>Paper</_Logo>
+        <Space>
+          {headerActions.map(i => (
+            <i.component {...i.props} key={i.key} />
+          ))}
 
-        <CreateButton />
-        <AccountButton />
-      </Space>
-    </_Header>
+          <CreateButton />
+          <AccountButton />
+        </Space>
+      </_Header>
+      <_HeaderPlaceholder />
+    </>
   )
 }
 
@@ -53,6 +56,11 @@ const _Header = styled.header`
   justify-content: space-between;
   background-color: #ffffff;
   z-index: 100;
+`
+
+const _HeaderPlaceholder = styled.div`
+  height: 48px;
+  width: 100%;
 `
 
 const _Logo = styled.div`
