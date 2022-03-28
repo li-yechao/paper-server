@@ -21,6 +21,7 @@ import Editor, {
   Bold,
   BulletList,
   Code,
+  CodeBlock,
   Doc,
   dropCursor,
   DropPasteFile,
@@ -63,6 +64,7 @@ const App = () => {
           source: src => src,
           thumbnail: { maxSize: 4096 },
         }),
+        new CodeBlock(),
       ],
       marks: [
         new Bold(),
