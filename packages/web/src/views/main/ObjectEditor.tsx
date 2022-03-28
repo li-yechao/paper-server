@@ -13,15 +13,6 @@
 // limitations under the License.
 
 import { DeleteOutlined, LoadingOutlined, MoreOutlined } from '@ant-design/icons'
-import {
-  gql,
-  LazyQueryHookOptions,
-  MutationHookOptions,
-  QueryHookOptions,
-  useLazyQuery,
-  useMutation,
-  useQuery,
-} from '@apollo/client'
 import styled from '@emotion/styled'
 import Editor, {
   baseKeymap,
@@ -55,16 +46,22 @@ import Editor, {
 } from '@paper/editor'
 import { ProsemirrorNode } from '@paper/editor/src/Editor/lib/Node'
 import { Button, Dropdown, Menu, message, Spin } from 'antd'
-import produce from 'immer'
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { toString } from 'uint8arrays'
 import { useHeaderActionsCtrl } from '../../components/AppBar'
 import useOnSave from '../../utils/useOnSave'
 import { usePrompt } from '../../utils/usePrompt'
+import {
+  useCreateObject,
+  useDeleteObject,
+  useMyObjectUriQuery,
+  useMyObject,
+  useUpdateObject,
+} from './apollo'
 
 export default function ObjectEditor({ objectId }: { objectId: string }) {
-  const object = useObject({ variables: { objectId } })
+  const object = useMyObject({ variables: { objectId } })
 
   if (object.error) {
     throw object.error
@@ -165,8 +162,8 @@ const _ObjectEditor = ({ object }: { object: { id: string; data?: string } }) =>
 
   usePrompt('Discard changes?', changed)
 
-  const [createObject] = useCreateObject()
-  const [queryObjectCid] = useObjectUriLazy()
+  const [createFileObject] = useCreateObject()
+  const [queryFileObjectUri] = useMyObjectUriQuery()
 
   const state = useMemo(() => {
     return new State({
@@ -182,7 +179,7 @@ const _ObjectEditor = ({ object }: { object: { id: string; data?: string } }) =>
         new ImageBlock({
           upload: async file => {
             const data = toString(new Uint8Array(await file.arrayBuffer()), 'base64')
-            const res = await createObject({
+            const res = await createFileObject({
               variables: {
                 parentId: object.id,
                 input: {
@@ -198,7 +195,7 @@ const _ObjectEditor = ({ object }: { object: { id: string; data?: string } }) =>
             return res.data.createObject.id
           },
           source: async src => {
-            const res = await queryObjectCid({ variables: { objectId: src } })
+            const res = await queryFileObjectUri({ variables: { objectId: src } })
             if (!res.data || res.error) {
               throw res.error || new Error('query object cid failed')
             }
@@ -270,173 +267,3 @@ const _Container = styled.div`
 const _Editor = styled(Editor)`
   min-height: calc(100vh - 100px);
 `
-
-const OBJECT_QUERY = gql`
-  query Object($objectId: String!) {
-    viewer {
-      id
-
-      object(objectId: $objectId) {
-        id
-        createdAt
-        updatedAt
-        meta
-        data
-      }
-    }
-  }
-`
-
-const useObject = (
-  options?: QueryHookOptions<
-    {
-      viewer: {
-        id: string
-        object: {
-          id: string
-          createdAt: string
-          updatedAt: string
-          meta?: unknown
-          data?: string
-        }
-      }
-    },
-    { objectId: string }
-  >
-) => {
-  return useQuery(OBJECT_QUERY, options)
-}
-
-const UPDATE_OBJECT_MUTATION = gql`
-  mutation UpdateObject($objectId: String!, $input: UpdateObjectInput!) {
-    updateObject(objectId: $objectId, input: $input) {
-      id
-      createdAt
-      updatedAt
-      meta
-      data
-    }
-  }
-`
-
-const useUpdateObject = (
-  options?: MutationHookOptions<
-    {
-      updateObject: {
-        id: string
-        createdAt: string
-        updatedAt: string
-        meta?: unknown
-        data?: string
-      }
-    },
-    {
-      objectId: string
-      input: {
-        meta?: { title?: string }
-        data?: string
-      }
-    }
-  >
-) => {
-  return useMutation(UPDATE_OBJECT_MUTATION, options)
-}
-
-const CREATE_OBJECT_MUTATION = gql`
-  mutation CreateObject($parentId: String, $input: CreateObjectInput!) {
-    createObject(parentId: $parentId, input: $input) {
-      id
-      meta
-      cid
-    }
-  }
-`
-
-const useCreateObject = (
-  options?: MutationHookOptions<
-    {
-      createObject: {
-        id: string
-        meta?: unknown
-        cid?: string
-      }
-    },
-    {
-      parentId?: string
-      input: {
-        meta?: unknown
-        data?: string
-        encoding?: 'BASE64'
-      }
-    }
-  >
-) => {
-  return useMutation(CREATE_OBJECT_MUTATION, options)
-}
-
-const OBJECT_URI_QUERY = gql`
-  query Object($objectId: String!) {
-    viewer {
-      id
-
-      object(objectId: $objectId) {
-        id
-        uri
-      }
-    }
-  }
-`
-
-const useObjectUriLazy = (
-  options?: LazyQueryHookOptions<
-    {
-      viewer: {
-        id: string
-        object: {
-          id: string
-          uri?: string
-        }
-      }
-    },
-    { objectId: string }
-  >
-) => {
-  return useLazyQuery(OBJECT_URI_QUERY, options)
-}
-
-const DELETE_OBJECT_MUTATION = gql`
-  mutation DeleteObject($objectId: String!) {
-    deleteObject(objectId: $objectId) {
-      id
-      userId
-    }
-  }
-`
-
-const useDeleteObject = (
-  options?: MutationHookOptions<
-    { deleteObject: { id: string; userId: string } },
-    { objectId: string }
-  >
-) => {
-  return useMutation(DELETE_OBJECT_MUTATION, {
-    updateQueries: {
-      Objects(prev, { mutationResult }) {
-        return produce(prev, draft => {
-          if (!mutationResult.data) {
-            return
-          }
-
-          const { id: objectId } = mutationResult.data.deleteObject
-          const index = draft['viewer'].objects.edges.findIndex(
-            (i: { node: { id: string } }) => i.node.id === objectId
-          )
-          if (index >= 0) {
-            draft['viewer'].objects.edges.splice(index, 1)
-          }
-        })
-      },
-    },
-    ...options,
-  })
-}
