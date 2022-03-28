@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.0.0-alpha.6](https://github.com/li-yechao/paper/compare/@paper/web@1.0.0-alpha.5...@paper/web@1.0.0-alpha.6) (2022-03-28)
+
+### Bug Fixes
+
+- avoid recreate editor with same object ([17d5aaf](https://github.com/li-yechao/paper/commit/17d5aaf925022e5228f7d1083ac4d52015e12979))
+
+### Features
+
+- support delete object ([#37](https://github.com/li-yechao/paper/issues/37)) ([6fa5ddd](https://github.com/li-yechao/paper/commit/6fa5ddd96ac8c470f9e566f4c2c8ddd0712da2c7))
+
 # [1.0.0-alpha.5](https://github.com/li-yechao/paper/compare/@paper/web@1.0.0-alpha.4...@paper/web@1.0.0-alpha.5) (2022-03-26)
 
 ### Bug Fixes

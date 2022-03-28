@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.0.0-alpha.4](https://github.com/li-yechao/paper/compare/@paper/editor@1.0.0-alpha.3...@paper/editor@1.0.0-alpha.4) (2022-03-28)
+
+### Bug Fixes
+
+- multiple editor instance use one dom element ([0f4ed58](https://github.com/li-yechao/paper/commit/0f4ed58e0b38d456dd9753f3a51b950cf69358fb))
+
+### Features
+
+- add CodeBlock node ([#33](https://github.com/li-yechao/paper/issues/33)) ([98b3d78](https://github.com/li-yechao/paper/commit/98b3d7838339710bcc9b73041fecc8ee8d98f05f))
+- add TodoList node ([#38](https://github.com/li-yechao/paper/issues/38)) ([9ff340e](https://github.com/li-yechao/paper/commit/9ff340e0e5f6f2b5d89739c8f651e6b090b0f21c))
+
 # [1.0.0-alpha.3](https://github.com/li-yechao/paper/compare/@paper/editor@1.0.0-alpha.2...@paper/editor@1.0.0-alpha.3) (2022-03-26)
 
 ### Features
