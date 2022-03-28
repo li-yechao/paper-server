@@ -39,6 +39,7 @@ import Editor, {
   State,
   Strikethrough,
   Text,
+  TodoList,
   Underline,
   undo,
   undoInputRule,
@@ -65,6 +66,7 @@ describe('Editor', () => {
           thumbnail: { maxSize: 1024 },
         }),
         new CodeBlock(),
+        new TodoList(),
       ],
       marks: [
         new Bold(),
