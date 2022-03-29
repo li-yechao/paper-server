@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.0.0-alpha.8](https://github.com/li-yechao/paper/compare/@paper/web@1.0.0-alpha.7...@paper/web@1.0.0-alpha.8) (2022-03-29)
+
+### Bug Fixes
+
+- fetch object list after create first object ([e25888b](https://github.com/li-yechao/paper/commit/e25888b7bc249541fb6061dff644e167c8905468))
+
+### Features
+
+- add CodeBlock and TodoList node ([3a35184](https://github.com/li-yechao/paper/commit/3a3518415b5709046c6f22413e05448f8c6c1ec2))
+- add object menu ([089e5d3](https://github.com/li-yechao/paper/commit/089e5d3d09e87c23efacab9c4c04440d813a43ac))
+
 # [1.0.0-alpha.7](https://github.com/li-yechao/paper/compare/@paper/web@1.0.0-alpha.6...@paper/web@1.0.0-alpha.7) (2022-03-29)
 
 ### Bug Fixes
