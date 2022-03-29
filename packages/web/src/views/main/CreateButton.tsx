@@ -13,11 +13,11 @@
 // limitations under the License.
 
 import { FileAddOutlined, PlusOutlined } from '@ant-design/icons'
-import { gql, MutationHookOptions, useMutation } from '@apollo/client'
 import { Button, Dropdown, Menu } from 'antd'
 import { useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAccount } from '../../state/account'
+import { useCreateObject } from './apollo'
 
 export default function CreateButton() {
   const navigate = useNavigate()
@@ -52,22 +52,4 @@ export default function CreateButton() {
       </Button>
     </Dropdown>
   )
-}
-
-const CREATE_OBJECT_MUTATION = gql`
-  mutation CreateObject($input: CreateObjectInput!) {
-    createObject(input: $input) {
-      id
-      userId
-    }
-  }
-`
-
-const useCreateObject = (
-  options?: MutationHookOptions<
-    { createObject: { id: string; userId: string } },
-    { input: { meta?: unknown; data?: string } }
-  >
-) => {
-  return useMutation(CREATE_OBJECT_MUTATION, options)
 }

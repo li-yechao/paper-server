@@ -13,14 +13,28 @@
 // limitations under the License.
 
 import styled from '@emotion/styled'
+import { useEffect } from 'react'
 import { useParams } from 'react-router-dom'
+import { useHeaderActionsCtrl } from '../../components/AppBar'
 import ErrorBoundary from '../../components/ErrorBoundary'
 import { ErrorViewLazy } from '../error'
+import CreateButton from './CreateButton'
 import ObjectEditor from './ObjectEditor'
 import ObjectList from './ObjectList'
 
 export default function MainView() {
   const { objectId } = useParams()
+  const headerCtl = useHeaderActionsCtrl()
+
+  useEffect(() => {
+    const action = {
+      key: 'createObjectAction',
+      component: CreateButton,
+      props: {},
+    }
+    headerCtl.append(action)
+    return () => headerCtl.remove(action)
+  }, [])
 
   return (
     <_MainView>
