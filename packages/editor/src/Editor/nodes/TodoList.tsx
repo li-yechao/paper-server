@@ -186,7 +186,5 @@ class TodoItemNodeView extends NodeViewReact<TodoItemAttrs> {
 }
 
 const _Checkbox = styled.input`
-  color: inherit !important;
-  padding: 0;
-  vertical-align: text-bottom;
+  vertical-align: middle;
 `
