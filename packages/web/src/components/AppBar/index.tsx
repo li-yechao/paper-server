@@ -16,7 +16,6 @@ import { LogoutOutlined, UserOutlined } from '@ant-design/icons'
 import styled from '@emotion/styled'
 import { Button, Dropdown, Menu, Space } from 'antd'
 import { useAccount, useSignOut } from '../../state/account'
-import CreateButton from './CreateButton'
 import { useHeaderActions } from './state'
 
 export * from './state'
@@ -33,7 +32,6 @@ export default function AppBar() {
             <i.component {...i.props} key={i.key} />
           ))}
 
-          <CreateButton />
           <AccountButton />
         </Space>
       </_Header>
