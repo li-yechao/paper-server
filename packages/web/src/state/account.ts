@@ -12,8 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import { useApolloClient } from '@apollo/client'
 import { PrivateKey } from 'libp2p-crypto'
 import { useCallback } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { atom, useRecoilValue, useSetRecoilState } from 'recoil'
 import Storage from '../Storage'
 
@@ -30,9 +32,13 @@ const accountState = atom<AccountState | null>({
 })
 
 export const useSignOut = () => {
+  const client = useApolloClient()
+  const navigate = useNavigate()
   const setAccountState = useSetRecoilState(accountState)
 
-  return useCallback(() => {
+  return useCallback(async () => {
+    navigate('/')
+    await client.clearStore()
     return setAccountState(() => {
       Storage.setPrivateKey(null)
       return null
