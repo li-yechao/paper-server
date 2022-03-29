@@ -21,13 +21,14 @@ import Storage from '../Storage'
 
 export interface AccountState {
   privateKey: PrivateKey
+  id: string
 }
 
 const accountState = atom<AccountState | null>({
   key: 'account',
   default: (async () => {
     const privateKey = await Storage.getPrivateKey()
-    return privateKey ? { privateKey } : null
+    return privateKey ? { privateKey, id: await privateKey.id() } : null
   })(),
 })
 
@@ -37,22 +38,24 @@ export const useSignOut = () => {
   const setAccountState = useSetRecoilState(accountState)
 
   return useCallback(async () => {
-    navigate('/')
     await client.clearStore()
-    return setAccountState(() => {
+    setAccountState(() => {
       Storage.setPrivateKey(null)
       return null
     })
+    navigate('/')
   }, [])
 }
 
 export const useSignIn = () => {
   const setAccountState = useSetRecoilState(accountState)
 
-  return useCallback((privateKey: PrivateKey) => {
+  return useCallback(async (privateKey: PrivateKey) => {
+    const id = await privateKey.id()
+
     return setAccountState(() => {
       Storage.setPrivateKey(privateKey)
-      return { privateKey }
+      return { privateKey, id }
     })
   }, [])
 }

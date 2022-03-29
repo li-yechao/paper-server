@@ -25,9 +25,9 @@ import {
 } from '@apollo/client'
 import produce from 'immer'
 
-const MY_OBJECTS_QUERY = gql`
-  query MyObjects($before: String, $after: String, $first: Int, $last: Int) {
-    viewer {
+const OBJECTS_QUERY = gql`
+  query Objects($userId: String!, $before: String, $after: String, $first: Int, $last: Int) {
+    user(userId: $userId) {
       id
 
       objects(before: $before, after: $after, first: $first, last: $last) {
@@ -50,11 +50,12 @@ const MY_OBJECTS_QUERY = gql`
   }
 `
 
-export const useMyObjects = (
+export const useObjects = (
   options?: QueryHookOptions<
     {
-      viewer: {
+      user: {
         id: string
+
         objects: {
           edges: {
             cursor: string
@@ -71,10 +72,10 @@ export const useMyObjects = (
         }
       }
     },
-    { before?: string; after?: string; first?: number; last?: number }
+    { userId: string; before?: string; after?: string; first?: number; last?: number }
   >
 ) => {
-  return useQuery(MY_OBJECTS_QUERY, options)
+  return useQuery(OBJECTS_QUERY, options)
 }
 
 const OBJECT_CREATED_SUBSCRIPTION = gql`
@@ -95,13 +96,14 @@ export const useObjectCreated = (
   }>(OBJECT_CREATED_SUBSCRIPTION, options)
 }
 
-const MY_OBJECT_QUERY = gql`
-  query MyObject($objectId: String!) {
-    viewer {
+const OBJECT_QUERY = gql`
+  query Object($userId: String!, $objectId: String!) {
+    user(userId: $userId) {
       id
 
       object(objectId: $objectId) {
         id
+        userId
         createdAt
         updatedAt
         meta
@@ -111,14 +113,15 @@ const MY_OBJECT_QUERY = gql`
   }
 `
 
-export const useMyObject = (
+export const useObject = (
   options?: QueryHookOptions<
     {
-      viewer: {
+      user: {
         id: string
 
         object: {
           id: string
+          userId: string
           createdAt: string
           updatedAt: string
           meta?: { title?: string }
@@ -126,10 +129,10 @@ export const useMyObject = (
         }
       }
     },
-    { objectId: string }
+    { userId: string; objectId: string }
   >
 ) => {
-  return useQuery(MY_OBJECT_QUERY, options)
+  return useQuery(OBJECT_QUERY, options)
 }
 
 const CREATE_OBJECT_MUTATION = gql`
@@ -213,7 +216,8 @@ export const useDeleteObject = (
 ) => {
   return useMutation(DELETE_OBJECT_MUTATION, {
     updateQueries: {
-      MyObjects(prev, { mutationResult }) {
+      Objects(prev, { mutationResult, ...q }) {
+        console.log(q)
         return produce(prev, draft => {
           if (!mutationResult.data) {
             return
@@ -233,8 +237,8 @@ export const useDeleteObject = (
   })
 }
 
-const MY_OBJECT_URI_QUERY = gql`
-  query MyObjectUri($objectId: String!) {
+const OBJECT_URI_QUERY = gql`
+  query ObjectUri($objectId: String!) {
     viewer {
       id
 
@@ -246,7 +250,7 @@ const MY_OBJECT_URI_QUERY = gql`
   }
 `
 
-export const useMyObjectUriQuery = (
+export const useObjectUriQuery = (
   options?: LazyQueryHookOptions<
     {
       viewer: {
@@ -261,5 +265,5 @@ export const useMyObjectUriQuery = (
     { objectId: string }
   >
 ) => {
-  return useLazyQuery(MY_OBJECT_URI_QUERY, options)
+  return useLazyQuery(OBJECT_URI_QUERY, options)
 }

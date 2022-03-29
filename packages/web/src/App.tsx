@@ -21,6 +21,8 @@ import { RecoilRoot } from 'recoil'
 import { createClient } from './apollo'
 import AppBar from './components/AppBar'
 import ErrorBoundary from './components/ErrorBoundary'
+import { useAccount } from './state/account'
+import { AuthViewLazy } from './views/auth'
 import { ErrorViewLazy, NotFoundViewLazy } from './views/error'
 import { MainViewLazy } from './views/main'
 
@@ -51,9 +53,18 @@ export default function App() {
 const AppRoutes = () => {
   return (
     <Routes>
-      <Route index element={<Navigate to="/me" replace />} />
-      <Route path="/me/*" element={<MainViewLazy />} />
+      <Route index element={<Index />} />
+      <Route path="/auth" element={<AuthViewLazy />} />
+      <Route path="/:userId/*" element={<MainViewLazy />} />
       <Route path="*" element={<NotFoundViewLazy />} />
     </Routes>
   )
+}
+
+const Index = () => {
+  const account = useAccount()
+  if (!account) {
+    return <Navigate to="/auth" replace />
+  }
+  return <Navigate to={`/${account.id}`} replace />
 }

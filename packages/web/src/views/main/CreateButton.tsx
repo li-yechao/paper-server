@@ -25,10 +25,13 @@ export default function CreateButton() {
   const [createObject] = useCreateObject()
 
   const handleCreateObject = useCallback(async () => {
+    if (!account) {
+      return
+    }
     createObject({ variables: { input: {} } }).then(res => {
       const object = res.data?.createObject
       if (object) {
-        navigate(`/me/${object.id}`)
+        navigate(`/${account.id}/${object.id}`)
       }
     })
   }, [])

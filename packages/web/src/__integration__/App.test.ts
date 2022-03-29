@@ -31,13 +31,18 @@ describe('App', () => {
     await expect(page).toFill('[data-testid="input-privatekey"]', keyText)
     await expect(page).toClick('[data-testid="button-submit"]')
     await new Promise(resolve => setTimeout(resolve, 200))
-    await expect(page.url()).toMatch(/\/me/)
+    await expect(page.url()).toMatch(`/${await key.id()}`)
   })
 
   it('sign in by new key', async () => {
     await expect(page).toClick('[data-testid="button-newkey"]')
+    const keyText = await page.$eval(
+      '[data-testid="input-privatekey"]',
+      el => (el as HTMLTextAreaElement).value
+    )
+    const key = await keys.unmarshalPrivateKey(Buffer.from(keyText, 'base64'))
     await expect(page).toClick('[data-testid="button-submit"]')
     await new Promise(resolve => setTimeout(resolve, 200))
-    await expect(page.url()).toMatch(/\/me/)
+    await expect(page.url()).toMatch(`/${await key.id()}`)
   })
 })

@@ -16,6 +16,7 @@ import styled from '@emotion/styled'
 import { Button, Form, Input, message } from 'antd'
 import { keys, PrivateKey } from 'libp2p-crypto'
 import { useCallback, useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { fromString } from 'uint8arrays/from-string'
 import { toString } from 'uint8arrays/to-string'
 import { useSignIn } from '../../state/account'
@@ -25,6 +26,7 @@ export interface AuthViewProps {
 }
 
 export default function AuthView(props: AuthViewProps) {
+  const navigate = useNavigate()
   const signIn = useSignIn()
   const [key, setKey] = useState<PrivateKey>()
   const [value, setValue] = useState('')
@@ -42,8 +44,9 @@ export default function AuthView(props: AuthViewProps) {
   const handleSignIn = async () => {
     try {
       const key = await keys.unmarshalPrivateKey(fromString(value, 'base64'))
-      signIn(key)
+      await signIn(key)
       props.onSuccess?.()
+      navigate('/', { replace: true })
     } catch (error) {
       message.error(error.message)
     }

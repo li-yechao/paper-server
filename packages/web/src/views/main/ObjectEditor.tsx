@@ -49,21 +49,30 @@ import Editor, {
 import { ProsemirrorNode } from '@paper/editor/src/Editor/lib/Node'
 import { Button, Dropdown, Menu, message, Spin } from 'antd'
 import { useEffect, useMemo, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 import { toString } from 'uint8arrays'
 import { useHeaderActionsCtrl } from '../../components/AppBar'
+import { useAccount } from '../../state/account'
 import useOnSave from '../../utils/useOnSave'
 import { usePrompt } from '../../utils/usePrompt'
 import {
   useCreateObject,
   useDeleteObject,
-  useMyObjectUriQuery,
-  useMyObject,
+  useObjectUriQuery,
+  useObject,
   useUpdateObject,
 } from './apollo'
 
-export default function ObjectEditor({ objectId }: { objectId: string }) {
-  const object = useMyObject({ variables: { objectId } })
+export default function ObjectEditor() {
+  const { userId, objectId } = useParams()
+  if (!userId) {
+    throw new Error('Missing required params `userId`')
+  }
+  if (!objectId) {
+    throw new Error('Missing required params `objectId`')
+  }
+
+  const object = useObject({ variables: { userId, objectId } })
 
   if (object.error) {
     throw object.error
@@ -74,7 +83,7 @@ export default function ObjectEditor({ objectId }: { objectId: string }) {
       </_Loading>
     )
   } else if (object.data) {
-    return <_ObjectEditor object={object.data.viewer.object} />
+    return <_ObjectEditor object={object.data.user.object} />
   }
   return null
 }
@@ -87,55 +96,11 @@ const _Loading = styled.div`
   margin-top: 40vh;
 `
 
-const _ObjectEditor = ({ object }: { object: { id: string; data?: string } }) => {
-  const headerCtl = useHeaderActionsCtrl()
-  const navigate = useNavigate()
+const _ObjectEditor = ({ object }: { object: { id: string; userId: string; data?: string } }) => {
+  const account = useAccount()
   const [updateObject] = useUpdateObject()
-  const [deleteObject] = useDeleteObject()
   const [doc, setDoc] = useState<ProsemirrorNode>()
   const [changed, setChanged] = useState(false)
-
-  useEffect(() => {
-    const menu = (
-      <Menu>
-        <Menu.Item
-          key="logout"
-          icon={<DeleteOutlined />}
-          onClick={() => {
-            deleteObject({ variables: { objectId: object.id } })
-              .then(() => {
-                message.success('Deleted')
-                navigate('/me', { replace: true })
-              })
-              .catch(error => {
-                message.error(error.message)
-                throw error
-              })
-          }}
-        >
-          Move To Trash
-        </Menu.Item>
-      </Menu>
-    )
-
-    const action = {
-      key: 'objectHeaderAction',
-      component: () => (
-        <Dropdown overlay={menu} trigger={['click']} arrow>
-          <Button type="link" shape="circle">
-            <MoreOutlined />
-          </Button>
-        </Dropdown>
-      ),
-      props: {},
-    }
-
-    headerCtl.append(action)
-
-    return () => {
-      headerCtl.remove(action)
-    }
-  }, [object])
 
   useEffect(() => {
     setChanged(false)
@@ -165,7 +130,7 @@ const _ObjectEditor = ({ object }: { object: { id: string; data?: string } }) =>
   usePrompt('Discard changes?', changed)
 
   const [createFileObject] = useCreateObject()
-  const [queryFileObjectUri] = useMyObjectUriQuery()
+  const [queryFileObjectUri] = useObjectUriQuery()
 
   const state = useMemo(() => {
     return new State({
@@ -258,6 +223,8 @@ const _ObjectEditor = ({ object }: { object: { id: string; data?: string } }) =>
 
   return (
     <_Container>
+      {account?.id === object.userId && <ObjectMenu object={object} />}
+
       <_Editor state={state} />
     </_Container>
   )
@@ -271,3 +238,53 @@ const _Container = styled.div`
 const _Editor = styled(Editor)`
   min-height: calc(100vh - 100px);
 `
+
+const ObjectMenu = ({ object }: { object: { id: string } }) => {
+  const headerCtl = useHeaderActionsCtrl()
+  const navigate = useNavigate()
+  const [deleteObject] = useDeleteObject()
+
+  useEffect(() => {
+    const menu = (
+      <Menu>
+        <Menu.Item
+          key="logout"
+          icon={<DeleteOutlined />}
+          onClick={() => {
+            deleteObject({ variables: { objectId: object.id } })
+              .then(() => {
+                message.success('Deleted')
+                navigate('/me', { replace: true })
+              })
+              .catch(error => {
+                message.error(error.message)
+                throw error
+              })
+          }}
+        >
+          Move To Trash
+        </Menu.Item>
+      </Menu>
+    )
+
+    const action = {
+      key: 'objectHeaderAction',
+      component: () => (
+        <Dropdown overlay={menu} trigger={['click']} arrow>
+          <Button type="link" shape="circle">
+            <MoreOutlined />
+          </Button>
+        </Dropdown>
+      ),
+      props: {},
+    }
+
+    headerCtl.append(action)
+
+    return () => {
+      headerCtl.remove(action)
+    }
+  }, [object])
+
+  return null
+}

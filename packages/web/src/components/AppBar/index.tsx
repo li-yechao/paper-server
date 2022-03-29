@@ -15,6 +15,7 @@
 import { LogoutOutlined, UserOutlined } from '@ant-design/icons'
 import styled from '@emotion/styled'
 import { Button, Dropdown, Menu, Space } from 'antd'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { useAccount, useSignOut } from '../../state/account'
 import { useHeaderActions } from './state'
 
@@ -67,11 +68,21 @@ const _Logo = styled.div`
 `
 
 const AccountButton = () => {
+  const navigate = useNavigate()
+  const location = useLocation()
   const account = useAccount()
   const signOut = useSignOut()
 
   if (!account) {
-    return null
+    if (location.pathname === '/auth') {
+      return null
+    }
+
+    return (
+      <Button type="link" onClick={() => navigate('/auth')}>
+        Login
+      </Button>
+    )
   }
 
   const menu = (

@@ -13,26 +13,31 @@
 // limitations under the License.
 
 import styled from '@emotion/styled'
-import { useEffect } from 'react'
+import { lazy, useEffect } from 'react'
 import { Route, Routes, useParams } from 'react-router-dom'
-import { AuthGuard } from '../../AuthGuard'
 import { useHeaderActionsCtrl } from '../../components/AppBar'
 import ErrorBoundary from '../../components/ErrorBoundary'
+import { useAccount } from '../../state/account'
 import { ErrorViewLazy, NotFoundViewLazy } from '../error'
 import CreateButton from './CreateButton'
-import ObjectEditor from './ObjectEditor'
-import ObjectList from './ObjectList'
 
 export default function MainView() {
-  return (
-    <AuthGuard>
-      <CreateObjectAction />
+  const { userId } = useParams()
+  if (!userId) {
+    throw new Error('Missing required params `userId`')
+  }
 
+  const account = useAccount()
+
+  if (account?.id === userId) {
+    return (
       <_Container>
+        <CreateObjectAction />
+
         <aside>
           <Routes>
-            <Route index element={<ObjectList />} />
-            <Route path=":objectId/*" element={<ObjectList />} />
+            <Route index element={<ObjectListLazy />} />
+            <Route path=":objectId/*" element={<ObjectListLazy />} />
           </Routes>
         </aside>
 
@@ -40,14 +45,26 @@ export default function MainView() {
           <ErrorBoundary fallback={ErrorViewLazy}>
             <Routes>
               <Route index element={<div />} />
-              <Route path=":objectId" element={<_ObjectEditor />} />
+              <Route path=":objectId" element={<ObjectEditorLazy />} />
               <Route path="*" element={<NotFoundViewLazy />} />
             </Routes>
           </ErrorBoundary>
         </main>
       </_Container>
-    </AuthGuard>
+    )
+  }
+
+  return (
+    <Routes>
+      <Route index element={<Forbidden />} />
+      <Route path=":objectId" element={<ObjectEditorLazy />} />
+      <Route path="*" element={<NotFoundViewLazy />} />
+    </Routes>
   )
+}
+
+const Forbidden = () => {
+  throw new Error('Forbidden')
 }
 
 const CreateObjectAction = () => {
@@ -66,12 +83,6 @@ const CreateObjectAction = () => {
   return null
 }
 
-const _ObjectEditor = () => {
-  const { objectId } = useParams()
-
-  return objectId ? <ObjectEditor objectId={objectId} /> : null
-}
-
 const _Container = styled.div`
   padding-left: 200px;
 
@@ -84,3 +95,7 @@ const _Container = styled.div`
     border-right: 1px solid #efefef;
   }
 `
+
+const ObjectListLazy = lazy(() => import('./ObjectList'))
+
+const ObjectEditorLazy = lazy(() => import('./ObjectEditor'))

@@ -16,20 +16,23 @@ import styled from '@emotion/styled'
 import { useCallback, useEffect, useRef } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useVirtual } from 'react-virtual'
-import { useObjectCreated, useMyObjects } from './apollo'
+import { useObjectCreated, useObjects } from './apollo'
 import ObjectMenuButton from './ObjectMenuButton'
 
 const PAGE_SIZE = 10
 
 export default function ObjectList() {
-  const { objectId } = useParams()
+  const { userId, objectId } = useParams()
+  if (!userId) {
+    throw new Error('Missing required params `userId`')
+  }
   const navigate = useNavigate()
   const {
-    data: { viewer } = {},
+    data: { user } = {},
     error,
     fetchMore,
     loading,
-  } = useMyObjects({ variables: { first: PAGE_SIZE } })
+  } = useObjects({ variables: { userId, first: PAGE_SIZE } })
 
   if (error) {
     throw error
@@ -38,7 +41,7 @@ export default function ObjectList() {
   const { data: { objectCreated } = {} } = useObjectCreated()
 
   useEffect(() => {
-    const first = viewer?.objects.edges.at(0)
+    const first = user?.objects.edges.at(0)
     if (objectCreated) {
       if (first) {
         fetchMore({ variables: { before: first.cursor, last: PAGE_SIZE, first: null } })
@@ -46,12 +49,12 @@ export default function ObjectList() {
         fetchMore({ variables: { first: PAGE_SIZE } })
       }
     }
-  }, [objectCreated, viewer])
+  }, [objectCreated, user])
 
   const parentRef = useRef<HTMLDivElement>(null)
 
   const virtual = useVirtual({
-    size: viewer?.objects.edges.length || 0,
+    size: user?.objects.edges.length || 0,
     parentRef,
     estimateSize: useCallback(() => 32, []),
   })
@@ -62,7 +65,7 @@ export default function ObjectList() {
     }
 
     const last = virtual.virtualItems.at(-1)
-    const { edges, pageInfo } = viewer?.objects ?? {}
+    const { edges, pageInfo } = user?.objects ?? {}
     const after = edges?.at(-1)?.cursor
     if (!last || !edges || !after || !pageInfo) {
       return
@@ -77,7 +80,7 @@ export default function ObjectList() {
     <_List ref={parentRef}>
       <div style={{ height: `${virtual.totalSize}px`, position: 'relative' }}>
         {virtual.virtualItems.map(row => {
-          const edge = viewer?.objects.edges[row.index]
+          const edge = user?.objects.edges[row.index]
           if (!edge) {
             throw new Error('The edges index overflow')
           }
@@ -90,7 +93,7 @@ export default function ObjectList() {
                 height: `${row.size}px`,
                 transform: `translateY(${row.start}px)`,
               }}
-              onClick={() => navigate(`/me/${edge.node.id}`)}
+              onClick={() => navigate(`/${userId}/${edge.node.id}`)}
             >
               <_ItemTitle>{edge.node.meta?.title || 'Untitled'}</_ItemTitle>
 

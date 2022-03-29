@@ -14,6 +14,7 @@
 
 import { act, fireEvent, render, RenderResult, waitFor } from '@testing-library/react'
 import { keys } from 'libp2p-crypto'
+import { HashRouter } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
 import { toString } from 'uint8arrays/to-string'
 import AuthView from '../AuthView'
@@ -28,7 +29,9 @@ describe('AuthView', () => {
   beforeEach(() => {
     result = render(
       <RecoilRoot>
-        <AuthView onSuccess={onSuccess} />
+        <HashRouter>
+          <AuthView onSuccess={onSuccess} />
+        </HashRouter>
       </RecoilRoot>
     )
     inputPrivKey = result.getByTestId('input-privatekey')
