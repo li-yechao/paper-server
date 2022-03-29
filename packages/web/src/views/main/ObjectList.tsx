@@ -32,8 +32,12 @@ export default function ObjectList({ objectId }: { objectId?: string }) {
 
   useEffect(() => {
     const first = viewer?.objects.edges.at(0)
-    if (objectCreated && first) {
-      fetchMore({ variables: { before: first.cursor, last: PAGE_SIZE, first: null } })
+    if (objectCreated) {
+      if (first) {
+        fetchMore({ variables: { before: first.cursor, last: PAGE_SIZE, first: null } })
+      } else {
+        fetchMore({ variables: { first: PAGE_SIZE } })
+      }
     }
   }, [objectCreated, viewer])
 
