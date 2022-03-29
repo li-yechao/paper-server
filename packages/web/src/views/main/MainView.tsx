@@ -42,9 +42,11 @@ export default function MainView() {
         <ObjectList objectId={objectId} />
       </aside>
       <main>
-        <ErrorBoundary fallback={ErrorViewLazy}>
-          {objectId && <ObjectEditor objectId={objectId} />}
-        </ErrorBoundary>
+        {objectId && (
+          <ErrorBoundary fallback={ErrorViewLazy}>
+            <ObjectEditor objectId={objectId} />
+          </ErrorBoundary>
+        )}
       </main>
     </_MainView>
   )
