@@ -120,7 +120,7 @@ const _ObjectEditor = ({ object }: { object: { id: string; data?: string } }) =>
       key: 'objectHeaderAction',
       component: () => (
         <Dropdown overlay={menu} trigger={['click']} arrow>
-          <Button type="link">
+          <Button type="link" shape="circle">
             <MoreOutlined />
           </Button>
         </Dropdown>

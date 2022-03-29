@@ -47,7 +47,7 @@ export default function CreateButton() {
 
   return (
     <Dropdown overlay={menu} trigger={['click']} arrow>
-      <Button type="link">
+      <Button type="link" shape="circle">
         <PlusOutlined />
       </Button>
     </Dropdown>
