@@ -12,9 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { UseGuards } from '@nestjs/common'
 import { Args, Field, Int, ObjectType, Parent, ResolveField, Resolver } from '@nestjs/graphql'
-import { AuthGuard } from '../auth/auth.guard'
 import { User } from '../user/user.schema'
 import { Connection, ConnectionOptions, PageInfo } from '../utils/Connection'
 import { ObjectOrder, ObjectOrderField } from './object.input'
@@ -22,7 +20,6 @@ import { Object_ } from './object.schema'
 import { ObjectService } from './object.service'
 
 @Resolver(() => User)
-@UseGuards(AuthGuard)
 export class UserObjectResolver {
   constructor(private readonly objectService: ObjectService) {}
 
