@@ -14,6 +14,8 @@
 
 import styled from '@emotion/styled'
 import { useParams } from 'react-router-dom'
+import ErrorBoundary from '../../components/ErrorBoundary'
+import { ErrorViewLazy } from '../error'
 import ObjectEditor from './ObjectEditor'
 import ObjectList from './ObjectList'
 
@@ -25,14 +27,17 @@ export default function MainView() {
       <aside>
         <ObjectList objectId={objectId} />
       </aside>
-      <main>{objectId && <ObjectEditor objectId={objectId} />}</main>
+      <main>
+        <ErrorBoundary fallback={ErrorViewLazy}>
+          {objectId && <ObjectEditor objectId={objectId} />}
+        </ErrorBoundary>
+      </main>
     </_MainView>
   )
 }
 
 const _MainView = styled.div`
   padding-left: 200px;
-  padding-top: 48px;
 
   > aside {
     position: fixed;
