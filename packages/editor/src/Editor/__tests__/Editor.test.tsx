@@ -44,7 +44,7 @@ import Editor, {
   undo,
   undoInputRule,
   Value,
-} from '.'
+} from '..'
 
 describe('Editor', () => {
   let state: State
@@ -111,7 +111,7 @@ describe('Editor', () => {
     })
   })
 
-  it('Editor', async () => {
+  test('Editor', async () => {
     const result = render(<Editor state={state} />)
     await act(() => new Promise(resolve => setTimeout(resolve, 100)))
     const editor = result.getByTestId('prosemirror-editor')

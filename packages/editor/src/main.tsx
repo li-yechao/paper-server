@@ -93,9 +93,7 @@ const App = () => {
         new Value({
           defaultValue: {
             type: 'doc',
-            content: [
-              { type: 'heading', attrs: { level: 1 }, content: [{ type: 'text', text: 'HELLO' }] },
-            ],
+            content: null,
           },
         }),
         new DropPasteFile({
