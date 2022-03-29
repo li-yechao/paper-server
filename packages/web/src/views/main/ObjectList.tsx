@@ -25,9 +25,14 @@ export default function ObjectList({ objectId }: { objectId?: string }) {
   const navigate = useNavigate()
   const {
     data: { viewer } = {},
+    error,
     fetchMore,
     loading,
   } = useMyObjects({ variables: { first: PAGE_SIZE } })
+
+  if (error) {
+    throw error
+  }
 
   const { data: { objectCreated } = {} } = useObjectCreated()
 
