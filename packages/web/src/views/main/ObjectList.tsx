@@ -17,6 +17,7 @@ import { useCallback, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useVirtual } from 'react-virtual'
 import { useObjectCreated, useMyObjects } from './apollo'
+import ObjectMenuButton from './ObjectMenuButton'
 
 const PAGE_SIZE = 10
 
@@ -85,7 +86,9 @@ export default function ObjectList({ objectId }: { objectId?: string }) {
               }}
               onClick={() => navigate(`/me/${edge.node.id}`)}
             >
-              {edge.node.meta?.title || 'Untitled'}
+              <_ItemTitle>{edge.node.meta?.title || 'Untitled'}</_ItemTitle>
+
+              <ObjectMenuButton className="hover_visible" object={edge.node} />
             </_Item>
           )
         })}
@@ -100,10 +103,10 @@ const _List = styled.div`
 `
 
 const _Item = styled.div`
+  display: flex;
+  align-items: center;
   overflow: hidden;
-  text-overflow: ellipsis;
   white-space: nowrap;
-  padding: 0 8px;
   cursor: pointer;
   position: absolute;
   top: 0;
@@ -111,12 +114,28 @@ const _Item = styled.div`
   width: 100%;
   height: 32px;
   line-height: 32px;
+  padding: 0 8px;
+
+  > .hover_visible {
+    display: none;
+  }
 
   &:hover {
     background-color: rgba(0, 0, 0, 0.05);
+    padding-right: 0;
+
+    > .hover_visible {
+      display: block;
+    }
   }
 
   &.selected {
     background-color: rgba(0, 0, 0, 0.1);
   }
+`
+
+const _ItemTitle = styled.div`
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
 `
