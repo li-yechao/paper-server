@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.0.0-alpha.7](https://github.com/li-yechao/paper/compare/@paper/web@1.0.0-alpha.6...@paper/web@1.0.0-alpha.7) (2022-03-29)
+
+### Bug Fixes
+
+- avoid undefined children in ErrorBoundary ([#43](https://github.com/li-yechao/paper/issues/43)) ([e56bc2b](https://github.com/li-yechao/paper/commit/e56bc2b9646302f063b54b772f189fe026b9d756))
+
+### Features
+
+- use ErrorBoundary show error views ([#41](https://github.com/li-yechao/paper/issues/41)) ([884cd77](https://github.com/li-yechao/paper/commit/884cd772e749de533378fb70ce15d8715447c119))
+
 # [1.0.0-alpha.6](https://github.com/li-yechao/paper/compare/@paper/web@1.0.0-alpha.5...@paper/web@1.0.0-alpha.6) (2022-03-28)
 
 ### Bug Fixes
