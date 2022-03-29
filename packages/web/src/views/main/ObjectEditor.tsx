@@ -102,7 +102,7 @@ const _ObjectEditor = ({ object }: { object: { id: string; data?: string } }) =>
           onClick={() => {
             deleteObject({ variables: { objectId: object.id } })
               .then(() => {
-                message.success('删除成功')
+                message.success('Deleted')
                 navigate('/me', { replace: true })
               })
               .catch(error => {
