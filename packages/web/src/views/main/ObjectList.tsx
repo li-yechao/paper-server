@@ -12,31 +12,28 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { gql, QueryHookOptions, useQuery, useSubscription } from '@apollo/client'
 import styled from '@emotion/styled'
 import { useCallback, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useVirtual } from 'react-virtual'
+import { useObjectCreated, useMyObjects } from './apollo'
+
+const PAGE_SIZE = 10
 
 export default function ObjectList({ objectId }: { objectId?: string }) {
   const navigate = useNavigate()
-  const { data: { viewer } = {}, fetchMore, loading } = useObjects({ variables: { first: 10 } })
+  const {
+    data: { viewer } = {},
+    fetchMore,
+    loading,
+  } = useMyObjects({ variables: { first: PAGE_SIZE } })
 
-  const { data: { objectCreated } = {} } = useSubscription<{
-    objectCreated: { id: string; meta?: { title?: string } }
-  }>(
-    gql`
-      subscription ObjectCreated {
-        objectCreated {
-          id
-        }
-      }
-    `
-  )
+  const { data: { objectCreated } = {} } = useObjectCreated()
+
   useEffect(() => {
     const first = viewer?.objects.edges.at(0)
     if (objectCreated && first) {
-      fetchMore({ variables: { before: first.cursor, last: 10, first: null } })
+      fetchMore({ variables: { before: first.cursor, last: PAGE_SIZE, first: null } })
     }
   }, [objectCreated, viewer])
 
@@ -61,7 +58,7 @@ export default function ObjectList({ objectId }: { objectId?: string }) {
     }
 
     if (last.index >= edges.length - 1 && pageInfo.hasNextPage) {
-      fetchMore({ variables: { after } })
+      fetchMore({ variables: { after, first: PAGE_SIZE, last: null } })
     }
   }, [loading, virtual.virtualItems])
 
@@ -119,49 +116,3 @@ const _Item = styled.div`
     background-color: rgba(0, 0, 0, 0.1);
   }
 `
-
-const OBJECTS_QUERY = gql`
-  query Objects($before: String, $after: String, $first: Int, $last: Int) {
-    viewer {
-      id
-
-      objects(before: $before, after: $after, first: $first, last: $last) {
-        edges {
-          cursor
-          node {
-            id
-            createdAt
-            updatedAt
-            meta
-          }
-        }
-
-        pageInfo {
-          hasNextPage
-        }
-      }
-    }
-  }
-`
-
-const useObjects = (
-  options?: QueryHookOptions<
-    {
-      viewer: {
-        id: string
-        objects: {
-          edges: {
-            cursor: string
-            node: { id: string; createdAt: string; updatedAt: string; meta?: { title?: string } }
-          }[]
-          pageInfo: {
-            hasNextPage: boolean
-          }
-        }
-      }
-    },
-    { before?: string; after?: string; first?: number; last?: number }
-  >
-) => {
-  return useQuery(OBJECTS_QUERY, options)
-}
