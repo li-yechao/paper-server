@@ -14,16 +14,43 @@
 
 import styled from '@emotion/styled'
 import { useEffect } from 'react'
-import { useParams } from 'react-router-dom'
+import { Route, Routes, useParams } from 'react-router-dom'
+import { AuthGuard } from '../../AuthGuard'
 import { useHeaderActionsCtrl } from '../../components/AppBar'
 import ErrorBoundary from '../../components/ErrorBoundary'
-import { ErrorViewLazy } from '../error'
+import { ErrorViewLazy, NotFoundViewLazy } from '../error'
 import CreateButton from './CreateButton'
 import ObjectEditor from './ObjectEditor'
 import ObjectList from './ObjectList'
 
 export default function MainView() {
-  const { objectId } = useParams()
+  return (
+    <AuthGuard>
+      <CreateObjectAction />
+
+      <_Container>
+        <aside>
+          <Routes>
+            <Route index element={<ObjectList />} />
+            <Route path=":objectId/*" element={<ObjectList />} />
+          </Routes>
+        </aside>
+
+        <main>
+          <ErrorBoundary fallback={ErrorViewLazy}>
+            <Routes>
+              <Route index element={<div />} />
+              <Route path=":objectId" element={<_ObjectEditor />} />
+              <Route path="*" element={<NotFoundViewLazy />} />
+            </Routes>
+          </ErrorBoundary>
+        </main>
+      </_Container>
+    </AuthGuard>
+  )
+}
+
+const CreateObjectAction = () => {
   const headerCtl = useHeaderActionsCtrl()
 
   useEffect(() => {
@@ -36,23 +63,16 @@ export default function MainView() {
     return () => headerCtl.remove(action)
   }, [])
 
-  return (
-    <_MainView>
-      <aside>
-        <ObjectList objectId={objectId} />
-      </aside>
-      <main>
-        {objectId && (
-          <ErrorBoundary fallback={ErrorViewLazy}>
-            <ObjectEditor objectId={objectId} />
-          </ErrorBoundary>
-        )}
-      </main>
-    </_MainView>
-  )
+  return null
 }
 
-const _MainView = styled.div`
+const _ObjectEditor = () => {
+  const { objectId } = useParams()
+
+  return objectId ? <ObjectEditor objectId={objectId} /> : null
+}
+
+const _Container = styled.div`
   padding-left: 200px;
 
   > aside {

@@ -14,14 +14,15 @@
 
 import styled from '@emotion/styled'
 import { useCallback, useEffect, useRef } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 import { useVirtual } from 'react-virtual'
 import { useObjectCreated, useMyObjects } from './apollo'
 import ObjectMenuButton from './ObjectMenuButton'
 
 const PAGE_SIZE = 10
 
-export default function ObjectList({ objectId }: { objectId?: string }) {
+export default function ObjectList() {
+  const { objectId } = useParams()
   const navigate = useNavigate()
   const {
     data: { viewer } = {},
