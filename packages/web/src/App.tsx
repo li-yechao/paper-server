@@ -14,7 +14,7 @@
 
 import { ApolloProvider } from '@apollo/client'
 import { ConfigProvider } from 'antd'
-import zhCN from 'antd/lib/locale/zh_CN'
+import enUS from 'antd/lib/locale/en_US'
 import { Suspense, useMemo } from 'react'
 import { HashRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
@@ -30,7 +30,7 @@ export default function App() {
   const apolloClient = useMemo(() => createClient(), [])
 
   return (
-    <ConfigProvider locale={zhCN}>
+    <ConfigProvider locale={enUS}>
       <RecoilRoot>
         <ApolloProvider client={apolloClient}>
           <HashRouter>
