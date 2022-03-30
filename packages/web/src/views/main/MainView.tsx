@@ -13,7 +13,7 @@
 // limitations under the License.
 
 import styled from '@emotion/styled'
-import { lazy, useEffect } from 'react'
+import { lazy, Suspense, useEffect } from 'react'
 import { Route, Routes, useParams } from 'react-router-dom'
 import { useHeaderActionsCtrl } from '../../components/AppBar'
 import ErrorBoundary from '../../components/ErrorBoundary'
@@ -43,11 +43,13 @@ export default function MainView() {
 
         <main>
           <ErrorBoundary fallback={ErrorViewLazy}>
-            <Routes>
-              <Route index element={<div />} />
-              <Route path=":objectId" element={<ObjectEditorLazy />} />
-              <Route path="*" element={<NotFoundViewLazy />} />
-            </Routes>
+            <Suspense fallback={<div />}>
+              <Routes>
+                <Route index element={<div />} />
+                <Route path=":objectId" element={<ObjectEditorLazy />} />
+                <Route path="*" element={<NotFoundViewLazy />} />
+              </Routes>
+            </Suspense>
           </ErrorBoundary>
         </main>
       </_Container>
