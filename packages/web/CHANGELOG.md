@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.0.0-alpha.10](https://github.com/li-yechao/paper/compare/@paper/web@1.0.0-alpha.9...@paper/web@1.0.0-alpha.10) (2022-03-30)
+
+### Bug Fixes
+
+- use Suspence wrap ObjectEditorLazy ([43ed6b8](https://github.com/li-yechao/paper/commit/43ed6b83c242cf1959f0f8cf034cf29b3c165ba1))
+
 # [1.0.0-alpha.9](https://github.com/li-yechao/paper/compare/@paper/web@1.0.0-alpha.8...@paper/web@1.0.0-alpha.9) (2022-03-30)
 
 ### Bug Fixes
