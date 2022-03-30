@@ -225,7 +225,7 @@ const _ObjectEditor = ({ object }: { object: { id: string; userId: string; data?
     <_Container>
       {account?.id === object.userId && <ObjectMenu object={object} />}
 
-      <_Editor state={state} />
+      <_Editor state={state} readOnly={account?.id !== object.userId} />
     </_Container>
   )
 }
