@@ -7,7 +7,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build --base ./",
-    "test": "yarn build && jest"
+    "test": "jest"
   },
   "dependencies": {
     "@ant-design/icons": "^4.7.0",

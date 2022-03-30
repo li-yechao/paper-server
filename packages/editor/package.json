@@ -8,7 +8,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build --base ./",
-    "test": "yarn build && jest"
+    "test": "jest"
   },
   "dependencies": {
     "@benrbray/prosemirror-math": "^0.2.2",
