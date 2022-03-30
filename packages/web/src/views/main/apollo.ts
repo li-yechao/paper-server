@@ -238,8 +238,8 @@ export const useDeleteObject = (
 }
 
 const OBJECT_URI_QUERY = gql`
-  query ObjectUri($objectId: String!) {
-    viewer {
+  query ObjectUri($userId: String!, $objectId: String!) {
+    user(userId: $userId) {
       id
 
       object(objectId: $objectId) {
@@ -253,7 +253,7 @@ const OBJECT_URI_QUERY = gql`
 export const useObjectUriQuery = (
   options?: LazyQueryHookOptions<
     {
-      viewer: {
+      user: {
         id: string
 
         object: {
@@ -262,7 +262,7 @@ export const useObjectUriQuery = (
         }
       }
     },
-    { objectId: string }
+    { userId: string; objectId: string }
   >
 ) => {
   return useLazyQuery(OBJECT_URI_QUERY, options)

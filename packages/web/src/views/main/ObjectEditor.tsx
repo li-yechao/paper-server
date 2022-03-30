@@ -129,8 +129,8 @@ const _ObjectEditor = ({ object }: { object: { id: string; userId: string; data?
 
   usePrompt('Discard changes?', changed)
 
-  const [createFileObject] = useCreateObject()
-  const [queryFileObjectUri] = useObjectUriQuery()
+  const [createObject] = useCreateObject()
+  const [queryObjectUri] = useObjectUriQuery()
 
   const state = useMemo(() => {
     return new State({
@@ -146,7 +146,7 @@ const _ObjectEditor = ({ object }: { object: { id: string; userId: string; data?
         new ImageBlock({
           upload: async file => {
             const data = toString(new Uint8Array(await file.arrayBuffer()), 'base64')
-            const res = await createFileObject({
+            const res = await createObject({
               variables: {
                 parentId: object.id,
                 input: {
@@ -162,11 +162,13 @@ const _ObjectEditor = ({ object }: { object: { id: string; userId: string; data?
             return res.data.createObject.id
           },
           source: async src => {
-            const res = await queryFileObjectUri({ variables: { objectId: src } })
+            const res = await queryObjectUri({
+              variables: { userId: object.userId, objectId: src },
+            })
             if (!res.data || res.error) {
               throw res.error || new Error('query object cid failed')
             }
-            const uri = res.data.viewer.object.uri
+            const uri = res.data.user.object.uri
             if (!uri) {
               throw new Error('object cid not found')
             }
