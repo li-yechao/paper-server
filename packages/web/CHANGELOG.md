@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.0.0-alpha.12](https://github.com/li-yechao/paper/compare/@paper/web@1.0.0-alpha.11...@paper/web@1.0.0-alpha.12) (2022-03-31)
+
+### Features
+
+- add pwa support ([aa3be97](https://github.com/li-yechao/paper/commit/aa3be971e99770c79e7473eda379252279fe1f1f))
+
 # [1.0.0-alpha.11](https://github.com/li-yechao/paper/compare/@paper/web@1.0.0-alpha.10...@paper/web@1.0.0-alpha.11) (2022-03-31)
 
 ### Bug Fixes
