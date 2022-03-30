@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.0.0-alpha.6](https://github.com/li-yechao/paper/compare/@paper/server@1.0.0-alpha.5...@paper/server@1.0.0-alpha.6) (2022-03-30)
+
+### Bug Fixes
+
+- remove auth guard for object query ([8b7a620](https://github.com/li-yechao/paper/commit/8b7a620051f10dd077ce1a95b15c66971d95c56e))
+
 # [1.0.0-alpha.5](https://github.com/li-yechao/paper/compare/@paper/server@1.0.0-alpha.4...@paper/server@1.0.0-alpha.5) (2022-03-29)
 
 **Note:** Version bump only for package @paper/server

@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.0.0-alpha.9](https://github.com/li-yechao/paper/compare/@paper/web@1.0.0-alpha.8...@paper/web@1.0.0-alpha.9) (2022-03-30)
+
+### Bug Fixes
+
+- clear apollo store and navigate to index after logout ([1c56531](https://github.com/li-yechao/paper/commit/1c56531302bffba2c8680a1fb7fa29f6e607eee5))
+- read only when not authed ([93878f4](https://github.com/li-yechao/paper/commit/93878f4292feedf1c673c74610d6a217d7fcde98))
+- throw apollo error ([31aa476](https://github.com/li-yechao/paper/commit/31aa476b3fae74639174371191ca8c6fad269fde))
+
+### Features
+
+- allow access paper without login ([fd0ca75](https://github.com/li-yechao/paper/commit/fd0ca750a1291adab6c226f2bb90f08509b1a5cd))
+
 # [1.0.0-alpha.8](https://github.com/li-yechao/paper/compare/@paper/web@1.0.0-alpha.7...@paper/web@1.0.0-alpha.8) (2022-03-29)
 
 ### Bug Fixes

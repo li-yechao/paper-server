@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.0.0-alpha.6](https://github.com/li-yechao/paper/compare/@paper/editor@1.0.0-alpha.5...@paper/editor@1.0.0-alpha.6) (2022-03-30)
+
+### Bug Fixes
+
+- vertical align center checkbox ([a897fce](https://github.com/li-yechao/paper/commit/a897fcecdd6224acee5f4fdf5871605b7067d0ba))
+
+### Features
+
+- support readOnly prop ([09e078c](https://github.com/li-yechao/paper/commit/09e078ca8606c103859aa352970fd428bb6a3299))
+
 # [1.0.0-alpha.5](https://github.com/li-yechao/paper/compare/@paper/editor@1.0.0-alpha.4...@paper/editor@1.0.0-alpha.5) (2022-03-29)
 
 **Note:** Version bump only for package @paper/editor
