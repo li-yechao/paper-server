@@ -12,17 +12,25 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import 'antd/dist/antd.variable.min.css'
-import { StrictMode } from 'react'
-import ReactDOM from 'react-dom'
-import App from './App'
-import PwaUpdater from './PwaUpdater'
+import { Modal } from 'antd'
+import { useEffect } from 'react'
+import { useRegisterSW } from 'virtual:pwa-register/react'
 
-ReactDOM.render(
-  <StrictMode>
-    <PwaUpdater />
+export default function PwaUpdater() {
+  const {
+    needRefresh: [needRefresh],
+    updateServiceWorker,
+  } = useRegisterSW()
 
-    <App />
-  </StrictMode>,
-  document.getElementById('root')
-)
+  useEffect(() => {
+    if (needRefresh) {
+      Modal.confirm({
+        title: 'New Version',
+        content: 'A new version of Paper is available, Upgrade now?',
+        onOk: () => updateServiceWorker(true),
+      })
+    }
+  }, [needRefresh])
+
+  return null
+}
