@@ -25,6 +25,7 @@ import { proseMirrorStyle } from './style'
 export interface EditorProps {
   className?: string
   autoFocus?: boolean
+  readOnly?: boolean
   state: State
 }
 
@@ -42,10 +43,15 @@ const Editor = memo(
     const state = useAsync(async () => {
       const { view } = await props.state.createEditor(undefined, {
         dispatchTransaction: () => update(),
+        editable: () => !props.readOnly,
       })
 
       return { view }
     }, [props.state])
+
+    useEffect(() => {
+      state.value?.view.setProps({ editable: () => !props.readOnly })
+    }, [props.readOnly])
 
     const view = state.value?.view
 
