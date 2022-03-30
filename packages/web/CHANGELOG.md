@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.0.0-alpha.11](https://github.com/li-yechao/paper/compare/@paper/web@1.0.0-alpha.10...@paper/web@1.0.0-alpha.11) (2022-03-31)
+
+### Bug Fixes
+
+- query object uri by user id ([a27308b](https://github.com/li-yechao/paper/commit/a27308b9ea873dd02c2f32fcbd31266a2ea56edb))
+
 # [1.0.0-alpha.10](https://github.com/li-yechao/paper/compare/@paper/web@1.0.0-alpha.9...@paper/web@1.0.0-alpha.10) (2022-03-30)
 
 ### Bug Fixes
