@@ -77,8 +77,8 @@ export class ObjectConnection extends Connection<Object_> {
     return super.nodes
   }
 
-  @Field(() => [PaperEdge])
-  override get edges(): Promise<PaperEdge[]> {
+  @Field(() => [ObjectEdge])
+  override get edges(): Promise<ObjectEdge[]> {
     return super.edges
   }
 
@@ -94,7 +94,7 @@ export class ObjectConnection extends Connection<Object_> {
 }
 
 @ObjectType()
-export class PaperEdge {
+export class ObjectEdge {
   @Field(() => String)
   cursor!: string
 
