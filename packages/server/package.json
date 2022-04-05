@@ -5,18 +5,10 @@
   "author": "LiYechao <liyechao@yechao.xyz>",
   "license": "Apache-2.0",
   "scripts": {
-    "prebuild": "rimraf dist",
+    "dev": "nest start --watch --",
     "build": "nest build",
-    "start": "nest start --",
-    "start:dev": "nest start --watch --",
-    "start:debug": "nest start --debug --watch --",
-    "start:prod": "node dist/main",
-    "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
-    "test": "jest",
-    "test:watch": "jest --watch",
-    "test:cov": "jest --coverage",
-    "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:e2e": "jest --config ./test/jest-e2e.json"
+    "start": "node dist/main",
+    "test": "jest"
   },
   "dependencies": {
     "@nestjs/apollo": "^10.0.6",
