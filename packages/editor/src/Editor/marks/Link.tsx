@@ -13,7 +13,7 @@
 // limitations under the License.
 
 import { InputRule } from 'prosemirror-inputrules'
-import { MarkSpec, MarkType, Schema } from 'prosemirror-model'
+import { MarkSpec, MarkType } from 'prosemirror-model'
 import { Mark } from '../lib/Mark'
 
 export default class Link implements Mark {
@@ -41,14 +41,14 @@ export default class Link implements Mark {
     }
   }
 
-  inputRules({ type, schema }: { type: MarkType; schema: Schema }): InputRule[] {
+  inputRules({ type }: { type: MarkType }): InputRule[] {
     return [
       new InputRule(/\[(.+)]\((https?:\/\/\S+)\)/, (state, match, start, end) => {
         const [okay, alt, href] = match
         const { tr } = state
 
         if (okay) {
-          tr.replaceWith(start, end, schema.text(alt!)).addMark(
+          tr.replaceWith(start, end, type.schema.text(alt!)).addMark(
             start,
             start + alt!.length,
             type.create({ href })
@@ -62,7 +62,7 @@ export default class Link implements Mark {
         const { tr } = state
 
         if (okay) {
-          tr.replaceWith(start, end, schema.text(href!)).addMark(
+          tr.replaceWith(start, end, type.schema.text(href!)).addMark(
             start,
             start + href!.length,
             type.create({ href })
