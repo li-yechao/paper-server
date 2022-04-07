@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.0.0-alpha.8](https://github.com/li-yechao/paper/compare/@paper/editor@1.0.0-alpha.7...@paper/editor@1.0.0-alpha.8) (2022-04-08)
+
+### Bug Fixes
+
+- remove schame parameter ([f871f2b](https://github.com/li-yechao/paper/commit/f871f2bd60bd0649e22d3023e5bd2fbd2dbfaac0))
+
 # [1.0.0-alpha.7](https://github.com/li-yechao/paper/compare/@paper/editor@1.0.0-alpha.6...@paper/editor@1.0.0-alpha.7) (2022-03-31)
 
 **Note:** Version bump only for package @paper/editor

@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.0.0-alpha.7](https://github.com/li-yechao/paper/compare/@paper/server@1.0.0-alpha.6...@paper/server@1.0.0-alpha.7) (2022-04-08)
+
+### Bug Fixes
+
+- set `ignoreUndefined` option for mongo connection ([f8b2452](https://github.com/li-yechao/paper/commit/f8b2452cfa1a3201f49c7aa875591842758c52a6))
+
 # [1.0.0-alpha.6](https://github.com/li-yechao/paper/compare/@paper/server@1.0.0-alpha.5...@paper/server@1.0.0-alpha.6) (2022-03-30)
 
 ### Bug Fixes
