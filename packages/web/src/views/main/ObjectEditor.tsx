@@ -73,7 +73,7 @@ export default function ObjectEditor() {
     throw new Error('Missing required params `objectId`')
   }
 
-  const object = useObject({ variables: { userId, objectId } })
+  const object = useObject({ variables: { userId, objectId }, fetchPolicy: 'cache-and-network' })
 
   if (object.error) {
     throw object.error
