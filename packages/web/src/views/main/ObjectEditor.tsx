@@ -49,7 +49,7 @@ import Editor, {
 import { ProsemirrorNode } from '@paper/editor/src/Editor/lib/Node'
 import { Button, Dropdown, Menu, message, Spin } from 'antd'
 import equal from 'fast-deep-equal'
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { toString } from 'uint8arrays'
 import { useHeaderActionsCtrl } from '../../components/AppBar'
@@ -64,6 +64,8 @@ import {
   useUpdateObject,
 } from './apollo'
 
+const AUTO_SAVE_TIMEOUT = 3e3
+
 export default function ObjectEditor() {
   const { userId, objectId } = useParams()
   if (!userId) {
@@ -77,14 +79,14 @@ export default function ObjectEditor() {
 
   if (object.error) {
     throw object.error
+  } else if (object.data) {
+    return <_ObjectEditor object={object.data.user.object} />
   } else if (object.loading) {
     return (
       <_Loading>
         <Spin indicator={<LoadingOutlined spin />} />
       </_Loading>
     )
-  } else if (object.data) {
-    return <_ObjectEditor object={object.data.user.object} />
   }
   return null
 }
@@ -106,30 +108,49 @@ const _ObjectEditor = ({ object }: { object: { id: string; userId: string; data?
   useEffect(() => {
     setDoc(undefined)
     setSavedDoc(undefined)
-  }, [object])
+  }, [object.id])
 
-  useOnSave(() => {
-    if (!doc) {
-      return
-    }
-    const data = JSON.stringify(doc.toJSON())
-    updateObject({
-      variables: {
-        objectId: object.id,
-        input: { meta: { title: doc.content.maybeChild(0)?.textContent }, data },
-      },
-    })
-      .then(() => {
-        setSavedDoc(doc)
-        message.success('Save Success')
+  const save = useCallback(
+    (doc: ProsemirrorNode) => {
+      const data = JSON.stringify(doc.toJSON())
+      updateObject({
+        variables: {
+          objectId: object.id,
+          input: { meta: { title: doc.content.maybeChild(0)?.textContent }, data },
+        },
       })
-      .catch(error => {
-        message.error(error.message)
-        throw error
-      })
-  }, [object, doc])
+        .then(() => {
+          setSavedDoc(doc)
+          message.success('Save Success')
+        })
+        .catch(error => {
+          message.error(error.message)
+          throw error
+        })
+    },
+    [object.id]
+  )
 
   const changed = useMemo(() => !equal(doc, savedDoc), [doc, savedDoc])
+
+  const autoSaveTimeout = useRef<number>()
+
+  useEffect(() => {
+    if (autoSaveTimeout.current) {
+      clearTimeout(autoSaveTimeout.current)
+    }
+    if (changed && doc) {
+      autoSaveTimeout.current = window.setTimeout(() => {
+        save(doc)
+      }, AUTO_SAVE_TIMEOUT)
+    }
+  }, [doc, changed])
+
+  useOnSave(() => {
+    if (doc) {
+      save(doc)
+    }
+  }, [doc])
 
   usePrompt('Discard changes?', changed)
 
@@ -223,7 +244,7 @@ const _ObjectEditor = ({ object }: { object: { id: string; userId: string; data?
         }),
       ],
     })
-  }, [object])
+  }, [object.id])
 
   return (
     <_Container>
