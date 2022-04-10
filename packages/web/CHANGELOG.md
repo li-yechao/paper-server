@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.0.0-alpha.14](https://github.com/li-yechao/paper/compare/@paper/web@1.0.0-alpha.13...@paper/web@1.0.0-alpha.14) (2022-04-10)
+
+### Bug Fixes
+
+- get saved state by deep compare doc ([2ca1972](https://github.com/li-yechao/paper/commit/2ca1972694e397f5331d0b1debcff74eaaaf9c27))
+- only use hover in pc browser ([5e74933](https://github.com/li-yechao/paper/commit/5e74933a6bebb5073c57f5030bba3c47babd5291))
+- query object by network always ([cf31380](https://github.com/li-yechao/paper/commit/cf3138058e184d266c589dbf42e267213e061616))
+
+### Features
+
+- auto save when doc changed ([4f84330](https://github.com/li-yechao/paper/commit/4f8433034c36d4031551fa153d01bf31df96e4a4))
+
 # [1.0.0-alpha.13](https://github.com/li-yechao/paper/compare/@paper/web@1.0.0-alpha.12...@paper/web@1.0.0-alpha.13) (2022-04-08)
 
 **Note:** Version bump only for package @paper/web
