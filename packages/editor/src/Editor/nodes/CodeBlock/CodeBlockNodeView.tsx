@@ -218,9 +218,9 @@ const _Container = styled.div`
   margin: 16px 0;
   position: relative;
   padding: 8px 0;
-  border-radius: 8px;
+  border-radius: 4px;
   background-color: #fffffe;
-  border: 1px solid #aeaeae;
+  border: 1px solid #efefef;
 
   .language-select {
     display: none;
