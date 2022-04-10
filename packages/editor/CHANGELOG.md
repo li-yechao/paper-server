@@ -3,6 +3,15 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.0.0-alpha.9](https://github.com/li-yechao/paper/compare/@paper/editor@1.0.0-alpha.8...@paper/editor@1.0.0-alpha.9) (2022-04-11)
+
+### Bug Fixes
+
+- check deleting selection is not empty ([adfa81c](https://github.com/li-yechao/paper/commit/adfa81c8c418e1c79a9d6c07e64ca6f845bd87d1))
+- correct select position after `CodeBlock` deleted ([32974ec](https://github.com/li-yechao/paper/commit/32974ec419c2f8f00097843699b5c28254ed11f4))
+- dont display zero character in selection ([fc7f715](https://github.com/li-yechao/paper/commit/fc7f71556f73a6ae1c0452293fa21f90b8570e54))
+- safari selection not visible ([598983e](https://github.com/li-yechao/paper/commit/598983ebfffd9b16cdf554700eebb6afe3ea07c7))
+
 # [1.0.0-alpha.8](https://github.com/li-yechao/paper/compare/@paper/editor@1.0.0-alpha.7...@paper/editor@1.0.0-alpha.8) (2022-04-08)
 
 ### Bug Fixes
