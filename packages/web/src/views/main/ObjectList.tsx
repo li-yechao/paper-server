@@ -129,17 +129,24 @@ const _Item = styled.div`
     display: none;
   }
 
-  &:hover {
-    background-color: rgba(0, 0, 0, 0.05);
-    padding-right: 0;
+  @media (hover: hover) {
+    &:hover {
+      background-color: rgba(0, 0, 0, 0.05);
+      padding-right: 0;
 
-    > .hover_visible {
-      display: block;
+      > .hover_visible {
+        display: block;
+      }
     }
   }
 
   &.selected {
     background-color: rgba(0, 0, 0, 0.1);
+    padding-right: 0;
+
+    > .hover_visible {
+      display: block;
+    }
   }
 `
 
