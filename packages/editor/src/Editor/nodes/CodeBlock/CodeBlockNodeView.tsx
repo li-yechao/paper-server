@@ -14,6 +14,7 @@
 
 import { css } from '@emotion/css'
 import styled from '@emotion/styled'
+import { setTextSelection } from 'prosemirror-utils'
 import { EditorView } from 'prosemirror-view'
 import React, { ChangeEvent, useCallback, useState } from 'react'
 import CupertinoActivityIndicator from '../../lib/CupertinoActivityIndicator'
@@ -192,9 +193,11 @@ export default class CodeBlockNodeView extends NodeViewReactSelectable<CodeBlock
                     // KeyCode.Backspace is 1
                     if (e.keyCode === 1 && this.isAtFirstPosition) {
                       this.view.dispatch(
-                        this.view.state.tr.setNodeMarkup(
-                          this.getPos(),
-                          this.view.state.schema.nodes['paragraph']
+                        setTextSelection(this.getPos())(
+                          this.view.state.tr.setNodeMarkup(
+                            this.getPos(),
+                            this.view.state.schema.nodes['paragraph']
+                          )
                         )
                       )
                       this.view.focus()
