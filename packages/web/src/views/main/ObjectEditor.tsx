@@ -48,6 +48,7 @@ import Editor, {
 } from '@paper/editor'
 import { ProsemirrorNode } from '@paper/editor/src/Editor/lib/Node'
 import { Button, Dropdown, Menu, message, Spin } from 'antd'
+import equal from 'fast-deep-equal'
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { toString } from 'uint8arrays'
@@ -100,10 +101,11 @@ const _ObjectEditor = ({ object }: { object: { id: string; userId: string; data?
   const account = useAccount()
   const [updateObject] = useUpdateObject()
   const [doc, setDoc] = useState<ProsemirrorNode>()
-  const [changed, setChanged] = useState(false)
+  const [savedDoc, setSavedDoc] = useState<ProsemirrorNode>()
 
   useEffect(() => {
-    setChanged(false)
+    setDoc(undefined)
+    setSavedDoc(undefined)
   }, [object])
 
   useOnSave(() => {
@@ -111,7 +113,6 @@ const _ObjectEditor = ({ object }: { object: { id: string; userId: string; data?
       return
     }
     const data = JSON.stringify(doc.toJSON())
-    setChanged(false)
     updateObject({
       variables: {
         objectId: object.id,
@@ -119,6 +120,7 @@ const _ObjectEditor = ({ object }: { object: { id: string; userId: string; data?
       },
     })
       .then(() => {
+        setSavedDoc(doc)
         message.success('Save Success')
       })
       .catch(error => {
@@ -126,6 +128,8 @@ const _ObjectEditor = ({ object }: { object: { id: string; userId: string; data?
         throw error
       })
   }, [object, doc])
+
+  const changed = useMemo(() => !equal(doc, savedDoc), [doc, savedDoc])
 
   usePrompt('Discard changes?', changed)
 
@@ -203,11 +207,9 @@ const _ObjectEditor = ({ object }: { object: { id: string; userId: string; data?
         ]),
         new Value({
           defaultValue: object.data ? JSON.parse(object.data) : undefined,
-          onDispatchTransaction: (view, tr) => {
-            if (tr.docChanged) {
-              setDoc(view.state.doc)
-              setChanged(true)
-            }
+          onDispatchTransaction: view => {
+            setSavedDoc(v => v ?? view.state.doc)
+            setDoc(view.state.doc)
           },
         }),
         new DropPasteFile({
