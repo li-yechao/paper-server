@@ -67,11 +67,9 @@ class HeadingNodeView extends NodeView<HeadingAttrs> {
 
     this.dom.classList.add(css`
       position: relative;
-      list-style: none;
     `)
     const zero = document.createElement('span')
     zero.innerText = '\u200b'
-    zero.contentEditable = 'false'
     zero.classList.add(css`
       position: absolute;
       left: 0;

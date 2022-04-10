@@ -131,7 +131,6 @@ class TodoItemNodeView extends NodeViewReact<TodoItemAttrs> {
       position: relative;
       list-style: none;
     `)
-    this.reactDOM.contentEditable = 'false'
     this.reactDOM.classList.add(css`
       position: absolute;
       left: -32px;
