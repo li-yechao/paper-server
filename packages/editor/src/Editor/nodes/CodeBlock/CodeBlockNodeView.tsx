@@ -181,8 +181,12 @@ export default class CodeBlockNodeView extends NodeViewReactSelectable<CodeBlock
                   onReplace={this.onReplace}
                   onDelete={this.onDelete}
                   onKeyDown={(_, editor) => {
+                    const selection = editor.getSelection()
                     this.isAtFirstPosition =
-                      editor.getPosition()?.equals({ lineNumber: 1, column: 1 }) ?? false
+                      (selection &&
+                        selection.isEmpty() &&
+                        selection.getPosition().equals({ lineNumber: 1, column: 1 })) ??
+                      false
                   }}
                   onKeyUp={e => {
                     // KeyCode.Backspace is 1
