@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.0.0-alpha.10](https://github.com/li-yechao/paper/compare/@paper/editor@1.0.0-alpha.9...@paper/editor@1.0.0-alpha.10) (2022-04-11)
+
+### Bug Fixes
+
+- remove `contenteditable` attribute in `ImageBlock` ([9565cba](https://github.com/li-yechao/paper/commit/9565cba75559c681d46e25204a48d950b7dc5395))
+
 # [1.0.0-alpha.9](https://github.com/li-yechao/paper/compare/@paper/editor@1.0.0-alpha.8...@paper/editor@1.0.0-alpha.9) (2022-04-11)
 
 ### Bug Fixes

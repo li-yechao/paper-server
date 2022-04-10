@@ -1,6 +1,6 @@
 {
   "name": "@paper/web",
-  "version": "1.0.0-alpha.15",
+  "version": "1.0.0-alpha.16",
   "description": "paper web",
   "author": "LiYechao <liyechao@yechao.xyz>",
   "license": "Apache-2.0",
@@ -14,7 +14,7 @@
     "@apollo/client": "^3.5.10",
     "@emotion/react": "^11.8.2",
     "@emotion/styled": "^11.8.1",
-    "@paper/editor": "^1.0.0-alpha.9",
+    "@paper/editor": "^1.0.0-alpha.10",
     "antd": "^4.19.2",
     "fast-deep-equal": "^3.1.3",
     "graphql": "^16.3.0",
