@@ -76,6 +76,7 @@ class HeadingNodeView extends NodeView<HeadingAttrs> {
       position: absolute;
       left: 0;
       top: 0;
+      opacity: 0;
     `)
 
     this.contentDOM = document.createElement('div')

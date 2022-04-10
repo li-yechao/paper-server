@@ -86,6 +86,7 @@ export class ListItem implements Node<ListItemAttrs> {
             position: absolute;
             left: 0;
             top: 0;
+            opacity: 0;
           `)
 
           this.dom.append(zero, this.contentDOM)

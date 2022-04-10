@@ -143,6 +143,7 @@ class TodoItemNodeView extends NodeViewReact<TodoItemAttrs> {
       position: absolute;
       left: 0;
       top: 0;
+      opacity: 0;
     `)
 
     this.dom.append(this.reactDOM, zero, this.contentDOM)
