@@ -30,7 +30,6 @@ export default class ImageBlockNodeView extends NodeViewReact<ImageBlockAttrs> {
     private options: ImageBlockOptions
   ) {
     super(node)
-    this.reactDOM.contentEditable = 'false'
     this.dom.classList.add(css`
       margin: 1em 0;
       text-align: center;
