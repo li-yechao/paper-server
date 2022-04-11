@@ -143,6 +143,7 @@ export default class ImageBlockNodeView extends NodeViewReact<ImageBlockAttrs> {
         component={_ImgContainer}
         onVisibleChange={onVisibleChange}
         style={{ width: this.attrs.naturalWidth ?? undefined }}
+        contentEditable={false}
       >
         <div style={{ paddingBottom: `${this.aspectRatio}%` }} />
         {this.attrs.thumbnail && <img src={this.attrs.thumbnail} />}
