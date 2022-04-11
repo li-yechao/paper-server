@@ -19,6 +19,15 @@ import { useRef, useEffect } from 'react'
 import { useUpdate } from 'react-use'
 import './monaco.vite'
 
+editor.defineTheme('my-theme', {
+  base: 'vs',
+  inherit: true,
+  colors: {
+    'editor.background': '#f5f5f5',
+  },
+  rules: [],
+})
+
 export type MonacoInstance = {
   editor: editor.ICodeEditor
   contentManager: EditorContentManager
@@ -54,6 +63,7 @@ const MonacoEditor = (props: MonacoEditorProps) => {
     }
 
     monacoEditor.current = editor.create(container.current, {
+      theme: 'my-theme',
       model: createModel(props.defaultValue, props.language),
       language: props.language,
       lineHeight: props.lineHeight,

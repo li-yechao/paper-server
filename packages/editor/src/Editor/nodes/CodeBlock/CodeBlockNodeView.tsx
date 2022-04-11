@@ -219,8 +219,11 @@ const _Container = styled.div`
   position: relative;
   padding: 8px 0;
   border-radius: 4px;
-  background-color: #fffffe;
-  border: 1px solid #efefef;
+  background-color: #f5f5f5;
+
+  .margin-view-overlays *::selection {
+    background-color: transparent;
+  }
 
   .language-select {
     display: none;
