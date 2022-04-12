@@ -12,7 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-export { default as Plugins } from './Plugins'
-export { default as Value } from './Value'
-export { default as DropPasteFile } from './DropPasteFile'
-export { default as BlockMenu } from './BlockMenu'
+import { Node, Schema } from 'prosemirror-model'
+
+export default function isList(node: Node, schema: Schema) {
+  return (
+    node.type === schema.nodes['bullet_list'] ||
+    node.type === schema.nodes['ordered_list'] ||
+    node.type === schema.nodes['todo_list']
+  )
+}

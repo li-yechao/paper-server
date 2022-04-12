@@ -17,6 +17,7 @@ import { useMemo } from 'react'
 import ReactDOM from 'react-dom'
 import Editor, {
   baseKeymap,
+  BlockMenu,
   Blockquote,
   Bold,
   BulletList,
@@ -78,6 +79,7 @@ const App = () => {
         new Underline(),
       ],
       extensions: [
+        new BlockMenu(),
         new Plugins([
           keymap({
             'Mod-z': undo,

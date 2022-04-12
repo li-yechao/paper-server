@@ -16,6 +16,7 @@ import { DeleteOutlined, LoadingOutlined, MoreOutlined } from '@ant-design/icons
 import styled from '@emotion/styled'
 import Editor, {
   baseKeymap,
+  BlockMenu,
   Blockquote,
   Bold,
   BulletList,
@@ -214,6 +215,7 @@ const _ObjectEditor = ({ object }: { object: { id: string; userId: string; data?
         new Underline(),
       ],
       extensions: [
+        new BlockMenu(),
         new Plugins([
           keymap({
             'Mod-z': undo,

@@ -15,8 +15,9 @@
 import { css, cx } from '@emotion/css'
 import { TextSelection } from 'prosemirror-state'
 import { EditorView } from 'prosemirror-view'
-import { forwardRef, memo, useEffect, useImperativeHandle, useRef } from 'react'
+import { forwardRef, memo, useEffect, useImperativeHandle, useRef, useState } from 'react'
 import { useUpdate } from 'react-use'
+import { BlockMenu } from '.'
 import CupertinoActivityIndicator from './lib/CupertinoActivityIndicator'
 import State from './lib/State'
 import useAsync from './lib/useAsync'
@@ -40,13 +41,23 @@ const Editor = memo(
 
     const container = useRef<HTMLDivElement>(null)
 
+    const [blockMenuKeyword, setBlockMenuKeyword] = useState<string | null>(null)
+
     const state = useAsync(async () => {
       const { view } = await props.state.createEditor(undefined, {
         dispatchTransaction: () => update(),
         editable: () => !props.readOnly,
       })
 
-      return { view }
+      const blockMenu = props.state.options.extensions?.find<BlockMenu>(
+        (i): i is BlockMenu => i instanceof BlockMenu
+      )
+      blockMenu?.setOptions({
+        onOpen: setBlockMenuKeyword,
+        onClose: () => setBlockMenuKeyword(null),
+      })
+
+      return { view, blockMenu }
     }, [props.state])
 
     useEffect(() => {
@@ -102,7 +113,17 @@ const Editor = memo(
           <div className={loadingCSS}>
             <CupertinoActivityIndicator />
           </div>
-        ) : null}
+        ) : (
+          <>
+            {state.value.blockMenu && (
+              <state.value.blockMenu.Menus
+                keyword={blockMenuKeyword}
+                view={state.value.view}
+                onClose={() => setBlockMenuKeyword(null)}
+              />
+            )}
+          </>
+        )}
       </div>
     )
   })

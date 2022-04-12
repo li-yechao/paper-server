@@ -12,7 +12,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-export { default as Plugins } from './Plugins'
-export { default as Value } from './Value'
-export { default as DropPasteFile } from './DropPasteFile'
-export { default as BlockMenu } from './BlockMenu'
+import { wrapIn, lift } from 'prosemirror-commands'
+import { NodeType } from 'prosemirror-model'
+import { EditorState, Transaction } from 'prosemirror-state'
+import isNodeActive from './isNodeActive'
+
+export default function toggleWrap(type: NodeType, attrs?: Record<string, any>) {
+  return (state: EditorState, dispatch: (tr: Transaction) => void) => {
+    const isActive = isNodeActive(type)(state)
+
+    if (isActive) {
+      return lift(state, dispatch)
+    }
+
+    return wrapIn(type, attrs)(state, dispatch)
+  }
+}
