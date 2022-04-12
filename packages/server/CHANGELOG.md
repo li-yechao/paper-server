@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.0.0-alpha.9](https://github.com/li-yechao/paper/compare/@paper/server@1.0.0-alpha.8...@paper/server@1.0.0-alpha.9) (2022-04-13)
+
+**Note:** Version bump only for package @paper/server
+
 # [1.0.0-alpha.8](https://github.com/li-yechao/paper/compare/@paper/server@1.0.0-alpha.7...@paper/server@1.0.0-alpha.8) (2022-04-13)
 
 ### Features

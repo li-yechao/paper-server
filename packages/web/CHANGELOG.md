@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.0.0-alpha.18](https://github.com/li-yechao/paper/compare/@paper/web@1.0.0-alpha.17...@paper/web@1.0.0-alpha.18) (2022-04-13)
+
+### Features
+
+- add `BlockMenu` extension ([8e6ec94](https://github.com/li-yechao/paper/commit/8e6ec94e59c28c10f747a72c5c5d36873a523caa))
+
 # [1.0.0-alpha.17](https://github.com/li-yechao/paper/compare/@paper/web@1.0.0-alpha.16...@paper/web@1.0.0-alpha.17) (2022-04-12)
 
 **Note:** Version bump only for package @paper/web

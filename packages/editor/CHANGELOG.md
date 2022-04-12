@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.0.0-alpha.12](https://github.com/li-yechao/paper/compare/@paper/editor@1.0.0-alpha.11...@paper/editor@1.0.0-alpha.12) (2022-04-13)
+
+### Features
+
+- add `BlockMenu` extension ([8e6ec94](https://github.com/li-yechao/paper/commit/8e6ec94e59c28c10f747a72c5c5d36873a523caa))
+
 # [1.0.0-alpha.11](https://github.com/li-yechao/paper/compare/@paper/editor@1.0.0-alpha.10...@paper/editor@1.0.0-alpha.11) (2022-04-12)
 
 ### Bug Fixes
