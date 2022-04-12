@@ -28,50 +28,28 @@ export class Config {
   }
 
   get signature() {
-    // eslint-disable-next-line @typescript-eslint/no-this-alias
-    const config = this
-
     return {
-      get expiresIn() {
-        return config.getInt('signature.expiresIn', 10)
-      },
+      expiresIn: this.getInt('signature.expiresIn', 10),
     }
   }
 
   get mongo() {
-    // eslint-disable-next-line @typescript-eslint/no-this-alias
-    const config = this
-
     return {
-      get uri() {
-        return config.getString('mongo.uri')
-      },
+      uri: this.getString('mongo.uri'),
     }
   }
 
   get ipfs() {
-    // eslint-disable-next-line @typescript-eslint/no-this-alias
-    const config = this
-
     return {
-      get api() {
-        return config.getString('ipfs.api')
-      },
-      get uri() {
-        return config.getString('ipfs.uri')
-      },
+      api: this.getString('ipfs.api'),
+      uri: this.getString('ipfs.uri'),
     }
   }
 
   get body() {
-    // eslint-disable-next-line @typescript-eslint/no-this-alias
-    const config = this
-
     return {
       json: {
-        get limit() {
-          return config.get('body.json.limit')
-        },
+        limit: this.get('body.json.limit'),
       },
     }
   }
