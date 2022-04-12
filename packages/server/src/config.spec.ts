@@ -15,60 +15,76 @@
 import { ConfigService } from '@nestjs/config'
 import { Test } from '@nestjs/testing'
 import { Config } from './config'
+import { createMock, MockType } from './jest.utils'
 
 describe('Config', () => {
   let config: Config
-  let configService: { get: jest.Mock }
+  let configService: MockType<ConfigService>
 
   beforeEach(async () => {
     const module = await Test.createTestingModule({
-      providers: [Config, { provide: ConfigService, useFactory: () => ({ get: jest.fn() }) }],
+      providers: [Config, { provide: ConfigService, useFactory: createMock }],
     }).compile()
+
     config = module.get(Config)
     configService = module.get(ConfigService)
   })
 
-  it('int', async () => {
-    // default `port`
-    expect(config.port).toBe(8080)
-    expect(configService.get.mock.calls[0]?.[0]).toBe('port')
+  describe('port', () => {
+    test('should be the default port', () => {
+      configService.get.mockReturnValueOnce(undefined)
 
-    configService.get.mockReturnValue('')
-    expect(config.port).toBe(8080)
+      expect(config.port).toBe(8080)
+    })
 
-    configService.get.mockReturnValue('10000')
-    expect(config.port).toBe(10000)
+    test('should be the specified port', () => {
+      configService.get.mockReturnValueOnce('10000')
 
-    configService.get.mockReturnValue('abc123')
-    expect(() => config.port).toThrow()
+      expect(config.port).toBe(10000)
+    })
+
+    test('should throw an error when invalid port in config', async () => {
+      configService.get.mockReturnValueOnce('abc123')
+
+      expect(() => config.port).toThrow()
+    })
   })
 
-  it('boolean', () => {
-    // default `cors`
-    expect(config.cors).toBe(false)
-    expect(configService.get.mock.calls[0]?.[0]).toBe('cors')
+  describe('cors', () => {
+    test('should be the default cors', () => {
+      configService.get.mockReturnValueOnce(undefined)
 
-    configService.get.mockReturnValue('')
-    expect(config.cors).toBe(false)
+      expect(config.cors).toBe(false)
+    })
 
-    configService.get.mockReturnValue('true')
-    expect(config.cors).toBe(true)
+    test('should be the specified cors', () => {
+      configService.get.mockReturnValueOnce('true')
+      configService.get.mockReturnValueOnce('false')
 
-    configService.get.mockReturnValue('false')
-    expect(config.cors).toBe(false)
+      expect(config.cors).toBe(true)
+      expect(config.cors).toBe(false)
+    })
 
-    configService.get.mockReturnValue('1')
-    expect(() => config.cors).toThrow()
+    test('should throw an error when invalid cors in config', () => {
+      configService.get.mockReturnValueOnce('1')
+
+      expect(() => config.cors).toThrow()
+    })
   })
 
-  it('string', () => {
-    configService.get.mockReturnValue('')
-    expect(() => config.mongo.uri).toThrow()
+  describe('mongo', () => {
+    test('should be the specified mongo', () => {
+      const uri = 'mongodb://user:pwd@127.0.0.1:27017/paper'
 
-    configService.get.mockReturnValue('abc')
-    expect(config.mongo.uri).toBe('abc')
+      configService.get.mockReturnValueOnce(uri)
 
-    configService.get.mockReturnValue(' ')
-    expect(() => config.mongo.uri).toThrow()
+      expect(config.mongo).toMatchObject({ uri })
+    })
+
+    test('should throw an error when missing mongo.uri config', () => {
+      configService.get.mockReturnValueOnce(undefined)
+
+      expect(() => config.mongo).toThrow()
+    })
   })
 })
