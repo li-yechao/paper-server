@@ -19,12 +19,13 @@ import mongoose from 'mongoose'
 import { Model } from 'mongoose'
 import { IpfsService } from './ipfs.service'
 import { CreateObjectInput, ObjectDataEncoding, UpdateObjectInput } from './object.input'
-import { Object_ } from './object.schema'
+import { ObjectHistory, Object_ } from './object.schema'
 
 @Injectable()
 export class ObjectService {
   constructor(
     @InjectModel(Object_.name) private readonly objectModel: Model<Object_>,
+    @InjectModel(ObjectHistory.name) private readonly objectHistoryModel: Model<ObjectHistory>,
     private readonly ipfsService: IpfsService
   ) {}
 
@@ -80,7 +81,7 @@ export class ObjectService {
 
     const cid = (await this.ipfsAdd(input))?.cid.toString()
 
-    return this.objectModel.create({
+    const object = await this.objectModel.create({
       parentId,
       userId,
       createdAt: now,
@@ -88,6 +89,10 @@ export class ObjectService {
       cid,
       meta: input.meta,
     })
+
+    await this.createHistory(object)
+
+    return object
   }
 
   async update({
@@ -118,6 +123,8 @@ export class ObjectService {
     if (!object) {
       throw new Error(`Object ${objectId} not found`)
     }
+
+    await this.createHistory(object)
 
     return object
   }
@@ -154,5 +161,15 @@ export class ObjectService {
           : undefined
       )
     )
+  }
+
+  private async createHistory(object: Object_) {
+    return this.objectHistoryModel.create({
+      createdAt: Date.now(),
+      objectId: object.id,
+      objectUpdatedAt: object.updatedAt,
+      cid: object.cid,
+      meta: object.meta,
+    })
   }
 }

@@ -17,15 +17,16 @@ import { getModelToken } from '@nestjs/mongoose'
 import { Test, TestingModule } from '@nestjs/testing'
 import mongoose from 'mongoose'
 import { Config } from '../config'
+import { createMock, MockType } from '../jest.utils'
 import { Cursor } from '../utils/Connection'
 import { IpfsService } from './ipfs.service'
-import { Object_ } from './object.schema'
+import { ObjectHistory, Object_ } from './object.schema'
 import { ObjectService } from './object.service'
 import { UserObjectResolver } from './user-object.resolver'
 
 describe('UserObjectResolver', () => {
   let resolver: UserObjectResolver
-  let objectModel: { [key in keyof mongoose.Model<Object_>]: jest.Mock<unknown> }
+  let objectModel: MockType<mongoose.Model<Object_>>
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -34,22 +35,9 @@ describe('UserObjectResolver', () => {
         Config,
         UserObjectResolver,
         ObjectService,
-        { provide: IpfsService, useFactory: () => ({ add: jest.fn(), get: jest.fn() }) },
-        {
-          provide: getModelToken(Object_.name),
-          useFactory: () =>
-            new Proxy(<{ [key: string | symbol]: jest.Mock<unknown> }>{}, {
-              get: (target, p) => {
-                if (p === 'then') {
-                  return undefined
-                }
-                if (!target[p]) {
-                  target[p] = jest.fn()
-                }
-                return target[p]
-              },
-            }),
-        },
+        { provide: IpfsService, useFactory: () => createMock() },
+        { provide: getModelToken(Object_.name), useFactory: () => createMock() },
+        { provide: getModelToken(ObjectHistory.name), useFactory: () => createMock() },
       ],
     }).compile()
 

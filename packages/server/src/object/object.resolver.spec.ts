@@ -18,17 +18,19 @@ import { Test, TestingModule } from '@nestjs/testing'
 import { PubSub } from 'graphql-subscriptions'
 import mongoose from 'mongoose'
 import { Config } from '../config'
+import { createMock, MockType } from '../jest.utils'
 import { Cursor } from '../utils/Connection'
 import { IpfsService } from './ipfs.service'
 import { ObjectDataEncoding } from './object.input'
 import { ObjectResolver } from './object.resolver'
-import { Object_ } from './object.schema'
+import { ObjectHistory, Object_ } from './object.schema'
 import { ObjectService } from './object.service'
 
 describe('ObjectResolver', () => {
   let resolver: ObjectResolver
-  let objectModel: { [key in keyof mongoose.Model<Object_>]: jest.Mock<unknown> }
-  let ipfsService: { add: jest.Mock; cat: jest.Mock }
+  let objectModel: MockType<mongoose.Model<Object_>>
+  let objectHistoryModel: MockType<mongoose.Model<ObjectHistory>>
+  let ipfsService: MockType<IpfsService>
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -38,27 +40,15 @@ describe('ObjectResolver', () => {
         ObjectResolver,
         ObjectService,
         { provide: 'PUB_SUB', useValue: new PubSub() },
-        { provide: IpfsService, useFactory: () => ({ add: jest.fn(), cat: jest.fn() }) },
-        {
-          provide: getModelToken(Object_.name),
-          useFactory: () =>
-            new Proxy(<{ [key: string | symbol]: jest.Mock<unknown> }>{}, {
-              get: (target, p) => {
-                if (p === 'then') {
-                  return undefined
-                }
-                if (!target[p]) {
-                  target[p] = jest.fn()
-                }
-                return target[p]
-              },
-            }),
-        },
+        { provide: IpfsService, useFactory: () => createMock() },
+        { provide: getModelToken(Object_.name), useFactory: () => createMock() },
+        { provide: getModelToken(ObjectHistory.name), useFactory: () => createMock() },
       ],
     }).compile()
 
     resolver = module.get<ObjectResolver>(ObjectResolver)
     objectModel = module.get(getModelToken(Object_.name))
+    objectHistoryModel = module.get(getModelToken(ObjectHistory.name))
     ipfsService = module.get(IpfsService)
   })
 
@@ -97,6 +87,18 @@ describe('ObjectResolver', () => {
         meta: { title: 'title' },
       })
     )
+
+    expect(objectHistoryModel.create.mock.calls).toMatchObject([
+      [
+        {
+          createdAt: expect.any(Number),
+          objectId: '123',
+          objectUpdatedAt: expect.any(Number),
+          cid: 'cid',
+          meta: { title: 'title' },
+        },
+      ],
+    ])
   })
 
   it('create child object', async () => {
@@ -230,6 +232,18 @@ describe('ObjectResolver', () => {
         }),
       })
     )
+
+    expect(objectHistoryModel.create.mock.calls).toMatchObject([
+      [
+        {
+          createdAt: expect.any(Number),
+          objectId: '123',
+          objectUpdatedAt: expect.any(Number),
+          cid: 'cid',
+          meta: { title: 'title' },
+        },
+      ],
+    ])
   })
 
   it('delete object', async () => {

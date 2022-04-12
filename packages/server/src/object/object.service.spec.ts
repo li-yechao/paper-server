@@ -14,8 +14,9 @@
 
 import { getModelToken } from '@nestjs/mongoose'
 import { Test, TestingModule } from '@nestjs/testing'
+import { createMock } from '../jest.utils'
 import { IpfsService } from './ipfs.service'
-import { Object_ } from './object.schema'
+import { ObjectHistory, Object_ } from './object.schema'
 import { ObjectService } from './object.service'
 
 describe('ObjectService', () => {
@@ -25,14 +26,9 @@ describe('ObjectService', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         ObjectService,
-        { provide: IpfsService, useFactory: () => ({ add: jest.fn(), get: jest.fn() }) },
-        {
-          provide: getModelToken(Object_.name),
-          useFactory: () =>
-            jest.fn(() => ({
-              findOne: jest.fn(() => null),
-            })),
-        },
+        { provide: IpfsService, useFactory: () => createMock() },
+        { provide: getModelToken(Object_.name), useFactory: () => createMock() },
+        { provide: getModelToken(ObjectHistory.name), useFactory: () => createMock() },
       ],
     }).compile()
 

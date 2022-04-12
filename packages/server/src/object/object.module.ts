@@ -18,14 +18,17 @@ import { MongooseModule } from '@nestjs/mongoose'
 import { Config } from '../config'
 import { IpfsService } from './ipfs.service'
 import { ObjectResolver } from './object.resolver'
-import { Object_, ObjectSchema } from './object.schema'
+import { Object_, ObjectSchema, ObjectHistory, ObjectHistorySchema } from './object.schema'
 import { ObjectService } from './object.service'
 import { UserObjectResolver } from './user-object.resolver'
 
 @Module({
   imports: [
     ConfigModule,
-    MongooseModule.forFeature([{ name: Object_.name, schema: ObjectSchema }]),
+    MongooseModule.forFeature([
+      { name: Object_.name, schema: ObjectSchema },
+      { name: ObjectHistory.name, schema: ObjectHistorySchema },
+    ]),
   ],
   providers: [Config, ObjectService, UserObjectResolver, ObjectResolver, IpfsService],
 })

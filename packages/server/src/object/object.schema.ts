@@ -50,3 +50,31 @@ export class Object_ {
 }
 
 export const ObjectSchema = SchemaFactory.createForClass(Object_)
+
+@ObjectType()
+@Schema()
+export class ObjectHistory {
+  @Field()
+  id!: string
+
+  @Field(() => String)
+  @Prop({ required: true })
+  createdAt!: number
+
+  @Field()
+  @Prop({ required: true })
+  objectId!: string
+
+  @Field(() => String)
+  @Prop({ required: true })
+  objectUpdatedAt!: number
+
+  @Prop()
+  cid?: string
+
+  @Field(() => GraphQLJSONObject, { nullable: true })
+  @Prop({ type: mongoose.Schema.Types.Mixed })
+  meta?: unknown
+}
+
+export const ObjectHistorySchema = SchemaFactory.createForClass(ObjectHistory)
