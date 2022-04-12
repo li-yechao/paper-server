@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.0.0-alpha.8](https://github.com/li-yechao/paper/compare/@paper/server@1.0.0-alpha.7...@paper/server@1.0.0-alpha.8) (2022-04-13)
+
+### Features
+
+- create a history record when object changed ([d35cb84](https://github.com/li-yechao/paper/commit/d35cb84301978d9cb8e5b9e591e76b53c8e0ead1))
+
 # [1.0.0-alpha.7](https://github.com/li-yechao/paper/compare/@paper/server@1.0.0-alpha.6...@paper/server@1.0.0-alpha.7) (2022-04-08)
 
 ### Bug Fixes
