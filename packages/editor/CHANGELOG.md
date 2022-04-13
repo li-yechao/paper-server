@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.0.0-alpha.13](https://github.com/li-yechao/paper/compare/@paper/editor@1.0.0-alpha.12...@paper/editor@1.0.0-alpha.13) (2022-04-14)
+
+### Features
+
+- add `FloatingToolbar` ([f3b63d5](https://github.com/li-yechao/paper/commit/f3b63d57620352d8efe84427311a11b9fac74424))
+
 # [1.0.0-alpha.12](https://github.com/li-yechao/paper/compare/@paper/editor@1.0.0-alpha.11...@paper/editor@1.0.0-alpha.12) (2022-04-13)
 
 ### Features
