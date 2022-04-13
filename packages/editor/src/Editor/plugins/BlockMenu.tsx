@@ -119,7 +119,6 @@ export default class BlockMenu implements Extension {
             ) {
               const { pos } = view.state.selection.$from
 
-              console.log('run')
               return run(view, pos, pos, OPEN_REGEX, (_, match) => {
                 // just tell Prosemirror we handled it and not to do anything
                 return match ? true : null
@@ -552,13 +551,11 @@ export function run(
   ) => boolean | Transaction | null
 ) {
   if (view.composing) {
-    console.log(1)
     return false
   }
   const state = view.state
   const $from = state.doc.resolve(from)
   if ($from.parent.type.spec.code) {
-    console.log(2)
     return false
   }
 
@@ -570,11 +567,5 @@ export function run(
   )
 
   const match = regex.exec(textBefore)
-  const tr = handler(state, match, from - (match?.[0]?.length || 0), to)
-  if (!tr) {
-    console.log(3)
-    return false
-  }
-  console.log(4)
-  return true
+  return !!handler(state, match, from - (match?.[0]?.length || 0), to)
 }
