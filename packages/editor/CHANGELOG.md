@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.0.0-alpha.14](https://github.com/li-yechao/paper/compare/@paper/editor@1.0.0-alpha.13...@paper/editor@1.0.0-alpha.14) (2022-04-14)
+
+### Bug Fixes
+
+- arrow not visible ([258febb](https://github.com/li-yechao/paper/commit/258febb9e24929e3a63599fc38e073e59a737f1f))
+- correct vertical position of floating toolbar ([d85cdc3](https://github.com/li-yechao/paper/commit/d85cdc3beeb6f5afb9a9001883c5f3dc0d886fbf))
+
+### Features
+
+- add `Table` node ([ca12422](https://github.com/li-yechao/paper/commit/ca124220fd8d9c4ede60ef174bd49bae7d1c700e))
+- add menus to toogle block type ([17d0641](https://github.com/li-yechao/paper/commit/17d0641fa9f407ea29dbd1fb32ea89732486c720))
+
 # [1.0.0-alpha.13](https://github.com/li-yechao/paper/compare/@paper/editor@1.0.0-alpha.12...@paper/editor@1.0.0-alpha.13) (2022-04-14)
 
 ### Features

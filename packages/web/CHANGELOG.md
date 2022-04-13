@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.0.0-alpha.20](https://github.com/li-yechao/paper/compare/@paper/web@1.0.0-alpha.19...@paper/web@1.0.0-alpha.20) (2022-04-14)
+
+### Features
+
+- add `Table` node ([ca12422](https://github.com/li-yechao/paper/commit/ca124220fd8d9c4ede60ef174bd49bae7d1c700e))
+
 # [1.0.0-alpha.19](https://github.com/li-yechao/paper/compare/@paper/web@1.0.0-alpha.18...@paper/web@1.0.0-alpha.19) (2022-04-14)
 
 **Note:** Version bump only for package @paper/web
