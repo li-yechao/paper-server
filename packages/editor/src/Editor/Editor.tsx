@@ -19,6 +19,7 @@ import { forwardRef, memo, useEffect, useImperativeHandle, useRef, useState } fr
 import { useUpdate } from 'react-use'
 import { BlockMenu } from '.'
 import CupertinoActivityIndicator from './lib/CupertinoActivityIndicator'
+import FloatingToolbar from './lib/FloatingToolbar'
 import State from './lib/State'
 import useAsync from './lib/useAsync'
 import { proseMirrorStyle } from './style'
@@ -44,7 +45,7 @@ const Editor = memo(
     const [blockMenuKeyword, setBlockMenuKeyword] = useState<string | null>(null)
 
     const state = useAsync(async () => {
-      const { view } = await props.state.createEditor(undefined, {
+      const { view, menus } = await props.state.createEditor(undefined, {
         dispatchTransaction: () => update(),
         editable: () => !props.readOnly,
       })
@@ -57,7 +58,7 @@ const Editor = memo(
         onClose: () => setBlockMenuKeyword(null),
       })
 
-      return { view, blockMenu }
+      return { view, menus, blockMenu }
     }, [props.state])
 
     useEffect(() => {
@@ -115,6 +116,8 @@ const Editor = memo(
           </div>
         ) : (
           <>
+            <FloatingToolbar view={state.value.view} menus={state.value.menus} />
+
             {state.value.blockMenu && (
               <state.value.blockMenu.Menus
                 keyword={blockMenuKeyword}

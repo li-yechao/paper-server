@@ -15,9 +15,12 @@
 import { Keymap } from 'prosemirror-commands'
 import { InputRule } from 'prosemirror-inputrules'
 import { MarkSpec, MarkType } from 'prosemirror-model'
+import FormatBold from '../icons/FormatBold'
+import { createMarkMenu, MenuComponentType } from '../lib/FloatingToolbar'
+import isMarkActive from '../lib/isMarkActive'
+import { Mark } from '../lib/Mark'
 import markInputRule from '../lib/markInputRule'
 import toggleMark from '../lib/toggleMark'
-import { Mark } from '../lib/Mark'
 
 export default class Bold implements Mark {
   get name() {
@@ -40,5 +43,15 @@ export default class Bold implements Mark {
       'Mod-b': toggleMark(type),
       'Mod-B': toggleMark(type),
     }
+  }
+
+  menus({ type }: { type: MarkType }): MenuComponentType[] {
+    return [
+      createMarkMenu({
+        icon: <FormatBold />,
+        isActive: isMarkActive(type),
+        toggleMark: toggleMark(type),
+      }),
+    ]
   }
 }

@@ -20,6 +20,7 @@ import { Decoration, DirectEditorProps, EditorView, NodeView } from 'prosemirror
 import { Mark } from './Mark'
 import { Node } from './Node'
 import { Extension } from './Extension'
+import { MenuComponentType } from './FloatingToolbar'
 
 export interface StateOptions {
   extensions?: Extension[]
@@ -51,6 +52,12 @@ export default class State {
 
   private get markSpecs(): { [key: string]: MarkSpec } {
     return this.marks.reduce((res, i) => ({ ...res, [i.name]: i.schema }), {})
+  }
+
+  private get menus(): MenuComponentType[] {
+    return this.marks
+      .flatMap(i => i.menus?.({ type: this.schema.marks[i.name]! }) ?? [])
+      .concat(this.nodes.flatMap(i => i.menus?.({ type: this.schema.nodes[i.name]! }) ?? []))
   }
 
   private async plugins(): Promise<Plugin[]> {
@@ -125,7 +132,7 @@ export default class State {
       | { mount: globalThis.Node }
       | undefined,
     props: Omit<DirectEditorProps, 'state' | 'nodeViews'>
-  ): Promise<{ view: EditorView }> {
+  ): Promise<{ view: EditorView; menus: MenuComponentType[] }> {
     const { dispatchTransactionHandlers } = this
 
     const onStateChange = (state: EditorState) => (this._editorState = state)
@@ -147,6 +154,6 @@ export default class State {
       },
     })
 
-    return { view }
+    return { view, menus: this.menus }
   }
 }

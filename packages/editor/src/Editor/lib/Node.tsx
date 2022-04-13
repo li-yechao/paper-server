@@ -24,6 +24,7 @@ import {
 import { Plugin } from 'prosemirror-state'
 import { Decoration, EditorView, NodeView as ProsemirrorNodeView } from 'prosemirror-view'
 import ReactDOM from 'react-dom'
+import { MenuComponentType } from './FloatingToolbar'
 
 export { Node as ProsemirrorNode } from 'prosemirror-model'
 
@@ -65,6 +66,8 @@ export interface Node<T extends { [key: string]: any }> {
   nodeView?(): NodeViewCreator<T> | undefined
 
   plugins?(): Plugin[]
+
+  menus?(options: { type: NodeType }): MenuComponentType[]
 
   readonly childNodes?: ChildNode<any>[]
 }

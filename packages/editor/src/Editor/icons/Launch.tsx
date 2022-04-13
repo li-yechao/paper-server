@@ -12,19 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { Keymap } from 'prosemirror-commands'
-import { InputRule } from 'prosemirror-inputrules'
-import { MarkSpec, MarkType } from 'prosemirror-model'
-import { MenuComponentType } from './FloatingToolbar'
+import createSvgIcon from './createSvgIcon'
 
-export interface Mark {
-  name: string
+const Launch = createSvgIcon(
+  <path d="M14,3V5H17.59L7.76,14.83L9.17,16.24L19,6.41V10H21V3M19,19H5V5H12V3H5C3.89,3 3,3.89 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V12H19V19Z" />
+)
 
-  schema: MarkSpec
-
-  inputRules?(options: { type: MarkType }): InputRule[]
-
-  keymap?(options: { type: MarkType }): Keymap
-
-  menus?(options: { type: MarkType }): MenuComponentType[]
-}
+export default Launch

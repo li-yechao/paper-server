@@ -15,6 +15,7 @@
     "@convergencelabs/monaco-collab-ext": "^0.3.2",
     "@emotion/css": "^11.7.1",
     "@emotion/styled": "^11.8.1",
+    "@popperjs/core": "^2.11.5",
     "katex": "^0.13.0",
     "monaco-editor": "^0.33.0",
     "prosemirror-commands": "^1.2.2",
@@ -32,6 +33,7 @@
     "prosemirror-transform": "^1.4.0",
     "prosemirror-utils": "^0.9.6",
     "prosemirror-view": "^1.23.10",
+    "react-popper": "^2.2.5",
     "react-use": "^17.3.2"
   },
   "peerDependencies": {

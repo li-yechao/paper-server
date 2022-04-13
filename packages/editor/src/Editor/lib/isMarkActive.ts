@@ -12,19 +12,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { Keymap } from 'prosemirror-commands'
-import { InputRule } from 'prosemirror-inputrules'
-import { MarkSpec, MarkType } from 'prosemirror-model'
-import { MenuComponentType } from './FloatingToolbar'
+import { MarkType } from 'prosemirror-model'
+import { EditorState } from 'prosemirror-state'
 
-export interface Mark {
-  name: string
+const isMarkActive =
+  (type: MarkType) =>
+  (state: EditorState): boolean => {
+    const { from, $from, to, empty } = state.selection
 
-  schema: MarkSpec
+    return empty
+      ? !!type.isInSet(state.storedMarks || $from.marks())
+      : state.doc.rangeHasMark(from, to, type)
+  }
 
-  inputRules?(options: { type: MarkType }): InputRule[]
-
-  keymap?(options: { type: MarkType }): Keymap
-
-  menus?(options: { type: MarkType }): MenuComponentType[]
-}
+export default isMarkActive

@@ -12,9 +12,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import styled from '@emotion/styled'
 import { InputRule } from 'prosemirror-inputrules'
 import { MarkSpec, MarkType } from 'prosemirror-model'
+import { useState } from 'react'
+import Launch from '../icons/Launch'
+import LinkIcon from '../icons/Link'
+import { createMarkMenu, MenuComponentType } from '../lib/FloatingToolbar'
+import getMarkRange from '../lib/getMarkRange'
+import isMarkActive from '../lib/isMarkActive'
 import { Mark } from '../lib/Mark'
+import toggleMark from '../lib/toggleMark'
 
 export default class Link implements Mark {
   get name() {
@@ -73,4 +81,75 @@ export default class Link implements Mark {
       }),
     ]
   }
+
+  menus({ type }: { type: MarkType }): MenuComponentType[] {
+    return [
+      {
+        ...createMarkMenu({
+          icon: <LinkIcon />,
+          isActive: isMarkActive(type),
+          toggleMark: toggleMark(type),
+        }),
+        expand: ({ view }) => {
+          const { selection } = view.state
+          const range = getMarkRange(selection.$from, type)
+          const [href, setHref] = useState(range?.mark.attrs['href'] || '')
+
+          const submit = () => {
+            view.dispatch(
+              href.trim()
+                ? view.state.tr.addMark(selection.from, selection.to, type.create({ href }))
+                : view.state.tr.removeMark(selection.from, selection.to, type)
+            )
+          }
+
+          const openLink = () => {
+            if (href.trim()) {
+              window.open(href, '__blank')
+            }
+          }
+
+          return (
+            <_LinkExpand>
+              <input
+                value={href}
+                onChange={e => setHref(e.target.value)}
+                onKeyUp={e => e.key === 'Enter' && submit()}
+                onBlur={submit}
+              />
+              <_Button onClick={openLink}>
+                <Launch />
+              </_Button>
+            </_LinkExpand>
+          )
+        },
+        isExtraPanelVisible: view => isMarkActive(type)(view.state),
+      },
+    ]
+  }
 }
+
+const _Button = styled.button`
+  appearance: none;
+  border: none;
+  outline: none;
+  background-color: transparent;
+  cursor: pointer;
+  padding: 4px;
+
+  &:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+  }
+`
+
+const _LinkExpand = styled.div`
+  display: flex;
+  align-items: center;
+  padding: 4px 8px;
+
+  input {
+    flex: 1;
+    margin-right: 4px;
+    padding: 4px 8px;
+  }
+`

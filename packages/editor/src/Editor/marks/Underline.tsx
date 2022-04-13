@@ -15,9 +15,12 @@
 import { Keymap } from 'prosemirror-commands'
 import { InputRule } from 'prosemirror-inputrules'
 import { MarkSpec, MarkType } from 'prosemirror-model'
+import FormatUnderlined from '../icons/FormatUnderlined'
+import { createMarkMenu, MenuComponentType } from '../lib/FloatingToolbar'
+import isMarkActive from '../lib/isMarkActive'
+import { Mark } from '../lib/Mark'
 import markInputRule from '../lib/markInputRule'
 import toggleMark from '../lib/toggleMark'
-import { Mark } from '../lib/Mark'
 
 export default class Underline implements Mark {
   get name() {
@@ -45,5 +48,15 @@ export default class Underline implements Mark {
     return {
       'Mod-u': toggleMark(type),
     }
+  }
+
+  menus({ type }: { type: MarkType }): MenuComponentType[] {
+    return [
+      createMarkMenu({
+        icon: <FormatUnderlined />,
+        isActive: isMarkActive(type),
+        toggleMark: toggleMark(type),
+      }),
+    ]
   }
 }

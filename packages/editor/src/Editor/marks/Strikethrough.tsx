@@ -15,9 +15,12 @@
 import { Keymap } from 'prosemirror-commands'
 import { InputRule } from 'prosemirror-inputrules'
 import { MarkSpec, MarkType } from 'prosemirror-model'
+import FormatStrikethrough from '../icons/FormatStrikethrough'
+import { createMarkMenu, MenuComponentType } from '../lib/FloatingToolbar'
+import isMarkActive from '../lib/isMarkActive'
+import { Mark } from '../lib/Mark'
 import markInputRule from '../lib/markInputRule'
 import toggleMark from '../lib/toggleMark'
-import { Mark } from '../lib/Mark'
 
 export default class Strikethrough implements Mark {
   get name() {
@@ -39,5 +42,15 @@ export default class Strikethrough implements Mark {
     return {
       'Mod-d': toggleMark(type),
     }
+  }
+
+  menus({ type }: { type: MarkType }): MenuComponentType[] {
+    return [
+      createMarkMenu({
+        icon: <FormatStrikethrough />,
+        isActive: isMarkActive(type),
+        toggleMark: toggleMark(type),
+      }),
+    ]
   }
 }
