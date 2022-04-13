@@ -154,6 +154,10 @@ export default class State {
       },
     })
 
+    for (const node of this.nodes) {
+      node.view = view
+    }
+
     return { view, menus: this.menus }
   }
 }

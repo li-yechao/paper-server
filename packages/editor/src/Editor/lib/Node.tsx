@@ -52,12 +52,16 @@ export interface StrictNodeSpec<T extends { [key: string]: any }>
   parseDOM?: StrictParseRule<T>[] | null
 
   options?: any
+
+  tableRole?: 'table' | 'row' | 'header_cell' | 'cell'
 }
 
 export interface Node<T extends { [key: string]: any }> {
   name: string
 
   schema: StrictNodeSpec<T>
+
+  view?: EditorView
 
   inputRules?(options: { type: NodeType }): InputRule[]
 

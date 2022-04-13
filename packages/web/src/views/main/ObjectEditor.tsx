@@ -40,6 +40,7 @@ import Editor, {
   redo,
   State,
   Strikethrough,
+  Table,
   Text,
   TodoList,
   Underline,
@@ -204,6 +205,7 @@ const _ObjectEditor = ({ object }: { object: { id: string; userId: string; data?
         }),
         new CodeBlock(),
         new TodoList(),
+        new Table(),
       ],
       marks: [
         new Bold(),

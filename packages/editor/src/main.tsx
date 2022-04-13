@@ -41,6 +41,7 @@ import Editor, {
   redo,
   State,
   Strikethrough,
+  Table,
   Text,
   TodoList,
   Underline,
@@ -68,6 +69,7 @@ const App = () => {
         }),
         new CodeBlock(),
         new TodoList(),
+        new Table(),
       ],
       marks: [
         new Bold(),
