@@ -14,7 +14,12 @@
 
 import { InputRule, wrappingInputRule } from 'prosemirror-inputrules'
 import { NodeType } from 'prosemirror-model'
+import FormatQuote from '../icons/FormatQuote'
+import { createMarkMenu, MenuComponentType } from '../lib/FloatingToolbar'
+import isNodeActive from '../lib/isNodeActive'
 import { Node, StrictNodeSpec } from '../lib/Node'
+import { canToggleBlockType } from '../lib/toggleBlockType'
+import toggleWrap from '../lib/toggleWrap'
 
 export interface BlockquoteAttrs {}
 
@@ -35,5 +40,16 @@ export default class Blockquote implements Node<BlockquoteAttrs> {
 
   inputRules({ type }: { type: NodeType }): InputRule[] {
     return [wrappingInputRule(/^\s*>\s$/, type)]
+  }
+
+  menus({ type }: { type: NodeType }): MenuComponentType[] {
+    return [
+      createMarkMenu({
+        icon: <FormatQuote />,
+        isActive: isNodeActive(type),
+        toggleMark: toggleWrap(type),
+        isVisible: view => canToggleBlockType(view.state.selection),
+      }),
+    ]
   }
 }

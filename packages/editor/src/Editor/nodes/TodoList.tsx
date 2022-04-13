@@ -20,6 +20,9 @@ import { NodeType } from 'prosemirror-model'
 import { liftListItem, sinkListItem, splitListItem } from 'prosemirror-schema-list'
 import { findParentNodeOfType } from 'prosemirror-utils'
 import { EditorView } from 'prosemirror-view'
+import FormatListCheckbox from '../icons/FormatListCheckbox'
+import { createMarkMenu, MenuComponentType } from '../lib/FloatingToolbar'
+import isNodeActive from '../lib/isNodeActive'
 import {
   Node,
   NodeViewCreator,
@@ -27,6 +30,8 @@ import {
   StrictNodeSpec,
   StrictProsemirrorNode,
 } from '../lib/Node'
+import { canToggleBlockType } from '../lib/toggleBlockType'
+import toggleWrap from '../lib/toggleWrap'
 
 export interface TodoListAttrs {}
 
@@ -47,6 +52,17 @@ export default class TodoList implements Node<TodoListAttrs> {
 
   inputRules({ type }: { type: NodeType }): InputRule[] {
     return [wrappingInputRule(/^(\[\s?\])\s$/i, type)]
+  }
+
+  menus({ type }: { type: NodeType }): MenuComponentType[] {
+    return [
+      createMarkMenu({
+        icon: <FormatListCheckbox />,
+        isActive: isNodeActive(type),
+        toggleMark: toggleWrap(type),
+        isVisible: view => canToggleBlockType(view.state.selection),
+      }),
+    ]
   }
 
   childNodes = [new TodoItem({ todoItemReadOnly: false })]

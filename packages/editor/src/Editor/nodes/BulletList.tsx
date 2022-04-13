@@ -14,7 +14,12 @@
 
 import { InputRule, wrappingInputRule } from 'prosemirror-inputrules'
 import { NodeType } from 'prosemirror-model'
+import FormatListBulleted from '../icons/FormatListBulleted'
+import { createMarkMenu, MenuComponentType } from '../lib/FloatingToolbar'
+import isNodeActive from '../lib/isNodeActive'
 import { Node, StrictNodeSpec } from '../lib/Node'
+import { canToggleBlockType } from '../lib/toggleBlockType'
+import toggleWrap from '../lib/toggleWrap'
 import { LIST_ITEM } from './OrderedList'
 
 export interface BulletListAttrs {}
@@ -36,6 +41,17 @@ export default class BulletList implements Node<BulletListAttrs> {
 
   inputRules({ type }: { type: NodeType }): InputRule[] {
     return [wrappingInputRule(/^\s*([-+*])\s$/, type)]
+  }
+
+  menus({ type }: { type: NodeType }): MenuComponentType[] {
+    return [
+      createMarkMenu({
+        icon: <FormatListBulleted />,
+        isActive: isNodeActive(type),
+        toggleMark: toggleWrap(type),
+        isVisible: view => canToggleBlockType(view.state.selection),
+      }),
+    ]
   }
 
   childNodes = [LIST_ITEM]

@@ -17,7 +17,12 @@ import { Keymap } from 'prosemirror-commands'
 import { InputRule, wrappingInputRule } from 'prosemirror-inputrules'
 import { NodeType } from 'prosemirror-model'
 import { liftListItem, sinkListItem, splitListItem } from 'prosemirror-schema-list'
+import FormatListNumbered from '../icons/FormatListNumbered'
+import { createMarkMenu, MenuComponentType } from '../lib/FloatingToolbar'
+import isNodeActive from '../lib/isNodeActive'
 import { Node, NodeView, NodeViewCreator, StrictNodeSpec } from '../lib/Node'
+import { canToggleBlockType } from '../lib/toggleBlockType'
+import toggleWrap from '../lib/toggleWrap'
 
 export interface OrderedListAttrs {}
 
@@ -38,6 +43,17 @@ export default class OrderedList implements Node<OrderedListAttrs> {
 
   inputRules({ type }: { type: NodeType }): InputRule[] {
     return [wrappingInputRule(/^(\d+)\.\s$/, type)]
+  }
+
+  menus({ type }: { type: NodeType }): MenuComponentType[] {
+    return [
+      createMarkMenu({
+        icon: <FormatListNumbered />,
+        isActive: isNodeActive(type),
+        toggleMark: toggleWrap(type),
+        isVisible: view => canToggleBlockType(view.state.selection),
+      }),
+    ]
   }
 
   childNodes = [LIST_ITEM]

@@ -15,7 +15,13 @@
 import { css } from '@emotion/css'
 import { InputRule, textblockTypeInputRule } from 'prosemirror-inputrules'
 import { NodeType } from 'prosemirror-model'
+import Heading1 from '../icons/Heading1'
+import Heading2 from '../icons/Heading2'
+import Heading3 from '../icons/Heading3'
+import { createMarkMenu, MenuComponentType } from '../lib/FloatingToolbar'
+import isNodeActive from '../lib/isNodeActive'
 import { NodeViewCreator, NodeView, StrictNodeSpec, StrictProsemirrorNode, Node } from '../lib/Node'
+import toggleBlockType, { canToggleBlockType } from '../lib/toggleBlockType'
 
 export interface HeadingAttrs {
   level: number
@@ -57,6 +63,49 @@ export default class Heading implements Node<HeadingAttrs> {
     return ({ node }) => {
       return new HeadingNodeView(node)
     }
+  }
+
+  menus({ type }: { type: NodeType }): MenuComponentType[] {
+    return [
+      {
+        button: ({ view, ...buttonProps }) => {
+          if (!canToggleBlockType(view.state.selection)) {
+            return null
+          }
+
+          const buttons = [
+            createMarkMenu({
+              icon: <Heading1 />,
+              isActive: isNodeActive(type, { level: 1 }),
+              toggleMark: toggleBlockType(type, type.schema.nodes['paragraph'], {
+                level: 1,
+              }),
+            }).button,
+            createMarkMenu({
+              icon: <Heading2 />,
+              isActive: isNodeActive(type, { level: 2 }),
+              toggleMark: toggleBlockType(type, type.schema.nodes['paragraph'], {
+                level: 2,
+              }),
+            }).button,
+            createMarkMenu({
+              icon: <Heading3 />,
+              isActive: isNodeActive(type, { level: 3 }),
+              toggleMark: toggleBlockType(type, type.schema.nodes['paragraph'], {
+                level: 3,
+              }),
+            }).button,
+          ]
+          return (
+            <>
+              {buttons.map((B, index) => (
+                <B {...buttonProps} key={index} view={view} />
+              ))}
+            </>
+          )
+        },
+      },
+    ]
   }
 }
 
