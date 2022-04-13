@@ -46,12 +46,12 @@ export default function FloatingToolbar({ view, menus }: FloatingToolbarProps) {
       }
 
       const { left: fromLeft, top: fromTop } = view.coordsAtPos(view.state.selection.from)
-      const { left: toLeft } = view.coordsAtPos(view.state.selection.to, -1)
+      const { left: toLeft, bottom: toBottom } = view.coordsAtPos(view.state.selection.to, -1)
 
       const left = fromLeft + (toLeft - fromLeft) / 2
       const top = fromTop
 
-      return { width: 0, height: 0, right: 0, bottom: 0, left, top }
+      return { width: 0, height: toBottom - fromTop, right: 0, bottom: 0, left, top }
     },
   })
 
@@ -62,7 +62,7 @@ export default function FloatingToolbar({ view, menus }: FloatingToolbarProps) {
       { name: 'flip', enabled: true },
       { name: 'arrow', options: { element: arrowElement } },
       { name: 'offset', options: { offset: [0, 16] } },
-      { name: 'preventOverflow', options: { padding: 20 } },
+      { name: 'preventOverflow', options: { padding: 16, altAxis: true } },
     ],
   })
 
