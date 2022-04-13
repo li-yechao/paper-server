@@ -98,7 +98,7 @@ export default function FloatingToolbar({ view, menus }: FloatingToolbarProps) {
       <div ref={setArrowElement} className="arrow" style={styles['arrow']} />
 
       {open && (
-        <div>
+        <_Content>
           <_ButtonList>
             {menus.map((menu, index) => (
               <li key={index}>
@@ -119,7 +119,7 @@ export default function FloatingToolbar({ view, menus }: FloatingToolbarProps) {
               )
             })}
           </_ExtraPanelList>
-        </div>
+        </_Content>
       )}
     </_Container>,
     document.body
@@ -130,8 +130,6 @@ const _Container = styled.div`
   position: relative;
   background-color: #ffffff;
   box-shadow: 0 3px 6px -4px #0000001f, 0 6px 16px #00000014, 0 9px 28px 8px #0000000d;
-  border-radius: 4px;
-  overflow: hidden;
 
   > .arrow {
     position: absolute;
@@ -174,6 +172,11 @@ const _Container = styled.div`
       transform: rotate(45deg);
     }
   }
+`
+
+const _Content = styled.div`
+  border-radius: 4px;
+  overflow: hidden;
 `
 
 const _ButtonList = styled.ul`
