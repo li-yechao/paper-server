@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.0.0-alpha.15](https://github.com/li-yechao/paper/compare/@paper/editor@1.0.0-alpha.14...@paper/editor@1.0.0-alpha.15) (2022-04-15)
+
+### Features
+
+- type `Shift-Enter` to split paragraph in table cell ([a09ed94](https://github.com/li-yechao/paper/commit/a09ed945c96291d2f16461e6e3c6955b777fc915))
+
 # [1.0.0-alpha.14](https://github.com/li-yechao/paper/compare/@paper/editor@1.0.0-alpha.13...@paper/editor@1.0.0-alpha.14) (2022-04-14)
 
 ### Bug Fixes
