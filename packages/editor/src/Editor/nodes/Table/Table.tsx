@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { Keymap } from 'prosemirror-commands'
+import { Keymap, splitBlock } from 'prosemirror-commands'
 import { Plugin } from 'prosemirror-state'
 import {
   addColumnAfter,
@@ -77,6 +77,7 @@ export default class Table implements Node<TableAttrs> {
         dispatch(addRowAt(cells.length, true)(state.tr))
         return true
       },
+      'Shift-Enter': splitBlock,
       Tab: goToNextCell(1),
       'Shift-Tab': goToNextCell(-1),
     }
