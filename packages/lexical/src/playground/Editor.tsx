@@ -27,12 +27,14 @@ import { HeadingNode, QuoteNode } from '@lexical/rich-text'
 import { TableCellNode, TableNode, TableRowNode } from '@lexical/table'
 import { $getRoot } from 'lexical'
 import { ComponentProps } from 'react'
+import { ImageNode } from '../nodes/ImageNode'
 import CodeHighlightPlugin from '../plugins/CodeHighlightPlugin'
 import FloatingToolbarPlugin, {
   ToggleBlockButton,
   ToggleFormatButton,
   ToggleLinkButton,
 } from '../plugins/FloatingToolbarPlugin'
+import ImagePlugin from '../plugins/ImagePlugin'
 import initialEditorStateFromProsemirrorDoc from '../prosemirror/initialEditorStateFromProsemirrorDoc '
 import theme from '../themes/theme'
 import { PROSEMIRROR_DOCUMENT } from './prosemirrorDocument'
@@ -54,6 +56,7 @@ export default function Editor(props: EditorProps) {
       TableNode,
       TableRowNode,
       TableCellNode,
+      ImageNode,
     ],
     theme,
     onError: e => {
@@ -63,37 +66,45 @@ export default function Editor(props: EditorProps) {
 
   return (
     <LexicalComposer initialConfig={initialConfig}>
-      <EditorContainer className={props.className}>
-        <LexicalRichTextPlugin
-          contentEditable={<ContentEditable />}
-          placeholder={<Placeholder>Input something...</Placeholder>}
-          initialEditorState={() =>
-            initialEditorStateFromProsemirrorDoc($getRoot(), PROSEMIRROR_DOCUMENT)
-          }
-        />
-        <LexicalLinkPlugin />
-        <CodeHighlightPlugin />
-        <LexicalMarkdownShortcutPlugin />
+      <ImageNode.Provider
+        value={{
+          upload: file => URL.createObjectURL(file),
+          source: url => url,
+        }}
+      >
+        <EditorContainer className={props.className}>
+          <LexicalRichTextPlugin
+            contentEditable={<ContentEditable />}
+            placeholder={<Placeholder>Input something...</Placeholder>}
+            initialEditorState={() =>
+              initialEditorStateFromProsemirrorDoc($getRoot(), PROSEMIRROR_DOCUMENT)
+            }
+          />
+          <LexicalLinkPlugin />
+          <CodeHighlightPlugin />
+          <LexicalMarkdownShortcutPlugin />
 
-        <FloatingToolbarPlugin>
-          <ToggleFormatButton type="bold" />
-          <ToggleFormatButton type="italic" />
-          <ToggleFormatButton type="underline" />
-          <ToggleFormatButton type="strikethrough" />
-          <ToggleFormatButton type="code" />
-          <ToggleLinkButton />
-          <ToggleBlockButton type="h1" />
-          <ToggleBlockButton type="h2" />
-          <ToggleBlockButton type="h3" />
-          <ToggleBlockButton type="quote" />
-          <ToggleBlockButton type="ol" />
-          <ToggleBlockButton type="ul" />
+          <ImagePlugin />
+          <FloatingToolbarPlugin>
+            <ToggleFormatButton type="bold" />
+            <ToggleFormatButton type="italic" />
+            <ToggleFormatButton type="underline" />
+            <ToggleFormatButton type="strikethrough" />
+            <ToggleFormatButton type="code" />
+            <ToggleLinkButton />
+            <ToggleBlockButton type="h1" />
+            <ToggleBlockButton type="h2" />
+            <ToggleBlockButton type="h3" />
+            <ToggleBlockButton type="quote" />
+            <ToggleBlockButton type="ol" />
+            <ToggleBlockButton type="ul" />
 
-          <FloatingToolbarPlugin.Extras>
-            <ToggleLinkButton.Extra />
-          </FloatingToolbarPlugin.Extras>
-        </FloatingToolbarPlugin>
-      </EditorContainer>
+            <FloatingToolbarPlugin.Extras>
+              <ToggleLinkButton.Extra />
+            </FloatingToolbarPlugin.Extras>
+          </FloatingToolbarPlugin>
+        </EditorContainer>
+      </ImageNode.Provider>
     </LexicalComposer>
   )
 }

@@ -247,6 +247,15 @@ const theme: EditorThemeClasses = {
       color: #e90;
     `,
   },
+  image: css`
+    cursor: default;
+    display: inline-block;
+    position: relative;
+
+    img {
+      max-width: 100%;
+    }
+  `,
 }
 
 export default theme

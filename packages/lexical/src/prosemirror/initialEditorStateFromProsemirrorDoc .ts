@@ -20,6 +20,7 @@ import { $createListItemNode, $createListNode } from '@lexical/list'
 import { $createHeadingNode, $createQuoteNode } from '@lexical/rich-text'
 import { $createTableCellNode, $createTableNode, $createTableRowNode } from '@lexical/table'
 import { $createParagraphNode, $createTextNode, ElementNode, RootNode } from 'lexical'
+import { $createImageNode } from '../nodes/ImageNode'
 
 export default function initialEditorStateFromProsemirrorDoc(root: RootNode, doc: string) {
   const json = JSON.parse(doc)
@@ -87,6 +88,8 @@ function parseBlock(parent: ElementNode, block: any) {
       break
     }
     case 'image_block': {
+      const node = $createImageNode(block.attrs)
+      parent.append($createParagraphNode().append(node))
       break
     }
     case 'table': {
