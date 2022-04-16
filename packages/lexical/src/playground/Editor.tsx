@@ -74,7 +74,7 @@ export default function Editor(props: EditorProps) {
       >
         <EditorContainer className={props.className}>
           <LexicalRichTextPlugin
-            contentEditable={<ContentEditable />}
+            contentEditable={<ContentEditable testid="lexical-editor" />}
             placeholder={<Placeholder>Input something...</Placeholder>}
             initialEditorState={() =>
               initialEditorStateFromProsemirrorDoc($getRoot(), PROSEMIRROR_DOCUMENT)
