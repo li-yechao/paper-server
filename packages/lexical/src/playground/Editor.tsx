@@ -13,8 +13,6 @@
 // limitations under the License.
 
 import styled from '@emotion/styled'
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
 import { CodeHighlightNode, CodeNode } from '@lexical/code'
 import { LinkNode } from '@lexical/link'
 import { ListItemNode, ListNode } from '@lexical/list'
@@ -37,7 +35,7 @@ import FloatingToolbarPlugin, {
 } from '../plugins/FloatingToolbarPlugin'
 import ImagePlugin from '../plugins/ImagePlugin'
 import TableActionMenuPlugin from '../plugins/TableActionMenuPlugin'
-import initialEditorStateFromProsemirrorDoc from '../prosemirror/initialEditorStateFromProsemirrorDoc '
+import initialEditorStateFromProsemirrorDoc from '../prosemirror/initialEditorStateFromProsemirrorDoc'
 import theme from '../themes/theme'
 import { PROSEMIRROR_DOCUMENT } from './prosemirrorDocument'
 

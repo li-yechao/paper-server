@@ -12,13 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-expect-error
 import { $createCodeNode } from '@lexical/code'
 import { $createLinkNode } from '@lexical/link'
 import { $createListItemNode, $createListNode } from '@lexical/list'
 import { $createHeadingNode, $createQuoteNode } from '@lexical/rich-text'
-import { $createTableCellNode, $createTableNode, $createTableRowNode } from '@lexical/table'
+import {
+  $createTableCellNode,
+  $createTableNode,
+  $createTableRowNode,
+  TableCellHeaderStates,
+} from '@lexical/table'
 import { $createParagraphNode, $createTextNode, ElementNode, RootNode } from 'lexical'
 import { $createImageNode } from '../nodes/ImageNode'
 
@@ -39,11 +42,7 @@ function parseBlock(parent: ElementNode, block: any) {
   switch (block.type) {
     case 'heading': {
       const node = $createHeadingNode(`h${block.attrs.level}` as any)
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-expect-error
       parseContents(node, block.content)
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-expect-error
       parent.append(node)
       break
     }
@@ -55,11 +54,7 @@ function parseBlock(parent: ElementNode, block: any) {
     }
     case 'blockquote': {
       const node = $createQuoteNode()
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-expect-error
       parseContents(node, block.content)
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-expect-error
       parent.append(node)
       break
     }
@@ -82,7 +77,8 @@ function parseBlock(parent: ElementNode, block: any) {
       break
     }
     case 'code_block': {
-      const node = $createCodeNode(block.attrs.language)
+      const node = $createCodeNode()
+      node.setLanguage(block.attrs.language)
       parseContents(node, block.content)
       parent.append(node)
       break
@@ -105,9 +101,10 @@ function parseBlock(parent: ElementNode, block: any) {
       break
     }
     case 'th': {
+      const node = $createTableCellNode()
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-expect-error
-      const node = $createTableCellNode(1)
+      node.setHeaderStyles(TableCellHeaderStates.ROW)
       parseContents(node, block.content)
       parent.append(node)
       break
