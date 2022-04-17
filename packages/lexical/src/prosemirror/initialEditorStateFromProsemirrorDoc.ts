@@ -23,6 +23,7 @@ import {
   TableCellHeaderStates,
 } from '@lexical/table'
 import { $createParagraphNode, $createTextNode, ElementNode, RootNode } from 'lexical'
+import { $createEquationNode } from '../nodes/EquationNode'
 import { $createImageNode } from '../nodes/ImageNode'
 
 export default function initialEditorStateFromProsemirrorDoc(root: RootNode, doc: string) {
@@ -112,6 +113,16 @@ function parseBlock(parent: ElementNode, block: any) {
     case 'td': {
       const node = $createTableCellNode()
       parseContents(node, block.content)
+      parent.append(node)
+      break
+    }
+    case 'math_display': {
+      const node = $createEquationNode(block.content[0].text, false)
+      parent.append(node)
+      break
+    }
+    case 'math_inline': {
+      const node = $createEquationNode(block.content[0].text, true)
       parent.append(node)
       break
     }

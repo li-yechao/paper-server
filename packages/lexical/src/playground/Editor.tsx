@@ -26,6 +26,7 @@ import { HeadingNode, QuoteNode } from '@lexical/rich-text'
 import { TableCellNode, TableNode, TableRowNode } from '@lexical/table'
 import { $getRoot } from 'lexical'
 import { ComponentProps } from 'react'
+import { EquationNode } from '../nodes/EquationNode'
 import { ImageNode } from '../nodes/ImageNode'
 import CodeHighlightPlugin from '../plugins/CodeHighlightPlugin'
 import FloatingToolbarPlugin, {
@@ -57,6 +58,7 @@ export default function Editor(props: EditorProps) {
       TableRowNode,
       TableCellNode,
       ImageNode,
+      EquationNode,
     ],
     theme,
     onError: e => {

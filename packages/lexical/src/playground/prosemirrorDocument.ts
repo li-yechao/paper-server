@@ -424,6 +424,33 @@ export const PROSEMIRROR_DOCUMENT = JSON.stringify({
     },
     {
       type: 'paragraph',
+      content: [
+        {
+          type: 'text',
+          text: 'equation inline',
+        },
+        {
+          type: 'math_inline',
+          content: [
+            {
+              type: 'text',
+              text: '1200 = 2^4 * 3 * 5^2',
+            },
+          ],
+        },
+      ],
+    },
+    {
+      type: 'math_display',
+      content: [
+        {
+          type: 'text',
+          text: 'a^{\\varphi(n)} = a * a^{\\varphi(n) - 1} \\equiv 1 \\pmod n',
+        },
+      ],
+    },
+    {
+      type: 'paragraph',
     },
   ],
 })
