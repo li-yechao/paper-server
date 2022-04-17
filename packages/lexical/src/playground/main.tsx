@@ -25,6 +25,8 @@ const App = () => {
           body {
             margin: 0;
             background-color: #f0f0f0;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, '.SFNSText-Regular',
+              sans-serif;
           }
         `}
       />

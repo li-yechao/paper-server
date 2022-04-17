@@ -23,6 +23,7 @@ import LexicalContentEditable from '@lexical/react/LexicalContentEditable'
 import LexicalLinkPlugin from '@lexical/react/LexicalLinkPlugin'
 import LexicalMarkdownShortcutPlugin from '@lexical/react/LexicalMarkdownShortcutPlugin'
 import LexicalRichTextPlugin from '@lexical/react/LexicalRichTextPlugin'
+import LexicalTablePlugin from '@lexical/react/LexicalTablePlugin'
 import { HeadingNode, QuoteNode } from '@lexical/rich-text'
 import { TableCellNode, TableNode, TableRowNode } from '@lexical/table'
 import { $getRoot } from 'lexical'
@@ -35,6 +36,7 @@ import FloatingToolbarPlugin, {
   ToggleLinkButton,
 } from '../plugins/FloatingToolbarPlugin'
 import ImagePlugin from '../plugins/ImagePlugin'
+import TableActionMenuPlugin from '../plugins/TableActionMenuPlugin'
 import initialEditorStateFromProsemirrorDoc from '../prosemirror/initialEditorStateFromProsemirrorDoc '
 import theme from '../themes/theme'
 import { PROSEMIRROR_DOCUMENT } from './prosemirrorDocument'
@@ -85,6 +87,8 @@ export default function Editor(props: EditorProps) {
           <LexicalMarkdownShortcutPlugin />
 
           <ImagePlugin />
+          <LexicalTablePlugin />
+          <TableActionMenuPlugin />
           <FloatingToolbarPlugin>
             <ToggleFormatButton type="bold" />
             <ToggleFormatButton type="italic" />
