@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.0.0-alpha.22](https://github.com/li-yechao/paper/compare/@paper/web@1.0.0-alpha.21...@paper/web@1.0.0-alpha.22) (2022-04-20)
+
+### Features
+
+- use lexical editor ([f7f9032](https://github.com/li-yechao/paper/commit/f7f903268280efd772f5db6cd03180f188b1130c))
+
 # [1.0.0-alpha.21](https://github.com/li-yechao/paper/compare/@paper/web@1.0.0-alpha.20...@paper/web@1.0.0-alpha.21) (2022-04-15)
 
 **Note:** Version bump only for package @paper/web
