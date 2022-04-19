@@ -14,43 +14,9 @@
 
 import { DeleteOutlined, LoadingOutlined, MoreOutlined } from '@ant-design/icons'
 import styled from '@emotion/styled'
-import Editor, {
-  baseKeymap,
-  BlockMenu,
-  Blockquote,
-  Bold,
-  BulletList,
-  Code,
-  CodeBlock,
-  Doc,
-  dropCursor,
-  DropPasteFile,
-  gapCursor,
-  Heading,
-  Highlight,
-  history,
-  ImageBlock,
-  Italic,
-  keymap,
-  Link,
-  Math,
-  OrderedList,
-  Paragraph,
-  Plugins,
-  redo,
-  State,
-  Strikethrough,
-  Table,
-  Text,
-  TodoList,
-  Underline,
-  undo,
-  undoInputRule,
-  Value,
-} from '@paper/editor'
-import { ProsemirrorNode } from '@paper/editor/src/Editor/lib/Node'
 import { Button, Dropdown, Menu, message, Spin } from 'antd'
 import equal from 'fast-deep-equal'
+import { $getRoot, EditorState } from 'lexical'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { toString } from 'uint8arrays'
@@ -65,6 +31,8 @@ import {
   useObject,
   useUpdateObject,
 } from './apollo'
+import LexicalEditor from './LexicalEditor'
+import { ImageNode } from '@paper/lexical/src/nodes/ImageNode'
 
 const AUTO_SAVE_TIMEOUT = 3e3
 
@@ -104,25 +72,47 @@ const _Loading = styled.div`
 const _ObjectEditor = ({ object }: { object: { id: string; userId: string; data?: string } }) => {
   const account = useAccount()
   const [updateObject] = useUpdateObject()
-  const [doc, setDoc] = useState<ProsemirrorNode>()
-  const [savedDoc, setSavedDoc] = useState<ProsemirrorNode>()
+  const [state, setState] = useState<EditorState>()
+  const [savedState, setSavedState] = useState<EditorState>()
+
+  const onChange = useCallback((state: EditorState) => {
+    setSavedState(v => v ?? state)
+    setState(state)
+  }, [])
 
   useEffect(() => {
-    setDoc(undefined)
-    setSavedDoc(undefined)
+    setState(undefined)
+    setSavedState(undefined)
   }, [object.id])
 
   const save = useCallback(
-    (doc: ProsemirrorNode) => {
-      const data = JSON.stringify(doc.toJSON())
+    (state: EditorState) => {
+      clearTimeout(autoSaveTimeout.current)
+
+      let title = ''
+      const data = JSON.stringify(state)
+
+      state.read(() => {
+        const root = $getRoot()
+        for (const child of root.getChildren()) {
+          title = child.getTextContent()
+          if (title) {
+            return
+          }
+        }
+      })
+
       updateObject({
         variables: {
           objectId: object.id,
-          input: { meta: { title: doc.content.maybeChild(0)?.textContent }, data },
+          input: {
+            meta: { title },
+            data,
+          },
         },
       })
         .then(() => {
-          setSavedDoc(doc)
+          setSavedState(state)
           message.success('Save Success')
         })
         .catch(error => {
@@ -133,7 +123,10 @@ const _ObjectEditor = ({ object }: { object: { id: string; userId: string; data?
     [object.id]
   )
 
-  const changed = useMemo(() => !equal(doc, savedDoc), [doc, savedDoc])
+  const changed = useMemo(
+    () => !equal(state?._nodeMap, savedState?._nodeMap),
+    [state?._nodeMap, savedState?._nodeMap]
+  )
 
   const autoSaveTimeout = useRef<number>()
 
@@ -141,120 +134,72 @@ const _ObjectEditor = ({ object }: { object: { id: string; userId: string; data?
     if (autoSaveTimeout.current) {
       clearTimeout(autoSaveTimeout.current)
     }
-    if (changed && doc) {
+    if (changed && state) {
       autoSaveTimeout.current = window.setTimeout(() => {
-        save(doc)
+        save(state)
       }, AUTO_SAVE_TIMEOUT)
     }
-  }, [doc, changed])
+  }, [state, changed])
 
   useOnSave(() => {
-    if (doc) {
-      save(doc)
+    if (state) {
+      save(state)
     }
-  }, [doc])
+  }, [state])
 
   usePrompt('Discard changes?', changed)
 
   const [createObject] = useCreateObject()
   const [queryObjectUri] = useObjectUriQuery()
 
-  const state = useMemo(() => {
-    return new State({
-      nodes: [
-        new Doc(),
-        new Text(),
-        new Paragraph(),
-        new Heading(),
-        new Blockquote(),
-        new OrderedList(),
-        new BulletList(),
-        new Math(),
-        new ImageBlock({
-          upload: async file => {
-            const data = toString(new Uint8Array(await file.arrayBuffer()), 'base64')
-            const res = await createObject({
-              variables: {
-                parentId: object.id,
-                input: {
-                  meta: { type: 'image' },
-                  data,
-                  encoding: 'BASE64',
-                },
-              },
-            })
-            if (res.errors || !res.data) {
-              throw new Error(res.errors?.[0]?.message || 'upload file failed')
-            }
-            return res.data.createObject.id
+  const imageProviderValue = useMemo(
+    () => ({
+      upload: async (file: File) => {
+        const data = toString(new Uint8Array(await file.arrayBuffer()), 'base64')
+        const res = await createObject({
+          variables: {
+            parentId: object.id,
+            input: {
+              meta: { type: 'image' },
+              data,
+              encoding: 'BASE64',
+            },
           },
-          source: async src => {
-            const res = await queryObjectUri({
-              variables: { userId: object.userId, objectId: src },
-            })
-            if (!res.data || res.error) {
-              throw res.error || new Error('query object cid failed')
-            }
-            const uri = res.data.user.object.uri
-            if (!uri) {
-              throw new Error('object cid not found')
-            }
-            return uri
-          },
-          thumbnail: { maxSize: 1024 },
-        }),
-        new CodeBlock(),
-        new TodoList(),
-        new Table(),
-      ],
-      marks: [
-        new Bold(),
-        new Code(),
-        new Highlight(),
-        new Italic(),
-        new Link(),
-        new Strikethrough(),
-        new Underline(),
-      ],
-      extensions: [
-        new BlockMenu(),
-        new Plugins([
-          keymap({
-            'Mod-z': undo,
-            'Shift-Mod-z': redo,
-            'Mod-y': redo,
-            Backspace: undoInputRule,
-          }),
-          keymap(baseKeymap),
-          history(),
-          gapCursor(),
-          dropCursor({ color: 'currentColor' }),
-        ]),
-        new Value({
-          defaultValue: object.data ? JSON.parse(object.data) : undefined,
-          onDispatchTransaction: view => {
-            setSavedDoc(v => v ?? view.state.doc)
-            setDoc(view.state.doc)
-          },
-        }),
-        new DropPasteFile({
-          create: (view, file) => {
-            const imageBlock = view.state.schema.nodes['image_block']
-            if (imageBlock && file.type.startsWith('image/')) {
-              return ImageBlock.create(view.state.schema, file, imageBlock.spec.options)
-            }
-            return
-          },
-        }),
-      ],
-    })
-  }, [object.id])
+        })
+        if (res.errors || !res.data) {
+          throw new Error(res.errors?.[0]?.message || 'upload file failed')
+        }
+        return res.data.createObject.id
+      },
+      source: async (src?: string | null) => {
+        if (!src) {
+          return null
+        }
+
+        const res = await queryObjectUri({
+          variables: { userId: object.userId, objectId: src },
+        })
+        if (!res.data || res.error) {
+          throw res.error || new Error('query object cid failed')
+        }
+        const uri = res.data.user.object.uri
+        if (!uri) {
+          throw new Error('object cid not found')
+        }
+        return uri
+      },
+      thumbnail: { maxSize: 1024 },
+    }),
+    [createObject, queryObjectUri]
+  )
 
   return (
     <_Container>
       {account?.id === object.userId && <ObjectMenu object={object} />}
 
-      <_Editor state={state} readOnly={account?.id !== object.userId} />
+      <ImageNode.Provider value={imageProviderValue}>
+        <_Editor key={object.id} defaultValue={object.data} onChange={onChange} />
+      </ImageNode.Provider>
     </_Container>
   )
 }
@@ -264,8 +209,10 @@ const _Container = styled.div`
   margin: auto;
 `
 
-const _Editor = styled(Editor)`
+const _Editor = styled(LexicalEditor)`
   min-height: calc(100vh - 100px);
+  padding: 16px 0;
+  margin: 0 16px;
 `
 
 const ObjectMenu = ({ object }: { object: { id: string } }) => {
