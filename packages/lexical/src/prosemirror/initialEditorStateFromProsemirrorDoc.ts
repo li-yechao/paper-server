@@ -85,7 +85,8 @@ function parseBlock(parent: ElementNode, block: any) {
       break
     }
     case 'image_block': {
-      const node = $createImageNode(block.attrs)
+      const caption = block.content[0].text
+      const node = $createImageNode({ ...block.attrs, caption })
       parent.append($createParagraphNode().append(node))
       break
     }

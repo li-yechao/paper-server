@@ -57,6 +57,7 @@ export default function ImagePlugin() {
             naturalWidth,
             naturalHeight,
             thumbnail: await readAsDataURL(thumbnail),
+            caption: file.name,
           })
         }
       }

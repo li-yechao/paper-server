@@ -24,6 +24,7 @@ export interface ImageNodeOptions {
   width?: number
   height?: number
   thumbnail?: string
+  caption?: string
 }
 
 const imageNodeContext = createContext<
@@ -45,6 +46,7 @@ export class ImageNode extends DecoratorNode<ReactNode> {
   __thumbnail?: string
   __width?: number
   __height?: number
+  __caption?: string
 
   static getType() {
     return 'image'
@@ -58,6 +60,7 @@ export class ImageNode extends DecoratorNode<ReactNode> {
       thumbnail: node.__thumbnail,
       width: node.__width,
       height: node.__height,
+      caption: node.__caption,
       key: node.__key,
     })
   }
@@ -74,6 +77,7 @@ export class ImageNode extends DecoratorNode<ReactNode> {
     this.__thumbnail = options.thumbnail
     this.__width = options.width
     this.__height = options.height
+    this.__caption = options.caption
   }
 
   setWidthAndHeight(width: number | undefined, height: number | undefined) {
@@ -85,6 +89,11 @@ export class ImageNode extends DecoratorNode<ReactNode> {
   setThumbnail(thumbnail: string | undefined) {
     const writable = this.getWritable<ImageNode>()
     writable.__thumbnail = thumbnail
+  }
+
+  setCaption(caption: string | undefined) {
+    const writable = this.getWritable<ImageNode>()
+    writable.__caption = caption
   }
 
   override createDOM<EditorContext>(config: EditorConfig<EditorContext>): HTMLElement {
