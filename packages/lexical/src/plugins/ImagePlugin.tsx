@@ -8,6 +8,7 @@ import {
 } from 'lexical'
 import { useEffect } from 'react'
 import { $createImageNode, ImageNode, useImageNodeContext } from '../nodes/ImageNode'
+import { getImageThumbnail, readAsDataURL } from '../utils/image'
 
 export interface InsertImageCommandPayload {
   src?: string
@@ -48,10 +49,15 @@ export default function ImagePlugin() {
 
     const pasteHandler = async (e: Event) => {
       for (const file of (e as ClipboardEvent).clipboardData?.files ?? []) {
+        const { thumbnail, naturalWidth, naturalHeight } = await getImageThumbnail(file)
         const url = await upload(file)
         if (url) {
-          const size = await getImageSize(url)
-          editor.dispatchCommand(INSERT_IMAGE_COMMAND, { src: url, ...size, thumbnail: url })
+          editor.dispatchCommand(INSERT_IMAGE_COMMAND, {
+            src: url,
+            naturalWidth,
+            naturalHeight,
+            thumbnail: await readAsDataURL(thumbnail),
+          })
         }
       }
     }
@@ -65,17 +71,4 @@ export default function ImagePlugin() {
   }, [editor])
 
   return null
-}
-
-async function getImageSize(url: string): Promise<{ width: number; height: number }> {
-  return new Promise((resolve, reject) => {
-    const image = new Image()
-    image.src = url
-    image.onload = () => {
-      resolve({ width: image.naturalWidth, height: image.naturalHeight })
-    }
-    image.onerror = error => {
-      reject(new Error(error.toString()))
-    }
-  })
 }
