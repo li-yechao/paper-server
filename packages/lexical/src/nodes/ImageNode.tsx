@@ -89,10 +89,8 @@ export class ImageNode extends DecoratorNode<ReactNode> {
 
   override createDOM<EditorContext>(config: EditorConfig<EditorContext>): HTMLElement {
     const span = document.createElement('span')
-    const theme = config.theme
-    const className = theme.image
-    if (className !== undefined) {
-      span.className = className
+    if (config.theme.image) {
+      span.classList.add(config.theme.image)
     }
     return span
   }
@@ -162,6 +160,7 @@ export function $isImageNode(node?: LexicalNode): node is ImageNode {
 
 const _ImageContainer = styled.div`
   display: inline-block;
+  max-width: 100%;
 
   > img {
     position: absolute;

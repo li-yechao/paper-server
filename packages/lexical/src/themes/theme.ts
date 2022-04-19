@@ -251,6 +251,7 @@ const theme: EditorThemeClasses = {
     cursor: default;
     display: inline-block;
     position: relative;
+    max-width: 100%;
 
     img {
       max-width: 100%;
