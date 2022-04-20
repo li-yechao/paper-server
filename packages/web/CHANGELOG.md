@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.0.0-alpha.23](https://github.com/li-yechao/paper/compare/@paper/web@1.0.0-alpha.22...@paper/web@1.0.0-alpha.23) (2022-04-20)
+
+### Features
+
+- use `HistoryPlugin` ([598fcfe](https://github.com/li-yechao/paper/commit/598fcfe72a89895cd37e513974f68ae0f63bf63b))
+
 # [1.0.0-alpha.22](https://github.com/li-yechao/paper/compare/@paper/web@1.0.0-alpha.21...@paper/web@1.0.0-alpha.22) (2022-04-20)
 
 ### Features
