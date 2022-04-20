@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.0.0-alpha.25](https://github.com/li-yechao/paper/compare/@paper/web@1.0.0-alpha.24...@paper/web@1.0.0-alpha.25) (2022-04-21)
+
+### Bug Fixes
+
+- remove object from list after deleted ([5f46d81](https://github.com/li-yechao/paper/commit/5f46d8125dcd82809a092edc91b7b3b11d7f3d29))
+
 # [1.0.0-alpha.24](https://github.com/li-yechao/paper/compare/@paper/web@1.0.0-alpha.23...@paper/web@1.0.0-alpha.24) (2022-04-21)
 
 ### Bug Fixes
