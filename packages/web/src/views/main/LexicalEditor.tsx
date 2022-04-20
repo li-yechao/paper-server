@@ -19,6 +19,7 @@ import { ListItemNode, ListNode } from '@lexical/list'
 import LexicalComposer from '@lexical/react/LexicalComposer'
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext'
 import LexicalContentEditable from '@lexical/react/LexicalContentEditable'
+import { HistoryPlugin } from '@lexical/react/LexicalHistoryPlugin'
 import LexicalLinkPlugin from '@lexical/react/LexicalLinkPlugin'
 import LexicalMarkdownShortcutPlugin from '@lexical/react/LexicalMarkdownShortcutPlugin'
 import LexicalRichTextPlugin from '@lexical/react/LexicalRichTextPlugin'
@@ -82,6 +83,7 @@ export default function LexicalEditor(props: LexicalEditorProps) {
         <LexicalLinkPlugin />
         <CodeHighlightPlugin />
         <LexicalMarkdownShortcutPlugin />
+        <HistoryPlugin />
 
         <ImagePlugin />
         <LexicalTablePlugin />
