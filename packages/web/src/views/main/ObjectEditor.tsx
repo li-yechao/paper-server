@@ -224,13 +224,13 @@ const ObjectMenu = ({ object }: { object: { id: string } }) => {
     const menu = (
       <Menu>
         <Menu.Item
-          key="logout"
+          key="delete"
           icon={<DeleteOutlined />}
           onClick={() => {
             deleteObject({ variables: { objectId: object.id } })
-              .then(() => {
+              .then(res => {
                 message.success('Deleted')
-                navigate('/me', { replace: true })
+                navigate(`/${res.data?.deleteObject.userId}`, { replace: true })
               })
               .catch(error => {
                 message.error(error.message)

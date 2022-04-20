@@ -216,19 +216,18 @@ export const useDeleteObject = (
 ) => {
   return useMutation(DELETE_OBJECT_MUTATION, {
     updateQueries: {
-      Objects(prev, { mutationResult, ...q }) {
-        console.log(q)
+      Objects(prev, { mutationResult }) {
         return produce(prev, draft => {
           if (!mutationResult.data) {
             return
           }
 
           const { id: objectId } = mutationResult.data.deleteObject
-          const index = draft['viewer'].objects.edges.findIndex(
+          const index = draft['user'].objects.edges.findIndex(
             (i: { node: { id: string } }) => i.node.id === objectId
           )
           if (index >= 0) {
-            draft['viewer'].objects.edges.splice(index, 1)
+            draft['user'].objects.edges.splice(index, 1)
           }
         })
       },
