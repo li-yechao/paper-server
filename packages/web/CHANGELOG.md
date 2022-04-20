@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.0.0-alpha.24](https://github.com/li-yechao/paper/compare/@paper/web@1.0.0-alpha.23...@paper/web@1.0.0-alpha.24) (2022-04-21)
+
+### Bug Fixes
+
+- use fast-deep-equal/es6 ([7aa507b](https://github.com/li-yechao/paper/commit/7aa507b078cdde7e6a4a395be3c5fb59e5628271))
+
 # [1.0.0-alpha.23](https://github.com/li-yechao/paper/compare/@paper/web@1.0.0-alpha.22...@paper/web@1.0.0-alpha.23) (2022-04-20)
 
 ### Features
