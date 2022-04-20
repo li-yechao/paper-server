@@ -15,7 +15,7 @@
 import { DeleteOutlined, LoadingOutlined, MoreOutlined } from '@ant-design/icons'
 import styled from '@emotion/styled'
 import { Button, Dropdown, Menu, message, Spin } from 'antd'
-import equal from 'fast-deep-equal'
+import equal from 'fast-deep-equal/es6'
 import { $getRoot, EditorState } from 'lexical'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
