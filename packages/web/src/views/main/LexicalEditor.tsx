@@ -180,7 +180,6 @@ const Placeholder = styled.div`
   overflow: hidden;
   position: absolute;
   text-overflow: ellipsis;
-  top: 0;
   left: 0;
   user-select: none;
   white-space: nowrap;
