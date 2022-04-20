@@ -14,8 +14,9 @@
 
 import styled from '@emotion/styled'
 import { CodeHighlightNode, CodeNode } from '@lexical/code'
-import { LinkNode } from '@lexical/link'
+import { AutoLinkNode, LinkNode } from '@lexical/link'
 import { ListItemNode, ListNode } from '@lexical/list'
+import LexicalAutoLinkPlugin from '@lexical/react/LexicalAutoLinkPlugin'
 import LexicalComposer from '@lexical/react/LexicalComposer'
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext'
 import LexicalContentEditable from '@lexical/react/LexicalContentEditable'
@@ -58,6 +59,7 @@ export default function LexicalEditor(props: LexicalEditorProps) {
         ListNode,
         ListItemNode,
         LinkNode,
+        AutoLinkNode,
         CodeNode,
         CodeHighlightNode,
         TableNode,
@@ -74,6 +76,39 @@ export default function LexicalEditor(props: LexicalEditorProps) {
     [props.readOnly]
   )
 
+  const autoLinkMatchers = useMemo(() => {
+    const URL_MATCHER =
+      /((https?:\/\/(www\.)?)|(www\.))[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_+.~#?&//=]*)/
+
+    const EMAIL_MATCHER =
+      /(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))/
+
+    return [
+      (text: string) => {
+        const match = URL_MATCHER.exec(text)
+        return match?.[0]
+          ? {
+              index: match.index,
+              length: match[0].length,
+              text: match[0],
+              url: match[0],
+            }
+          : null
+      },
+      (text: string) => {
+        const match = EMAIL_MATCHER.exec(text)
+        return match?.[0]
+          ? {
+              index: match.index,
+              length: match[0].length,
+              text: match[0],
+              url: `mailto:${match[0]}`,
+            }
+          : null
+      },
+    ]
+  }, [])
+
   return (
     <LexicalComposer initialConfig={initialConfig}>
       <EditorContainer className={props.className}>
@@ -82,6 +117,7 @@ export default function LexicalEditor(props: LexicalEditorProps) {
           placeholder={<Placeholder>Input something...</Placeholder>}
         />
         <ValuePlugin defaultValue={props.defaultValue} onChange={props.onChange} />
+        <LexicalAutoLinkPlugin matchers={autoLinkMatchers} />
         <LexicalLinkPlugin />
         <CodeHighlightPlugin />
         <LexicalMarkdownShortcutPlugin />
