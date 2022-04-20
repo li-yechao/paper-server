@@ -44,12 +44,14 @@ import { ComponentProps, useEffect, useMemo, useRef } from 'react'
 export interface LexicalEditorProps {
   className?: string
   defaultValue?: string
+  readOnly?: boolean
   onChange?: (editorState: EditorState) => void
 }
 
 export default function LexicalEditor(props: LexicalEditorProps) {
   const initialConfig = useMemo<ComponentProps<typeof LexicalComposer>['initialConfig']>(
     () => ({
+      readOnly: props.readOnly,
       nodes: [
         HeadingNode,
         QuoteNode,
@@ -69,7 +71,7 @@ export default function LexicalEditor(props: LexicalEditorProps) {
         throw e
       },
     }),
-    []
+    [props.readOnly]
   )
 
   return (

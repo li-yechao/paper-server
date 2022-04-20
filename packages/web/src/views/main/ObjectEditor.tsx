@@ -198,7 +198,12 @@ const _ObjectEditor = ({ object }: { object: { id: string; userId: string; data?
       {account?.id === object.userId && <ObjectMenu object={object} />}
 
       <ImageNode.Provider value={imageProviderValue}>
-        <_Editor key={object.id} defaultValue={object.data} onChange={onChange} />
+        <_Editor
+          key={object.id}
+          defaultValue={object.data}
+          readOnly={account?.id !== object.userId}
+          onChange={onChange}
+        />
       </ImageNode.Provider>
     </_Container>
   )
