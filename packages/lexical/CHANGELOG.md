@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.0.0-alpha.2](https://github.com/li-yechao/paper/compare/@paper/lexical@1.0.0-alpha.1...@paper/lexical@1.0.0-alpha.2) (2022-04-22)
+
+### Features
+
+- block menu ([cd9c616](https://github.com/li-yechao/paper/commit/cd9c6168fe0b8618c9f0df16312ebfc5e5d6d656))
+
 # [1.0.0-alpha.1](https://github.com/li-yechao/paper/compare/@paper/lexical@1.0.0-alpha.0...@paper/lexical@1.0.0-alpha.1) (2022-04-20)
 
 ### Bug Fixes

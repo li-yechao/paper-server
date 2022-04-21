@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.0.0-alpha.26](https://github.com/li-yechao/paper/compare/@paper/web@1.0.0-alpha.25...@paper/web@1.0.0-alpha.26) (2022-04-22)
+
+### Bug Fixes
+
+- read only editor if the object is not owned ([5bbbeb0](https://github.com/li-yechao/paper/commit/5bbbeb0a134556252a63d5c12d5726bf309b5d75))
+
+### Features
+
+- auto link ([cb52125](https://github.com/li-yechao/paper/commit/cb521256ac390afc240e1259c6ff6c35a7a8ce3a))
+- block menu ([cd9c616](https://github.com/li-yechao/paper/commit/cd9c6168fe0b8618c9f0df16312ebfc5e5d6d656))
+
 # [1.0.0-alpha.25](https://github.com/li-yechao/paper/compare/@paper/web@1.0.0-alpha.24...@paper/web@1.0.0-alpha.25) (2022-04-21)
 
 ### Bug Fixes
