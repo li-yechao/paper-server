@@ -163,8 +163,6 @@ function parseBlock(parent: ElementNode, block: any) {
       }
       const link = block.marks?.find((i: any) => i.type === 'link')
       if (link) {
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-expect-error
         parent.append($createLinkNode(link.href).append(text))
       } else {
         parent.append(text)
