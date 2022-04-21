@@ -13,11 +13,14 @@
 // limitations under the License.
 
 import styled from '@emotion/styled'
-import { DecoratorNode, EditorConfig, LexicalNode, NodeKey } from 'lexical'
-import { createContext, ReactNode, useContext, useMemo } from 'react'
+import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext'
+import { $getNodeByKey, DecoratorNode, EditorConfig, LexicalNode, NodeKey } from 'lexical'
+import { createContext, ReactNode, useContext, useEffect, useMemo } from 'react'
 import { useAsync } from 'react-use'
+import { getImageThumbnail, readAsDataURL } from '../utils/image'
 
 export interface ImageNodeOptions {
+  file?: File
   src?: string
   naturalWidth?: number
   naturalHeight?: number
@@ -40,6 +43,7 @@ const imageNodeContext = createContext<
 export class ImageNode extends DecoratorNode<ReactNode> {
   static Provider = imageNodeContext.Provider
 
+  file?: File
   __src?: string
   __naturalWidth?: number
   __naturalHeight?: number
@@ -54,6 +58,7 @@ export class ImageNode extends DecoratorNode<ReactNode> {
 
   static clone(node: ImageNode) {
     return new ImageNode({
+      file: node.file,
       src: node.__src,
       naturalWidth: node.__naturalWidth,
       naturalHeight: node.__naturalHeight,
@@ -65,12 +70,9 @@ export class ImageNode extends DecoratorNode<ReactNode> {
     })
   }
 
-  constructor(
-    options: ImageNodeOptions & {
-      key?: NodeKey
-    }
-  ) {
+  constructor(options: ImageNodeOptions & { key?: NodeKey }) {
     super(options.key)
+    this.file = options.file
     this.__src = options.src
     this.__naturalWidth = options.naturalWidth
     this.__naturalHeight = options.naturalHeight
@@ -78,6 +80,24 @@ export class ImageNode extends DecoratorNode<ReactNode> {
     this.__width = options.width
     this.__height = options.height
     this.__caption = options.caption
+  }
+
+  setOptions(
+    options: Pick<ImageNodeOptions, 'naturalWidth' | 'naturalHeight' | 'thumbnail' | 'src'>
+  ) {
+    const writable = this.getWritable<ImageNode>()
+    if (options.naturalWidth !== undefined) {
+      writable.__naturalWidth = options.naturalWidth
+    }
+    if (options.naturalHeight !== undefined) {
+      writable.__naturalHeight = options.naturalHeight
+    }
+    if (options.thumbnail !== undefined) {
+      writable.__thumbnail = options.thumbnail
+    }
+    if (options.src !== undefined) {
+      writable.__src = options.src
+    }
   }
 
   setWidthAndHeight(width: number | undefined, height: number | undefined) {
@@ -111,12 +131,14 @@ export class ImageNode extends DecoratorNode<ReactNode> {
   override decorate(): ReactNode {
     return (
       <ImageComponent
+        file={this.file}
         src={this.__src}
         thumbnail={this.__thumbnail}
         naturalWidth={this.__naturalWidth}
         naturalHeight={this.__naturalHeight}
         width={this.__width}
         height={this.__height}
+        nodeKey={this.__key}
       />
     )
   }
@@ -131,13 +153,55 @@ export function useImageNodeContext() {
 }
 
 function ImageComponent({
+  file,
   src,
   thumbnail,
   naturalWidth,
   naturalHeight,
   width,
   height,
-}: ImageNodeOptions) {
+  nodeKey,
+}: ImageNodeOptions & { nodeKey: NodeKey }) {
+  const [editor] = useLexicalComposerContext()
+  const { upload, source } = useImageNodeContext()
+
+  useEffect(() => {
+    if (file && !thumbnail) {
+      getImageThumbnail(file)
+        .then(({ thumbnail, naturalWidth, naturalHeight }) =>
+          readAsDataURL(thumbnail).then(thumbnail => ({ thumbnail, naturalWidth, naturalHeight }))
+        )
+        .then(({ thumbnail, naturalWidth, naturalHeight }) => {
+          editor.update(() => {
+            const node = $getNodeByKey(nodeKey)
+            if ($isImageNode(node)) {
+              node.setOptions({
+                thumbnail,
+                naturalWidth,
+                naturalHeight,
+              })
+            }
+          })
+        })
+    }
+  }, [editor, file, thumbnail])
+
+  useEffect(() => {
+    if (file && !src) {
+      Promise.resolve(upload(file)).then(src => {
+        if (!src) {
+          return
+        }
+        editor.update(() => {
+          const node = $getNodeByKey(nodeKey)
+          if ($isImageNode(node)) {
+            node.setOptions({ src })
+          }
+        })
+      })
+    }
+  }, [editor, file, src])
+
   const [w, ratio] = useMemo(() => {
     if (width && height) {
       return [width, (height / width) * 100]
@@ -147,7 +211,6 @@ function ImageComponent({
     return [0, 0]
   }, [naturalWidth, naturalHeight, width, height])
 
-  const { source } = useImageNodeContext()
   const { value } = useAsync(async () => source(src), [src])
 
   return (
@@ -163,7 +226,7 @@ export function $createImageNode(options: ImageNodeOptions): ImageNode {
   return new ImageNode(options)
 }
 
-export function $isImageNode(node?: LexicalNode): node is ImageNode {
+export function $isImageNode(node?: LexicalNode | null): node is ImageNode {
   return node instanceof ImageNode
 }
 

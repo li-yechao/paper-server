@@ -21,30 +21,19 @@ import {
   RangeSelection,
 } from 'lexical'
 import { useEffect } from 'react'
-import { $createImageNode, ImageNode, useImageNodeContext } from '../nodes/ImageNode'
-import { getImageThumbnail, readAsDataURL } from '../utils/image'
+import { $createImageNode, ImageNode, ImageNodeOptions } from '../nodes/ImageNode'
 
-export interface InsertImageCommandPayload {
-  src?: string
-  naturalWidth?: number
-  naturalHeight?: number
-  thumbnail?: string
-  width?: number
-  height?: number
-}
-
-export const INSERT_IMAGE_COMMAND = createCommand<InsertImageCommandPayload>()
+export const INSERT_IMAGE_COMMAND = createCommand<ImageNodeOptions>()
 
 export default function ImagePlugin() {
   const [editor] = useLexicalComposerContext()
-  const { upload } = useImageNodeContext()
 
   useEffect(() => {
     if (!editor.hasNodes([ImageNode])) {
       throw new Error('ImagePlugin: ImageNode not registered on editor')
     }
 
-    const unregister = editor.registerCommand<InsertImageCommandPayload>(
+    const unregister = editor.registerCommand<ImageNodeOptions>(
       INSERT_IMAGE_COMMAND,
       payload => {
         const selection = $getSelection()
@@ -64,17 +53,7 @@ export default function ImagePlugin() {
     const pasteHandler = async (e: Event) => {
       const files = ((e as ClipboardEvent).clipboardData || (e as DragEvent).dataTransfer)?.files
       for (const file of files ?? []) {
-        const { thumbnail, naturalWidth, naturalHeight } = await getImageThumbnail(file)
-        const url = await upload(file)
-        if (url) {
-          editor.dispatchCommand(INSERT_IMAGE_COMMAND, {
-            src: url,
-            naturalWidth,
-            naturalHeight,
-            thumbnail: await readAsDataURL(thumbnail),
-            caption: file.name,
-          })
-        }
+        editor.dispatchCommand(INSERT_IMAGE_COMMAND, { file })
       }
     }
 
