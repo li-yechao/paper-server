@@ -13,9 +13,9 @@
 // limitations under the License.
 
 import styled from '@emotion/styled'
-import { CodeHighlightNode, CodeNode } from '@lexical/code'
+import { $createCodeNode, CodeHighlightNode, CodeNode } from '@lexical/code'
 import { AutoLinkNode, LinkNode } from '@lexical/link'
-import { ListItemNode, ListNode } from '@lexical/list'
+import { $createListItemNode, $createListNode, ListItemNode, ListNode } from '@lexical/list'
 import LexicalAutoLinkPlugin from '@lexical/react/LexicalAutoLinkPlugin'
 import LexicalComposer from '@lexical/react/LexicalComposer'
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext'
@@ -25,10 +25,27 @@ import LexicalLinkPlugin from '@lexical/react/LexicalLinkPlugin'
 import LexicalMarkdownShortcutPlugin from '@lexical/react/LexicalMarkdownShortcutPlugin'
 import LexicalRichTextPlugin from '@lexical/react/LexicalRichTextPlugin'
 import LexicalTablePlugin from '@lexical/react/LexicalTablePlugin'
-import { HeadingNode, QuoteNode } from '@lexical/rich-text'
-import { TableCellNode, TableNode, TableRowNode } from '@lexical/table'
+import { $createHeadingNode, $createQuoteNode, HeadingNode, QuoteNode } from '@lexical/rich-text'
+import {
+  $createTableNodeWithDimensions,
+  TableCellNode,
+  TableNode,
+  TableRowNode,
+} from '@lexical/table'
+import BlockQuote from '@paper/lexical/src/icons/BlockQuote'
+import BulletList from '@paper/lexical/src/icons/BulletList'
+import Code from '@paper/lexical/src/icons/Code'
+import Heading1 from '@paper/lexical/src/icons/Heading1'
+import Heading2 from '@paper/lexical/src/icons/Heading2'
+import Heading3 from '@paper/lexical/src/icons/Heading3'
+import OrderedList from '@paper/lexical/src/icons/OrderedList'
+import Table from '@paper/lexical/src/icons/Table'
 import { EquationNode } from '@paper/lexical/src/nodes/EquationNode'
 import { ImageNode } from '@paper/lexical/src/nodes/ImageNode'
+import BlockMenuPlugin, {
+  BlockMenuCommand,
+  replaceWithNode,
+} from '@paper/lexical/src/plugins/BlockMenuPlugin'
 import CodeHighlightPlugin from '@paper/lexical/src/plugins/CodeHighlightPlugin'
 import FloatingToolbarPlugin, {
   ToggleBlockButton,
@@ -109,6 +126,53 @@ export default function LexicalEditor(props: LexicalEditorProps) {
     ]
   }, [])
 
+  const blockMenuCommands = useMemo<BlockMenuCommand[]>(() => {
+    return [
+      {
+        icon: <Heading1 />,
+        title: 'Heading1',
+        action: editor => replaceWithNode(editor, () => $createHeadingNode('h1')),
+      },
+      {
+        icon: <Heading2 />,
+        title: 'Heading2',
+        action: editor => replaceWithNode(editor, () => $createHeadingNode('h2')),
+      },
+      {
+        icon: <Heading3 />,
+        title: 'Heading3',
+        action: editor => replaceWithNode(editor, () => $createHeadingNode('h3')),
+      },
+      {
+        icon: <BlockQuote />,
+        title: 'Quote',
+        action: editor => replaceWithNode(editor, () => $createQuoteNode()),
+      },
+      {
+        icon: <Code />,
+        title: 'Code',
+        action: editor => replaceWithNode(editor, () => $createCodeNode()),
+      },
+      {
+        icon: <OrderedList />,
+        title: 'Ordered List',
+        action: editor =>
+          replaceWithNode(editor, () => $createListNode('ol').append($createListItemNode())),
+      },
+      {
+        icon: <BulletList />,
+        title: 'Bullet List',
+        action: editor =>
+          replaceWithNode(editor, () => $createListNode('ul').append($createListItemNode())),
+      },
+      {
+        icon: <Table />,
+        title: 'Table',
+        action: editor => replaceWithNode(editor, () => $createTableNodeWithDimensions(3, 3, true)),
+      },
+    ]
+  }, [])
+
   return (
     <LexicalComposer initialConfig={initialConfig}>
       <EditorContainer className={props.className}>
@@ -123,6 +187,7 @@ export default function LexicalEditor(props: LexicalEditorProps) {
         <LexicalMarkdownShortcutPlugin />
         <HistoryPlugin />
 
+        <BlockMenuPlugin commands={blockMenuCommands} />
         <ImagePlugin />
         <LexicalTablePlugin />
         <TableActionMenuPlugin />
