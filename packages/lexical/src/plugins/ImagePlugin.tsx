@@ -62,7 +62,8 @@ export default function ImagePlugin() {
     )
 
     const pasteHandler = async (e: Event) => {
-      for (const file of (e as ClipboardEvent).clipboardData?.files ?? []) {
+      const files = ((e as ClipboardEvent).clipboardData || (e as DragEvent).dataTransfer)?.files
+      for (const file of files ?? []) {
         const { thumbnail, naturalWidth, naturalHeight } = await getImageThumbnail(file)
         const url = await upload(file)
         if (url) {
@@ -78,10 +79,12 @@ export default function ImagePlugin() {
     }
 
     window.addEventListener('paste', pasteHandler, true)
+    window.addEventListener('drop', pasteHandler, true)
 
     return () => {
       unregister()
       window.removeEventListener('paste', pasteHandler, true)
+      window.removeEventListener('drop', pasteHandler, true)
     }
   }, [editor])
 
