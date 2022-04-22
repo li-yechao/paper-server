@@ -18,11 +18,11 @@ import { AutoLinkNode, LinkNode } from '@lexical/link'
 import { $createListItemNode, $createListNode, ListItemNode, ListNode } from '@lexical/list'
 import LexicalAutoLinkPlugin from '@lexical/react/LexicalAutoLinkPlugin'
 import LexicalComposer from '@lexical/react/LexicalComposer'
-import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext'
 import LexicalContentEditable from '@lexical/react/LexicalContentEditable'
 import { HistoryPlugin } from '@lexical/react/LexicalHistoryPlugin'
 import LexicalLinkPlugin from '@lexical/react/LexicalLinkPlugin'
 import LexicalMarkdownShortcutPlugin from '@lexical/react/LexicalMarkdownShortcutPlugin'
+import LexicalOnChangePlugin from '@lexical/react/LexicalOnChangePlugin'
 import LexicalRichTextPlugin from '@lexical/react/LexicalRichTextPlugin'
 import LexicalTablePlugin from '@lexical/react/LexicalTablePlugin'
 import { $createHeadingNode, $createQuoteNode, HeadingNode, QuoteNode } from '@lexical/rich-text'
@@ -54,10 +54,9 @@ import FloatingToolbarPlugin, {
 } from '@paper/lexical/src/plugins/FloatingToolbarPlugin'
 import ImagePlugin from '@paper/lexical/src/plugins/ImagePlugin'
 import TableActionMenuPlugin from '@paper/lexical/src/plugins/TableActionMenuPlugin'
-import initialEditorStateFromProsemirrorDoc from '@paper/lexical/src/prosemirror/initialEditorStateFromProsemirrorDoc'
 import theme from '@paper/lexical/src/themes/theme'
-import { $getRoot, CLEAR_HISTORY_COMMAND, EditorState } from 'lexical'
-import { ComponentProps, useEffect, useMemo, useRef } from 'react'
+import { EditorState } from 'lexical'
+import { ComponentProps, useMemo } from 'react'
 
 export interface LexicalEditorProps {
   className?: string
@@ -179,8 +178,9 @@ export default function LexicalEditor(props: LexicalEditorProps) {
         <LexicalRichTextPlugin
           contentEditable={<ContentEditable testid="lexical-editor" />}
           placeholder={<Placeholder>Input something...</Placeholder>}
+          initialEditorState={props.defaultValue}
         />
-        <ValuePlugin defaultValue={props.defaultValue} onChange={props.onChange} />
+        {props.onChange && <LexicalOnChangePlugin onChange={props.onChange} />}
         <LexicalAutoLinkPlugin matchers={autoLinkMatchers} />
         <LexicalLinkPlugin />
         <CodeHighlightPlugin />
@@ -212,60 +212,6 @@ export default function LexicalEditor(props: LexicalEditorProps) {
       </EditorContainer>
     </LexicalComposer>
   )
-}
-
-function ValuePlugin({
-  defaultValue,
-  onChange,
-}: {
-  defaultValue?: string
-  onChange?: (editorState: EditorState) => void
-}) {
-  const inited = useRef(false)
-
-  const [editor] = useLexicalComposerContext()
-
-  useEffect(() => {
-    if (onChange) {
-      return editor.registerUpdateListener(({ editorState, dirtyElements, dirtyLeaves }) => {
-        if (!inited.current) {
-          return
-        }
-
-        if (dirtyElements.size === 0 && dirtyLeaves.size === 0) {
-          return
-        }
-
-        onChange(editorState)
-      })
-    }
-    return
-  }, [editor, onChange])
-
-  useEffect(() => {
-    setTimeout(() => {
-      if (defaultValue) {
-        let json
-        try {
-          json = JSON.parse(defaultValue || '{}')
-        } catch {}
-
-        if (json.type === 'doc') {
-          editor.update(() => {
-            initialEditorStateFromProsemirrorDoc($getRoot(), defaultValue)
-          })
-        } else if (json._nodeMap) {
-          const editorState = editor.parseEditorState(defaultValue)
-          editor.setEditorState(editorState)
-        }
-      }
-      editor.dispatchCommand(CLEAR_HISTORY_COMMAND, null)
-      inited.current = true
-      onChange?.(editor.getEditorState())
-    })
-  }, [editor])
-
-  return null
 }
 
 const EditorContainer = styled.div`
