@@ -169,6 +169,7 @@ function BlockMenu({ editor, commands }: { editor: LexicalEditor; commands: Bloc
           <_Menu
             key={item.title}
             className={cx(index.current % commands.length === i && 'selected')}
+            onClick={() => item.action(editor)}
           >
             <span className="icon">{item.icon}</span>
             <span className="title">{item.title}</span>
