@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.0.0-alpha.29](https://github.com/li-yechao/paper/compare/@paper/web@1.0.0-alpha.28...@paper/web@1.0.0-alpha.29) (2022-04-23)
+
+### Features
+
+- add insert image menu ([a3de069](https://github.com/li-yechao/paper/commit/a3de0691696b1d50f5fbe0db76a173491358c257))
+
 # [1.0.0-alpha.28](https://github.com/li-yechao/paper/compare/@paper/web@1.0.0-alpha.27...@paper/web@1.0.0-alpha.28) (2022-04-22)
 
 **Note:** Version bump only for package @paper/web

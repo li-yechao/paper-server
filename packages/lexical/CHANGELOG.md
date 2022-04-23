@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.0.0-alpha.5](https://github.com/li-yechao/paper/compare/@paper/lexical@1.0.0-alpha.4...@paper/lexical@1.0.0-alpha.5) (2022-04-23)
+
+### Features
+
+- allow click block menu to create node ([b81ee3c](https://github.com/li-yechao/paper/commit/b81ee3c9d3675b83c085a4fd3562f32fca975077))
+
 # [1.0.0-alpha.4](https://github.com/li-yechao/paper/compare/@paper/lexical@1.0.0-alpha.3...@paper/lexical@1.0.0-alpha.4) (2022-04-22)
 
 ### Features
