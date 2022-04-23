@@ -18,6 +18,7 @@ import { AutoLinkNode, LinkNode } from '@lexical/link'
 import { $createListItemNode, $createListNode, ListItemNode, ListNode } from '@lexical/list'
 import LexicalAutoLinkPlugin from '@lexical/react/LexicalAutoLinkPlugin'
 import LexicalComposer from '@lexical/react/LexicalComposer'
+import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext'
 import LexicalContentEditable from '@lexical/react/LexicalContentEditable'
 import { HistoryPlugin } from '@lexical/react/LexicalHistoryPlugin'
 import LexicalLinkPlugin from '@lexical/react/LexicalLinkPlugin'
@@ -57,7 +58,7 @@ import ImagePlugin from '@paper/lexical/src/plugins/ImagePlugin'
 import TableActionMenuPlugin from '@paper/lexical/src/plugins/TableActionMenuPlugin'
 import theme from '@paper/lexical/src/themes/theme'
 import { $createParagraphNode, EditorState } from 'lexical'
-import { ChangeEventHandler, ComponentProps, useCallback, useMemo, useRef } from 'react'
+import { ChangeEventHandler, ComponentProps, useCallback, useEffect, useMemo, useRef } from 'react'
 
 export interface LexicalEditorProps {
   className?: string
@@ -221,6 +222,7 @@ export default function LexicalEditor(props: LexicalEditorProps) {
         <LexicalMarkdownShortcutPlugin />
         <HistoryPlugin />
 
+        <NoAutoFocusPlugin />
         <BlockMenuPlugin commands={blockMenuCommands} />
         <ImagePlugin />
         <LexicalTablePlugin />
@@ -246,6 +248,18 @@ export default function LexicalEditor(props: LexicalEditorProps) {
       </EditorContainer>
     </LexicalComposer>
   )
+}
+
+const NoAutoFocusPlugin = () => {
+  const [editor] = useLexicalComposerContext()
+
+  useEffect(() => {
+    setTimeout(() => {
+      editor.blur()
+    })
+  }, [editor])
+
+  return null
 }
 
 const EditorContainer = styled.div`
