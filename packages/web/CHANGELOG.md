@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.0.0-alpha.30](https://github.com/li-yechao/paper/compare/@paper/web@1.0.0-alpha.29...@paper/web@1.0.0-alpha.30) (2022-04-24)
+
+### Features
+
+- no auto focus plugin ([f2087b0](https://github.com/li-yechao/paper/commit/f2087b0d81e1d8cfeb971b70f28793e29ebc6705))
+
 # [1.0.0-alpha.29](https://github.com/li-yechao/paper/compare/@paper/web@1.0.0-alpha.28...@paper/web@1.0.0-alpha.29) (2022-04-23)
 
 ### Features
