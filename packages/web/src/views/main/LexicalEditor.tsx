@@ -38,10 +38,11 @@ import Code from '@paper/lexical/src/icons/Code'
 import Heading1 from '@paper/lexical/src/icons/Heading1'
 import Heading2 from '@paper/lexical/src/icons/Heading2'
 import Heading3 from '@paper/lexical/src/icons/Heading3'
+import Image from '@paper/lexical/src/icons/Image'
 import OrderedList from '@paper/lexical/src/icons/OrderedList'
 import Table from '@paper/lexical/src/icons/Table'
 import { EquationNode } from '@paper/lexical/src/nodes/EquationNode'
-import { ImageNode } from '@paper/lexical/src/nodes/ImageNode'
+import { $createImageNode, ImageNode } from '@paper/lexical/src/nodes/ImageNode'
 import BlockMenuPlugin, {
   BlockMenuCommand,
   replaceWithNode,
@@ -55,8 +56,8 @@ import FloatingToolbarPlugin, {
 import ImagePlugin from '@paper/lexical/src/plugins/ImagePlugin'
 import TableActionMenuPlugin from '@paper/lexical/src/plugins/TableActionMenuPlugin'
 import theme from '@paper/lexical/src/themes/theme'
-import { EditorState } from 'lexical'
-import { ComponentProps, useMemo } from 'react'
+import { $createParagraphNode, EditorState } from 'lexical'
+import { ChangeEventHandler, ComponentProps, useCallback, useMemo, useRef } from 'react'
 
 export interface LexicalEditorProps {
   className?: string
@@ -66,6 +67,14 @@ export interface LexicalEditorProps {
 }
 
 export default function LexicalEditor(props: LexicalEditorProps) {
+  const imageInput = useRef<HTMLInputElement>(null)
+
+  const onImageInputChange = useRef<ChangeEventHandler<HTMLInputElement>>()
+
+  const handleImageInputChange = useCallback<ChangeEventHandler<HTMLInputElement>>(e => {
+    onImageInputChange.current?.(e)
+  }, [])
+
   const initialConfig = useMemo<ComponentProps<typeof LexicalComposer>['initialConfig']>(
     () => ({
       readOnly: props.readOnly,
@@ -165,6 +174,23 @@ export default function LexicalEditor(props: LexicalEditorProps) {
           replaceWithNode(editor, () => $createListNode('ul').append($createListItemNode())),
       },
       {
+        icon: <Image />,
+        title: 'Image ',
+        action: editor => {
+          onImageInputChange.current = e => {
+            const { files } = e.target
+            if (files?.length) {
+              replaceWithNode(editor, () =>
+                $createParagraphNode().append(
+                  ...Array.from(files).map(file => $createImageNode({ file }))
+                )
+              )
+            }
+          }
+          imageInput.current?.click()
+        },
+      },
+      {
         icon: <Table />,
         title: 'Table',
         action: editor => replaceWithNode(editor, () => $createTableNodeWithDimensions(3, 3, true)),
@@ -174,6 +200,14 @@ export default function LexicalEditor(props: LexicalEditorProps) {
 
   return (
     <LexicalComposer initialConfig={initialConfig}>
+      <_ImageInput
+        type="file"
+        accept="image/*"
+        multiple
+        onChange={handleImageInputChange}
+        ref={imageInput}
+      />
+
       <EditorContainer className={props.className}>
         <LexicalRichTextPlugin
           contentEditable={<ContentEditable testid="lexical-editor" />}
@@ -218,6 +252,12 @@ const EditorContainer = styled.div`
   position: relative;
   display: flex;
   flex-direction: column;
+`
+
+const _ImageInput = styled.input`
+  position: fixed;
+  left: -1000px;
+  top: 0;
 `
 
 const ContentEditable = styled(LexicalContentEditable)`
