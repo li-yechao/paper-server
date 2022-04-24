@@ -22,14 +22,22 @@ import { useHeaderActions } from './state'
 export * from './state'
 
 export default function AppBar() {
-  const headerActions = useHeaderActions()
+  const { left, right } = useHeaderActions()
 
   return (
     <>
       <_Header>
         <_Logo>Paper</_Logo>
         <Space>
-          {headerActions.map(i => (
+          {left.map(i => (
+            <i.component {...i.props} key={i.key} />
+          ))}
+        </Space>
+
+        <_Spacing />
+
+        <Space>
+          {right.map(i => (
             <i.component {...i.props} key={i.key} />
           ))}
 
@@ -52,9 +60,12 @@ const _Header = styled.header`
   padding: 0 16px;
   display: flex;
   align-items: center;
-  justify-content: space-between;
   background-color: #ffffff;
   z-index: 100;
+`
+
+const _Spacing = styled.div`
+  flex: 1;
 `
 
 const _HeaderPlaceholder = styled.div`

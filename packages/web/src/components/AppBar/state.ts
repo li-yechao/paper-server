@@ -12,18 +12,23 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import produce from 'immer'
 import { ComponentType } from 'react'
 import { atom, useRecoilCallback, useRecoilValue } from 'recoil'
 
 export interface HeaderAction<P = unknown, C = ComponentType<P>> {
+  placement?: 'left' | 'right'
   key: string | number
   component: C
   props: P
 }
 
-const headerActionsState = atom<HeaderAction[]>({
+const headerActionsState = atom<{ left: HeaderAction[]; right: HeaderAction[] }>({
   key: 'headerActionsState',
-  default: [],
+  default: {
+    left: [],
+    right: [],
+  },
   dangerouslyAllowMutability: true,
 })
 
@@ -35,15 +40,17 @@ export function useHeaderActionsCtrl() {
   const append = useRecoilCallback(
     ({ set }) =>
       (action: HeaderAction<unknown>) => {
-        set(headerActionsState, actions => {
-          const as = [...actions]
-          const a = as.find(i => i.key === action.key)
-          if (a) {
-            Object.assign(a, action)
-          } else {
-            as.push(action)
-          }
-          return as
+        set(headerActionsState, state => {
+          return produce(state, draft => {
+            const placement = action.placement || 'right'
+            const actions = draft[placement]
+            const a = actions.find(i => i.key === action.key)
+            if (a) {
+              Object.assign(a, action)
+            } else {
+              actions.push(action)
+            }
+          })
         })
       },
     []
@@ -52,7 +59,16 @@ export function useHeaderActionsCtrl() {
   const remove = useRecoilCallback(
     ({ set }) =>
       (action: HeaderAction<unknown>) => {
-        set(headerActionsState, v => v.filter(i => i !== action))
+        set(headerActionsState, state => {
+          return produce(state, draft => {
+            const placement = action.placement || 'right'
+            const actions = draft[placement]
+            const index = actions.findIndex(i => i.key === action.key)
+            if (index >= 0) {
+              actions.splice(index, 1)
+            }
+          })
+        })
       },
     []
   )
