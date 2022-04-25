@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.0.0-alpha.6](https://github.com/li-yechao/paper/compare/@paper/lexical@1.0.0-alpha.5...@paper/lexical@1.0.0-alpha.6) (2022-04-26)
+
+### Features
+
+- add `TrailingParagraphPlugin` ([6cb5394](https://github.com/li-yechao/paper/commit/6cb5394fd5b582bae0519635cea4f243caf55915))
+
 # [1.0.0-alpha.5](https://github.com/li-yechao/paper/compare/@paper/lexical@1.0.0-alpha.4...@paper/lexical@1.0.0-alpha.5) (2022-04-23)
 
 ### Features

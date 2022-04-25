@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.0.0-alpha.31](https://github.com/li-yechao/paper/compare/@paper/web@1.0.0-alpha.30...@paper/web@1.0.0-alpha.31) (2022-04-26)
+
+### Features
+
+- add `TrailingParagraphPlugin` ([6cb5394](https://github.com/li-yechao/paper/commit/6cb5394fd5b582bae0519635cea4f243caf55915))
+- support collapse the list view ([de8e81a](https://github.com/li-yechao/paper/commit/de8e81a6446b2ff0f168d350e3b359f13d4aa97f))
+
 # [1.0.0-alpha.30](https://github.com/li-yechao/paper/compare/@paper/web@1.0.0-alpha.29...@paper/web@1.0.0-alpha.30) (2022-04-24)
 
 ### Features
