@@ -56,6 +56,7 @@ import FloatingToolbarPlugin, {
 } from '@paper/lexical/src/plugins/FloatingToolbarPlugin'
 import ImagePlugin from '@paper/lexical/src/plugins/ImagePlugin'
 import TableActionMenuPlugin from '@paper/lexical/src/plugins/TableActionMenuPlugin'
+import TrailingParagraphPlugin from '@paper/lexical/src/plugins/TrailingParagraphPlugin'
 import theme from '@paper/lexical/src/themes/theme'
 import { $createParagraphNode, EditorState } from 'lexical'
 import { ChangeEventHandler, ComponentProps, useCallback, useEffect, useMemo, useRef } from 'react'
@@ -223,6 +224,7 @@ export default function LexicalEditor(props: LexicalEditorProps) {
         <HistoryPlugin />
 
         <NoAutoFocusPlugin />
+        <TrailingParagraphPlugin />
         <BlockMenuPlugin commands={blockMenuCommands} />
         <ImagePlugin />
         <LexicalTablePlugin />
