@@ -75,6 +75,30 @@ export interface FloatingToolbarPluginProps {
 }
 
 export default function FloatingToolbarPlugin(props: FloatingToolbarPluginProps) {
+  const [open, setOpen] = useState(false)
+  const [editor] = useLexicalComposerContext()
+
+  useEffect(() => {
+    return editor.registerUpdateListener(({ editorState }) => {
+      editorState.read(() => {
+        const nativeSelection = window.getSelection()
+        if (nativeSelection?.rangeCount && !nativeSelection.isCollapsed) {
+          setOpen(true)
+        } else {
+          setOpen(false)
+        }
+      })
+    })
+  }, [editor])
+
+  if (!open) {
+    return null
+  }
+
+  return <FloatingToolbar {...props} />
+}
+
+function FloatingToolbar(props: FloatingToolbarPluginProps) {
   const [editor] = useLexicalComposerContext()
 
   const virtualElement = useRef<{ getBoundingClientRect: () => DOMRect }>({
