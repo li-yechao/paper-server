@@ -21,8 +21,8 @@ import {
   $isRangeSelection,
   $isRootNode,
   $isTextNode,
+  ElementNode,
   LexicalEditor,
-  LexicalNode,
   TextNode,
 } from 'lexical'
 import { ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react'
@@ -179,7 +179,7 @@ function BlockMenu({ editor, commands }: { editor: LexicalEditor; commands: Bloc
   )
 }
 
-export function replaceWithNode(editor: LexicalEditor, node: () => LexicalNode) {
+export function replaceWithNode(editor: LexicalEditor, node: () => ElementNode) {
   editor.update(() => {
     const selection = $getSelection()
     if (!$isRangeSelection(selection)) {
@@ -192,7 +192,7 @@ export function replaceWithNode(editor: LexicalEditor, node: () => LexicalNode) 
     if (!(anchorNode as TextNode).isSimpleText()) {
       return
     }
-    anchorNode.getParent()?.replace(node()).selectNext()
+    anchorNode.getParent()?.replace(node()).selectStart()
   })
 }
 
