@@ -13,13 +13,7 @@
 // limitations under the License.
 
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext'
-import {
-  $getSelection,
-  $isRangeSelection,
-  COMMAND_PRIORITY_EDITOR,
-  createCommand,
-  RangeSelection,
-} from 'lexical'
+import { $getSelection, $isRangeSelection, COMMAND_PRIORITY_EDITOR, createCommand } from 'lexical'
 import { useEffect } from 'react'
 import { $createEquationNode, EquationNode } from '../nodes/EquationNode'
 
@@ -45,7 +39,7 @@ export default function EquationsPlugin() {
         const selection = $getSelection()
         if ($isRangeSelection(selection)) {
           const equationNode = $createEquationNode(equation, inline)
-          ;(selection as RangeSelection).insertNodes([equationNode])
+          selection.insertNodes([equationNode])
         }
         return true
       },

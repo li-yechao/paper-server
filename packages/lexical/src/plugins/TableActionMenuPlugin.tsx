@@ -37,7 +37,6 @@ import {
   $setSelection,
   GridSelection,
   LexicalEditor,
-  RangeSelection,
 } from 'lexical'
 import { useCallback, useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
@@ -80,7 +79,7 @@ function TableActionMenu({ editor }: { editor: LexicalEditor }) {
 
         const selection = $getSelection()
         const cellNode = $isRangeSelection(selection)
-          ? $getTableCellNodeFromLexicalNode((selection as RangeSelection).anchor.getNode())
+          ? $getTableCellNodeFromLexicalNode(selection.anchor.getNode())
           : null
         if (cellNode) {
           setCellNode(cellNode)

@@ -23,7 +23,6 @@ import {
   $isTextNode,
   LexicalEditor,
   LexicalNode,
-  RangeSelection,
   TextNode,
 } from 'lexical'
 import { ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react'
@@ -52,7 +51,7 @@ export default function BlockMenuPlugin({ commands }: { commands: BlockMenuComma
           return
         }
 
-        const anchor = (selection as RangeSelection).anchor
+        const anchor = selection.anchor
         if (anchor.type !== 'text') {
           return
         }
@@ -186,8 +185,7 @@ export function replaceWithNode(editor: LexicalEditor, node: () => LexicalNode) 
     if (!$isRangeSelection(selection)) {
       return
     }
-    const s = selection as RangeSelection
-    const anchorNode = s.anchor.getNode()
+    const anchorNode = selection.anchor.getNode()
     if (!$isTextNode(anchorNode)) {
       return
     }

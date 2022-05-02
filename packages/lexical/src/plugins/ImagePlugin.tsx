@@ -13,13 +13,7 @@
 // limitations under the License.
 
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext'
-import {
-  $getSelection,
-  $isRangeSelection,
-  $isRootNode,
-  createCommand,
-  RangeSelection,
-} from 'lexical'
+import { $getSelection, $isRangeSelection, $isRootNode, createCommand } from 'lexical'
 import { useEffect } from 'react'
 import { $createImageNode, ImageNode, ImageNodeOptions } from '../nodes/ImageNode'
 
@@ -38,12 +32,11 @@ export default function ImagePlugin() {
       payload => {
         const selection = $getSelection()
         if ($isRangeSelection(selection)) {
-          const s = selection as RangeSelection
-          if ($isRootNode(s.anchor.getNode())) {
-            s.insertParagraph()
+          if ($isRootNode(selection.anchor.getNode())) {
+            selection.insertParagraph()
           }
           const img = $createImageNode(payload)
-          s.insertNodes([img])
+          selection.insertNodes([img])
         }
         return true
       },

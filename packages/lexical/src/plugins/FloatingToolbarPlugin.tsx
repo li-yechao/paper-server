@@ -258,7 +258,7 @@ export function ToggleFormatButton({
         const selection = $getSelection()
 
         if ($isRangeSelection(selection)) {
-          setActive((selection as RangeSelection).hasFormat(type))
+          setActive(selection.hasFormat(type))
         } else {
           setActive(false)
         }
@@ -299,7 +299,7 @@ export function ToggleLinkButton() {
         const selection = $getSelection()
 
         if ($isRangeSelection(selection)) {
-          const node = getSelectedNode(selection as RangeSelection)
+          const node = getSelectedNode(selection)
           setActive($isLinkNode(node) || $isLinkNode(node.getParent()))
         } else {
           setActive(false)
@@ -332,7 +332,7 @@ ToggleLinkButton.Extra = () => {
         let link: LinkNode | undefined
 
         if ($isRangeSelection(selection)) {
-          const node = getSelectedNode(selection as RangeSelection)
+          const node = getSelectedNode(selection)
           const parent = node.getParent()
           if ($isLinkNode(parent)) {
             link = parent as any
@@ -444,7 +444,7 @@ export function ToggleBlockButton({ type }: { type: 'h1' | 'h2' | 'h3' | 'quote'
         let active = false
 
         if ($isRangeSelection(selection)) {
-          const node = getSelectedNode(selection as RangeSelection).getParent()
+          const node = getSelectedNode(selection).getParent()
           if (node) {
             if (type === 'h1' || type === 'h2' || type === 'h3') {
               if ($isHeadingNode(node)) {
@@ -477,21 +477,14 @@ export function ToggleBlockButton({ type }: { type: 'h1' | 'h2' | 'h3' | 'quote'
 
       if ($isRangeSelection(selection)) {
         if (active) {
-          $wrapLeafNodesInElements(selection as RangeSelection, () => $createParagraphNode())
+          $wrapLeafNodesInElements(selection, () => $createParagraphNode())
         } else {
           if (type === 'h1' || type === 'h2' || type === 'h3') {
-            $wrapLeafNodesInElements(
-              selection as RangeSelection,
-              () => $createHeadingNode(type) as any
-            )
+            $wrapLeafNodesInElements(selection, () => $createHeadingNode(type) as any)
           } else if (type === 'quote') {
-            $wrapLeafNodesInElements(selection as RangeSelection, () => $createQuoteNode() as any)
+            $wrapLeafNodesInElements(selection, () => $createQuoteNode() as any)
           } else if (type === 'ol' || type === 'ul') {
-            $wrapLeafNodesInElements(
-              selection as RangeSelection,
-              () => $createListItemNode(),
-              $createListNode(type)
-            )
+            $wrapLeafNodesInElements(selection, () => $createListItemNode(), $createListNode(type))
           }
         }
       }
