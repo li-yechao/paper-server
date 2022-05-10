@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.0.0-alpha.34](https://github.com/li-yechao/paper/compare/@paper/web@1.0.0-alpha.33...@paper/web@1.0.0-alpha.34) (2022-05-11)
+
+### Features
+
+- give large aside in a large screen ([5bb3556](https://github.com/li-yechao/paper/commit/5bb355604582ad8e05cfc994557e8d03bd23e988))
+
 # [1.0.0-alpha.33](https://github.com/li-yechao/paper/compare/@paper/web@1.0.0-alpha.32...@paper/web@1.0.0-alpha.33) (2022-05-06)
 
 **Note:** Version bump only for package @paper/web
