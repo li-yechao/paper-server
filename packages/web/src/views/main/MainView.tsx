@@ -153,6 +153,10 @@ const _Container = styled.div`
     width: 200px;
     border-right: 1px solid #efefef;
     background-color: #ffffff;
+
+    @media (min-width: 1000px) {
+      width: 300px;
+    }
   }
 
   &.small-screen {
