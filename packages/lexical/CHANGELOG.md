@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.0.0-alpha.10](https://github.com/li-yechao/paper/compare/@paper/lexical@1.0.0-alpha.9...@paper/lexical@1.0.0-alpha.10) (2022-06-14)
+
+### Bug Fixes
+
+- correctly create lexical node ([69a0078](https://github.com/li-yechao/paper/commit/69a0078ffdb5063ff5ba42ee96b20ebefdad887b))
+
 # [1.0.0-alpha.9](https://github.com/li-yechao/paper/compare/@paper/lexical@1.0.0-alpha.8...@paper/lexical@1.0.0-alpha.9) (2022-06-14)
 
 **Note:** Version bump only for package @paper/lexical

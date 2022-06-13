@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.0.0-alpha.36](https://github.com/li-yechao/paper/compare/@paper/web@1.0.0-alpha.35...@paper/web@1.0.0-alpha.36) (2022-06-14)
+
+### Bug Fixes
+
+- correct aside spacing ([c77a633](https://github.com/li-yechao/paper/commit/c77a633b8091ca146fe7cec04735e10ec106493e))
+
 # [1.0.0-alpha.35](https://github.com/li-yechao/paper/compare/@paper/web@1.0.0-alpha.34...@paper/web@1.0.0-alpha.35) (2022-06-14)
 
 **Note:** Version bump only for package @paper/web
