@@ -16,16 +16,16 @@ import styled from '@emotion/styled'
 import { $createCodeNode, CodeHighlightNode, CodeNode } from '@lexical/code'
 import { AutoLinkNode, LinkNode } from '@lexical/link'
 import { $createListItemNode, $createListNode, ListItemNode, ListNode } from '@lexical/list'
-import LexicalAutoLinkPlugin from '@lexical/react/LexicalAutoLinkPlugin'
-import LexicalComposer from '@lexical/react/LexicalComposer'
+import { AutoLinkPlugin } from '@lexical/react/LexicalAutoLinkPlugin'
+import { LexicalComposer } from '@lexical/react/LexicalComposer'
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext'
-import LexicalContentEditable from '@lexical/react/LexicalContentEditable'
+import { ContentEditable } from '@lexical/react/LexicalContentEditable'
 import { HistoryPlugin } from '@lexical/react/LexicalHistoryPlugin'
-import LexicalLinkPlugin from '@lexical/react/LexicalLinkPlugin'
-import LexicalMarkdownShortcutPlugin from '@lexical/react/LexicalMarkdownShortcutPlugin'
-import LexicalOnChangePlugin from '@lexical/react/LexicalOnChangePlugin'
-import LexicalRichTextPlugin from '@lexical/react/LexicalRichTextPlugin'
-import LexicalTablePlugin from '@lexical/react/LexicalTablePlugin'
+import { LinkPlugin } from '@lexical/react/LexicalLinkPlugin'
+import { MarkdownShortcutPlugin } from '@lexical/react/LexicalMarkdownShortcutPlugin'
+import { OnChangePlugin } from '@lexical/react/LexicalOnChangePlugin'
+import { RichTextPlugin } from '@lexical/react/LexicalRichTextPlugin'
+import { TablePlugin } from '@lexical/react/LexicalTablePlugin'
 import { $createHeadingNode, $createQuoteNode, HeadingNode, QuoteNode } from '@lexical/rich-text'
 import {
   $createTableNodeWithDimensions,
@@ -79,6 +79,7 @@ export default function LexicalEditor(props: LexicalEditorProps) {
 
   const initialConfig = useMemo<ComponentProps<typeof LexicalComposer>['initialConfig']>(
     () => ({
+      namespace: 'editor',
       readOnly: props.readOnly,
       nodes: [
         HeadingNode,
@@ -167,13 +168,13 @@ export default function LexicalEditor(props: LexicalEditorProps) {
         icon: <OrderedList />,
         title: 'Ordered List',
         action: editor =>
-          replaceWithNode(editor, () => $createListNode('ol').append($createListItemNode())),
+          replaceWithNode(editor, () => $createListNode('number').append($createListItemNode())),
       },
       {
         icon: <BulletList />,
         title: 'Bullet List',
         action: editor =>
-          replaceWithNode(editor, () => $createListNode('ul').append($createListItemNode())),
+          replaceWithNode(editor, () => $createListNode('bullet').append($createListItemNode())),
       },
       {
         icon: <Image />,
@@ -211,23 +212,23 @@ export default function LexicalEditor(props: LexicalEditorProps) {
       />
 
       <EditorContainer className={props.className}>
-        <LexicalRichTextPlugin
-          contentEditable={<ContentEditable testid="lexical-editor" />}
+        <RichTextPlugin
+          contentEditable={<_ContentEditable testid="lexical-editor" />}
           placeholder={<Placeholder>Input something...</Placeholder>}
           initialEditorState={props.defaultValue}
         />
-        {props.onChange && <LexicalOnChangePlugin onChange={props.onChange} />}
-        <LexicalAutoLinkPlugin matchers={autoLinkMatchers} />
-        <LexicalLinkPlugin />
+        {props.onChange && <OnChangePlugin onChange={props.onChange} />}
+        <AutoLinkPlugin matchers={autoLinkMatchers} />
+        <LinkPlugin />
         <CodeHighlightPlugin />
-        <LexicalMarkdownShortcutPlugin />
+        <MarkdownShortcutPlugin />
         <HistoryPlugin />
 
         <NoAutoFocusPlugin />
         <TrailingParagraphPlugin />
         <BlockMenuPlugin commands={blockMenuCommands} />
         <ImagePlugin />
-        <LexicalTablePlugin />
+        <TablePlugin />
         <TableActionMenuPlugin />
         <FloatingToolbarPlugin>
           <ToggleFormatButton type="bold" />
@@ -276,7 +277,7 @@ const _ImageInput = styled.input`
   top: 0;
 `
 
-const ContentEditable = styled(LexicalContentEditable)`
+const _ContentEditable = styled(ContentEditable)`
   outline: none;
   flex-grow: 1;
 `
