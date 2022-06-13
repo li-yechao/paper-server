@@ -153,8 +153,12 @@ const _Container = styled.div`
     width: 200px;
     border-right: 1px solid #efefef;
     background-color: #ffffff;
+  }
 
-    @media (min-width: 1000px) {
+  @media (min-width: 1000px) {
+    padding-left: 300px;
+
+    > aside {
       width: 300px;
     }
   }
