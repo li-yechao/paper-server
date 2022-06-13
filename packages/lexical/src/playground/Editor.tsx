@@ -16,12 +16,12 @@ import styled from '@emotion/styled'
 import { CodeHighlightNode, CodeNode } from '@lexical/code'
 import { LinkNode } from '@lexical/link'
 import { ListItemNode, ListNode } from '@lexical/list'
-import LexicalComposer from '@lexical/react/LexicalComposer'
-import LexicalContentEditable from '@lexical/react/LexicalContentEditable'
-import LexicalLinkPlugin from '@lexical/react/LexicalLinkPlugin'
-import LexicalMarkdownShortcutPlugin from '@lexical/react/LexicalMarkdownShortcutPlugin'
-import LexicalRichTextPlugin from '@lexical/react/LexicalRichTextPlugin'
-import LexicalTablePlugin from '@lexical/react/LexicalTablePlugin'
+import { LexicalComposer } from '@lexical/react/LexicalComposer'
+import { ContentEditable } from '@lexical/react/LexicalContentEditable'
+import { LinkPlugin } from '@lexical/react/LexicalLinkPlugin'
+import { MarkdownShortcutPlugin } from '@lexical/react/LexicalMarkdownShortcutPlugin'
+import { RichTextPlugin } from '@lexical/react/LexicalRichTextPlugin'
+import { TablePlugin } from '@lexical/react/LexicalTablePlugin'
 import { HeadingNode, QuoteNode } from '@lexical/rich-text'
 import { TableCellNode, TableNode, TableRowNode } from '@lexical/table'
 import { $getRoot } from 'lexical'
@@ -46,6 +46,7 @@ export interface EditorProps {
 
 export default function Editor(props: EditorProps) {
   const initialConfig: ComponentProps<typeof LexicalComposer>['initialConfig'] = {
+    namespace: 'editor',
     nodes: [
       HeadingNode,
       QuoteNode,
@@ -75,19 +76,19 @@ export default function Editor(props: EditorProps) {
         }}
       >
         <EditorContainer className={props.className}>
-          <LexicalRichTextPlugin
-            contentEditable={<ContentEditable testid="lexical-editor" />}
+          <RichTextPlugin
+            contentEditable={<_ContentEditable testid="lexical-editor" />}
             placeholder={<Placeholder>Input something...</Placeholder>}
             initialEditorState={() =>
               initialEditorStateFromProsemirrorDoc($getRoot(), PROSEMIRROR_DOCUMENT)
             }
           />
-          <LexicalLinkPlugin />
+          <LinkPlugin />
           <CodeHighlightPlugin />
-          <LexicalMarkdownShortcutPlugin />
+          <MarkdownShortcutPlugin />
 
           <ImagePlugin />
-          <LexicalTablePlugin />
+          <TablePlugin />
           <TableActionMenuPlugin />
           <FloatingToolbarPlugin>
             <ToggleFormatButton type="bold" />
@@ -119,7 +120,7 @@ const EditorContainer = styled.div`
   flex-direction: column;
 `
 
-const ContentEditable = styled(LexicalContentEditable)`
+const _ContentEditable = styled(ContentEditable)`
   outline: none;
   flex-grow: 1;
 `

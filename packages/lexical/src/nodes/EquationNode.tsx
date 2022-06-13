@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { DecoratorNode, LexicalNode, NodeKey } from 'lexical'
+import { DecoratorNode, LexicalNode, NodeKey, SerializedLexicalNode, Spread } from 'lexical'
 import katex from 'katex'
 import 'katex/dist/katex.css'
 import { ReactNode, useEffect, useRef } from 'react'
@@ -44,16 +44,30 @@ function EquationComponent({ equation, inline }: EquationComponentProps) {
   return <span ref={ref} />
 }
 
+export type SerializedEquationNode = Spread<
+  {
+    type: 'equation'
+    version: 1
+    equation: string
+    inline: boolean
+  },
+  SerializedLexicalNode
+>
+
 export class EquationNode extends DecoratorNode<ReactNode> {
   __equation: string
   __inline: boolean
 
-  static getType(): string {
+  static override getType(): string {
     return 'equation'
   }
 
   static clone(node: EquationNode): EquationNode {
     return new EquationNode(node.__equation, node.__inline, node.__key)
+  }
+
+  static importJSON(serializedNode: SerializedEquationNode): EquationNode {
+    return $createEquationNode(serializedNode.equation, serializedNode.inline)
   }
 
   constructor(equation: string, inline?: boolean, key?: NodeKey) {
@@ -72,7 +86,7 @@ export class EquationNode extends DecoratorNode<ReactNode> {
   }
 
   setEquation(equation: string): void {
-    const writable = this.getWritable<EquationNode>()
+    const writable = this.getWritable()
     writable.__equation = equation
   }
 
@@ -80,6 +94,15 @@ export class EquationNode extends DecoratorNode<ReactNode> {
     return (
       <EquationComponent equation={this.__equation} inline={this.__inline} nodeKey={this.__key} />
     )
+  }
+
+  override exportJSON(): SerializedEquationNode {
+    return {
+      type: 'equation',
+      version: 1,
+      equation: this.__equation,
+      inline: this.__inline,
+    }
   }
 }
 

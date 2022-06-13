@@ -14,7 +14,15 @@
 
 import styled from '@emotion/styled'
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext'
-import { $getNodeByKey, DecoratorNode, EditorConfig, LexicalNode, NodeKey } from 'lexical'
+import {
+  $getNodeByKey,
+  DecoratorNode,
+  EditorConfig,
+  LexicalNode,
+  NodeKey,
+  SerializedLexicalNode,
+  Spread,
+} from 'lexical'
 import { createContext, ReactNode, useContext, useEffect, useMemo } from 'react'
 import { useAsync } from 'react-use'
 import { getImageThumbnail, readAsDataURL } from '../utils/image'
@@ -40,6 +48,21 @@ const imageNodeContext = createContext<
   | undefined
 >(undefined)
 
+export type SerializedImageNode = Spread<
+  {
+    type: 'image'
+    version: 1
+    src?: string
+    naturalWidth?: number
+    naturalHeight?: number
+    thumbnail?: string
+    width?: number
+    height?: number
+    caption?: string
+  },
+  SerializedLexicalNode
+>
+
 export class ImageNode extends DecoratorNode<ReactNode> {
   static Provider = imageNodeContext.Provider
 
@@ -52,7 +75,7 @@ export class ImageNode extends DecoratorNode<ReactNode> {
   __height?: number
   __caption?: string
 
-  static getType() {
+  static override getType() {
     return 'image'
   }
 
@@ -70,6 +93,10 @@ export class ImageNode extends DecoratorNode<ReactNode> {
     })
   }
 
+  static importJSON(serializedNode: SerializedImageNode): ImageNode {
+    return $createImageNode(serializedNode)
+  }
+
   constructor(options: ImageNodeOptions & { key?: NodeKey }) {
     super(options.key)
     this.file = options.file
@@ -85,7 +112,7 @@ export class ImageNode extends DecoratorNode<ReactNode> {
   setOptions(
     options: Pick<ImageNodeOptions, 'naturalWidth' | 'naturalHeight' | 'thumbnail' | 'src'>
   ) {
-    const writable = this.getWritable<ImageNode>()
+    const writable = this.getWritable()
     if (options.naturalWidth !== undefined) {
       writable.__naturalWidth = options.naturalWidth
     }
@@ -101,22 +128,22 @@ export class ImageNode extends DecoratorNode<ReactNode> {
   }
 
   setWidthAndHeight(width: number | undefined, height: number | undefined) {
-    const writable = this.getWritable<ImageNode>()
+    const writable = this.getWritable()
     writable.__width = width
     writable.__height = height
   }
 
   setThumbnail(thumbnail: string | undefined) {
-    const writable = this.getWritable<ImageNode>()
+    const writable = this.getWritable()
     writable.__thumbnail = thumbnail
   }
 
   setCaption(caption: string | undefined) {
-    const writable = this.getWritable<ImageNode>()
+    const writable = this.getWritable()
     writable.__caption = caption
   }
 
-  override createDOM<EditorContext>(config: EditorConfig<EditorContext>): HTMLElement {
+  override createDOM(config: EditorConfig): HTMLElement {
     const span = document.createElement('span')
     if (config.theme.image) {
       span.classList.add(config.theme.image)
@@ -141,6 +168,20 @@ export class ImageNode extends DecoratorNode<ReactNode> {
         nodeKey={this.__key}
       />
     )
+  }
+
+  override exportJSON(): SerializedImageNode {
+    return {
+      type: 'image',
+      version: 1,
+      src: this.__src,
+      thumbnail: this.__thumbnail,
+      naturalWidth: this.__naturalWidth,
+      naturalHeight: this.__naturalHeight,
+      width: this.__width,
+      height: this.__height,
+      caption: this.__caption,
+    }
   }
 }
 
