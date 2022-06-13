@@ -60,13 +60,13 @@ function parseBlock(parent: ElementNode, block: any) {
       break
     }
     case 'ordered_list': {
-      const node = $createListNode('ol')
+      const node = $createListNode('number')
       parseContents(node, block.content)
       parent.append(node)
       break
     }
     case 'bullet_list': {
-      const node = $createListNode('ul')
+      const node = $createListNode('bullet')
       parseContents(node, block.content)
       parent.append(node)
       break
@@ -103,16 +103,13 @@ function parseBlock(parent: ElementNode, block: any) {
       break
     }
     case 'th': {
-      const node = $createTableCellNode()
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-expect-error
-      node.setHeaderStyles(TableCellHeaderStates.ROW)
+      const node = $createTableCellNode(TableCellHeaderStates.ROW)
       parseContents(node, block.content)
       parent.append(node)
       break
     }
     case 'td': {
-      const node = $createTableCellNode()
+      const node = $createTableCellNode(TableCellHeaderStates.NO_STATUS)
       parseContents(node, block.content)
       parent.append(node)
       break

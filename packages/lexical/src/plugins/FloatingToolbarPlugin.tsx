@@ -484,7 +484,11 @@ export function ToggleBlockButton({ type }: { type: 'h1' | 'h2' | 'h3' | 'quote'
           } else if (type === 'quote') {
             $wrapLeafNodesInElements(selection, () => $createQuoteNode() as any)
           } else if (type === 'ol' || type === 'ul') {
-            $wrapLeafNodesInElements(selection, () => $createListItemNode(), $createListNode(type))
+            $wrapLeafNodesInElements(
+              selection,
+              () => $createListItemNode(),
+              $createListNode(type === 'ol' ? 'number' : 'bullet')
+            )
           }
         }
       }
