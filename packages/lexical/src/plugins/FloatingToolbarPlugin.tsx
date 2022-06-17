@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import { cx } from '@emotion/css'
 import styled from '@emotion/styled'
 import { $isLinkNode, LinkNode, TOGGLE_LINK_COMMAND } from '@lexical/link'
 import {
@@ -37,6 +38,7 @@ import {
   $isRangeSelection,
   ElementNode,
   FORMAT_TEXT_COMMAND,
+  LexicalEditor,
   RangeSelection,
   TextNode,
 } from 'lexical'
@@ -77,6 +79,7 @@ export interface FloatingToolbarPluginProps {
 export default function FloatingToolbarPlugin(props: FloatingToolbarPluginProps) {
   const [open, setOpen] = useState(false)
   const [editor] = useLexicalComposerContext()
+  const enabled = useEnabled(editor)
 
   useEffect(() => {
     return editor.registerUpdateListener(({ editorState }) => {
@@ -95,10 +98,35 @@ export default function FloatingToolbarPlugin(props: FloatingToolbarPluginProps)
     return null
   }
 
-  return <FloatingToolbar {...props} />
+  return <FloatingToolbar {...props} enabled={enabled} />
 }
 
-function FloatingToolbar(props: FloatingToolbarPluginProps) {
+function useEnabled(editor: LexicalEditor) {
+  const [enabled, setEnabled] = useState(true)
+
+  useEffect(() => {
+    const editorElement = editor.getRootElement()
+
+    const handleMouseDown = () => {
+      setEnabled(false)
+    }
+    const handleMouseUp = () => {
+      setEnabled(true)
+    }
+
+    editorElement?.addEventListener('mousedown', handleMouseDown, true)
+    window.addEventListener('mouseup', handleMouseUp, true)
+
+    return () => {
+      editorElement?.removeEventListener('mousedown', handleMouseDown, true)
+      window.removeEventListener('mouseup', handleMouseUp, true)
+    }
+  }, [editor])
+
+  return enabled
+}
+
+function FloatingToolbar(props: FloatingToolbarPluginProps & { enabled?: boolean }) {
   const [editor] = useLexicalComposerContext()
 
   const virtualElement = useRef<{ getBoundingClientRect: () => DOMRect }>({
@@ -141,7 +169,12 @@ function FloatingToolbar(props: FloatingToolbarPluginProps) {
   })
 
   return createPortal(
-    <_Toolbar ref={setPopperElement} style={styles['popper']} {...attributes['popper']}>
+    <_Toolbar
+      ref={setPopperElement}
+      style={styles['popper']}
+      {...attributes['popper']}
+      className={cx(props.enabled && 'available')}
+    >
       <div ref={setArrowElement} className="arrow" style={styles['arrow']} />
 
       <_Buttons>{buttons}</_Buttons>
@@ -156,6 +189,11 @@ const _Toolbar = styled.div`
   background-color: #ffffff;
   box-shadow: 0 5px 10px #0000004d;
   border-radius: 8px;
+  pointer-events: none;
+
+  &.available {
+    pointer-events: all;
+  }
 
   > .arrow {
     position: absolute;
