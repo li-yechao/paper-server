@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.0.0-alpha.11](https://github.com/li-yechao/paper/compare/@paper/lexical@1.0.0-alpha.10...@paper/lexical@1.0.0-alpha.11) (2022-06-17)
+
+### Bug Fixes
+
+- ignore all toolbar events until the selection is complete ([a8d0dc1](https://github.com/li-yechao/paper/commit/a8d0dc18d48e760b008c09f632dfe78949fc6cc5))
+
 # [1.0.0-alpha.10](https://github.com/li-yechao/paper/compare/@paper/lexical@1.0.0-alpha.9...@paper/lexical@1.0.0-alpha.10) (2022-06-14)
 
 ### Bug Fixes
