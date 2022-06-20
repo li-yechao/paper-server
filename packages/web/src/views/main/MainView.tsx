@@ -12,10 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { MenuOutlined } from '@ant-design/icons'
+import { LoadingOutlined, MenuOutlined } from '@ant-design/icons'
 import { cx } from '@emotion/css'
 import styled from '@emotion/styled'
-import { Button } from 'antd'
+import { Button, Spin } from 'antd'
 import { lazy, Suspense, useEffect, useMemo, useState } from 'react'
 import { Route, Routes, useParams } from 'react-router-dom'
 import { useToggle } from 'react-use'
@@ -74,7 +74,7 @@ export default function MainView() {
 
         <main>
           <ErrorBoundary fallback={ErrorViewLazy}>
-            <Suspense fallback={<div />}>
+            <Suspense fallback={<Loading />}>
               <Routes>
                 <Route index element={<div />} />
                 <Route path=":objectId" element={<ObjectEditorLazy />} />
@@ -88,11 +88,15 @@ export default function MainView() {
   }
 
   return (
-    <Routes>
-      <Route index element={<Forbidden />} />
-      <Route path=":objectId" element={<ObjectEditorLazy />} />
-      <Route path="*" element={<NotFoundViewLazy />} />
-    </Routes>
+    <ErrorBoundary fallback={ErrorViewLazy}>
+      <Suspense fallback={<Loading />}>
+        <Routes>
+          <Route index element={<Forbidden />} />
+          <Route path=":objectId" element={<ObjectEditorLazy />} />
+          <Route path="*" element={<NotFoundViewLazy />} />
+        </Routes>
+      </Suspense>
+    </ErrorBoundary>
   )
 }
 
@@ -179,6 +183,22 @@ const _Container = styled.div`
     }
   }
 `
+
+const _Loading = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin-top: 40vh;
+`
+
+const Loading = () => {
+  return (
+    <_Loading>
+      <Spin indicator={<LoadingOutlined spin />} />
+    </_Loading>
+  )
+}
 
 const ObjectListLazy = lazy(() => import('./ObjectList'))
 
