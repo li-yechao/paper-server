@@ -13,9 +13,9 @@
 // limitations under the License.
 
 import styled from '@emotion/styled'
-import { Button, Form, Input, message } from 'antd'
+import { Button, Form, Input, InputRef, message } from 'antd'
 import { keys, PrivateKey } from 'libp2p-crypto'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { fromString } from 'uint8arrays/from-string'
 import { toString } from 'uint8arrays/to-string'
@@ -28,17 +28,35 @@ export interface AuthViewProps {
 export default function AuthView(props: AuthViewProps) {
   const navigate = useNavigate()
   const signIn = useSignIn()
+  const passwordRef = useRef<InputRef>(null)
   const [key, setKey] = useState<PrivateKey>()
   const [value, setValue] = useState('')
+  const [id, setId] = useState('')
 
   useEffect(() => {
     if (key) {
       setValue(toString(new Uint8Array(key.bytes), 'base64'))
     }
+    !(async () => {
+      const id = await key?.id()
+      setId(id || '')
+    })()
   }, [key])
+
+  useEffect(() => {
+    !(async () => {
+      try {
+        const key = await keys.unmarshalPrivateKey(fromString(value, 'base64'))
+        setId(await key.id())
+      } catch {
+        setId('')
+      }
+    })()
+  }, [value])
 
   const handleNewAccount = useCallback(async () => {
     setKey(await keys.generateKeyPair('Ed25519'))
+    passwordRef.current?.focus()
   }, [])
 
   const handleSignIn = async () => {
@@ -56,10 +74,17 @@ export default function AuthView(props: AuthViewProps) {
     <_Card>
       <Form>
         <Form.Item>
-          <Input.TextArea
+          <Input id="username" autoComplete="username" type="text" value={id} readOnly disabled />
+        </Form.Item>
+
+        <Form.Item>
+          <Input.Password
+            ref={passwordRef}
             data-testid="input-privatekey"
+            id="current-password"
+            autoComplete="current-password"
             placeholder="Input or generate your private key"
-            autoSize={{ minRows: 3 }}
+            type="password"
             value={value}
             onChange={e => setValue(e.target.value)}
           />
