@@ -16,6 +16,7 @@ import styled from '@emotion/styled'
 import { $createCodeNode, CodeHighlightNode, CodeNode } from '@lexical/code'
 import { AutoLinkNode, LinkNode } from '@lexical/link'
 import { $createListItemNode, $createListNode, ListItemNode, ListNode } from '@lexical/list'
+import { TRANSFORMERS } from '@lexical/markdown'
 import { AutoLinkPlugin } from '@lexical/react/LexicalAutoLinkPlugin'
 import { LexicalComposer } from '@lexical/react/LexicalComposer'
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext'
@@ -40,9 +41,14 @@ import Heading1 from '@paper/lexical/src/icons/Heading1'
 import Heading2 from '@paper/lexical/src/icons/Heading2'
 import Heading3 from '@paper/lexical/src/icons/Heading3'
 import Image from '@paper/lexical/src/icons/Image'
+import Math from '@paper/lexical/src/icons/Math'
 import OrderedList from '@paper/lexical/src/icons/OrderedList'
 import Table from '@paper/lexical/src/icons/Table'
-import { EquationNode } from '@paper/lexical/src/nodes/EquationNode'
+import {
+  $createEquationNode,
+  $isEquationNode,
+  EquationNode,
+} from '@paper/lexical/src/nodes/EquationNode'
 import { $createImageNode, ImageNode } from '@paper/lexical/src/nodes/ImageNode'
 import BlockMenuPlugin, {
   BlockMenuCommand,
@@ -58,7 +64,7 @@ import ImagePlugin from '@paper/lexical/src/plugins/ImagePlugin'
 import TableActionMenuPlugin from '@paper/lexical/src/plugins/TableActionMenuPlugin'
 import TrailingParagraphPlugin from '@paper/lexical/src/plugins/TrailingParagraphPlugin'
 import theme from '@paper/lexical/src/themes/theme'
-import { $createParagraphNode, EditorState } from 'lexical'
+import { $createParagraphNode, EditorState, LexicalNode } from 'lexical'
 import { ChangeEventHandler, ComponentProps, useCallback, useEffect, useMemo, useRef } from 'react'
 
 export interface LexicalEditorProps {
@@ -198,6 +204,61 @@ export default function LexicalEditor(props: LexicalEditorProps) {
         title: 'Table',
         action: editor => replaceWithNode(editor, () => $createTableNodeWithDimensions(3, 3, true)),
       },
+      {
+        icon: <Math />,
+        title: 'Equation',
+        action: editor =>
+          replaceWithNode(editor, () =>
+            $createParagraphNode().append($createEquationNode('', true))
+          ),
+      },
+      {
+        icon: <Math />,
+        title: 'Equation Block',
+        action: editor =>
+          replaceWithNode(editor, () =>
+            $createParagraphNode().append($createEquationNode('', false))
+          ),
+      },
+    ]
+  }, [])
+
+  const transformers = useMemo<
+    ComponentProps<typeof MarkdownShortcutPlugin>['transformers']
+  >(() => {
+    const exportEquation = (node: LexicalNode) => {
+      if (!$isEquationNode(node)) {
+        return null
+      }
+      const inline = node.getInline()
+      const equation = node.getEquation()
+      if (inline) {
+        return `$${equation}$`
+      } else {
+        return `$$${equation}$$`
+      }
+    }
+
+    return [
+      ...TRANSFORMERS,
+      {
+        export: exportEquation,
+        importRegExp: /\$(\S+)\$/,
+        regExp: /\$(.+)\$$/,
+        replace: (textNode, match) => {
+          textNode.replace($createEquationNode(match[1], true))
+        },
+        trigger: '$',
+        type: 'text-match',
+      },
+      {
+        export: exportEquation,
+        regExp: /^\$\$\s/,
+        replace: parentNode => {
+          parentNode.replace($createParagraphNode().append($createEquationNode('', false)))
+        },
+        type: 'element',
+      },
     ]
   }, [])
 
@@ -221,7 +282,7 @@ export default function LexicalEditor(props: LexicalEditorProps) {
         <AutoLinkPlugin matchers={autoLinkMatchers} />
         <LinkPlugin />
         <CodeHighlightPlugin />
-        <MarkdownShortcutPlugin />
+        <MarkdownShortcutPlugin transformers={transformers} />
         <HistoryPlugin />
 
         <NoAutoFocusPlugin />

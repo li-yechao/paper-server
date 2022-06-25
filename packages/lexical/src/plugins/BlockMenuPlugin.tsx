@@ -23,6 +23,7 @@ import {
   $isTextNode,
   ElementNode,
   LexicalEditor,
+  LexicalNode,
   TextNode,
 } from 'lexical'
 import { ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react'
@@ -179,7 +180,7 @@ function BlockMenu({ editor, commands }: { editor: LexicalEditor; commands: Bloc
   )
 }
 
-export function replaceWithNode(editor: LexicalEditor, node: () => ElementNode) {
+export function replaceWithNode(editor: LexicalEditor, node: () => LexicalNode) {
   editor.update(() => {
     const selection = $getSelection()
     if (!$isRangeSelection(selection)) {
@@ -192,7 +193,14 @@ export function replaceWithNode(editor: LexicalEditor, node: () => ElementNode) 
     if (!(anchorNode as TextNode).isSimpleText()) {
       return
     }
-    anchorNode.getParent()?.replace(node()).selectStart()
+    const n = node()
+    anchorNode.getParent()?.replace(n)
+    if (n instanceof ElementNode) {
+      console.log('n is ElementNode')
+      n.selectStart()
+    } else {
+      n.selectPrevious()
+    }
   })
 }
 
