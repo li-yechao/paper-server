@@ -79,7 +79,7 @@ export class ImageNode extends DecoratorNode<ReactNode> {
     return 'image'
   }
 
-  static clone(node: ImageNode) {
+  static override clone(node: ImageNode) {
     return new ImageNode({
       file: node.file,
       src: node.__src,
@@ -93,7 +93,7 @@ export class ImageNode extends DecoratorNode<ReactNode> {
     })
   }
 
-  static importJSON(serializedNode: SerializedImageNode): ImageNode {
+  static override importJSON(serializedNode: SerializedImageNode): ImageNode {
     return $createImageNode(serializedNode)
   }
 

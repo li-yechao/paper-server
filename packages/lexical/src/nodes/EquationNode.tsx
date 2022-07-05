@@ -45,11 +45,11 @@ export class EquationNode extends DecoratorNode<ReactNode> {
     return 'equation'
   }
 
-  static clone(node: EquationNode): EquationNode {
+  static override clone(node: EquationNode): EquationNode {
     return new EquationNode(node.__equation, node.__inline, node.__key)
   }
 
-  static importJSON(serializedNode: SerializedEquationNode): EquationNode {
+  static override importJSON(serializedNode: SerializedEquationNode): EquationNode {
     return $createEquationNode(serializedNode.equation, serializedNode.inline)
   }
 
