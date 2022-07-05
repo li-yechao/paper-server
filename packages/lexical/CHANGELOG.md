@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.0.0-alpha.14](https://github.com/li-yechao/paper/compare/@paper/lexical@1.0.0-alpha.13...@paper/lexical@1.0.0-alpha.14) (2022-07-06)
+
+### Bug Fixes
+
+- add `override` modifier ([6ffe243](https://github.com/li-yechao/paper/commit/6ffe243c855ee4a7445a1c63eaf325ccbbee1c5d))
+
 # [1.0.0-alpha.13](https://github.com/li-yechao/paper/compare/@paper/lexical@1.0.0-alpha.12...@paper/lexical@1.0.0-alpha.13) (2022-07-06)
 
 **Note:** Version bump only for package @paper/lexical
