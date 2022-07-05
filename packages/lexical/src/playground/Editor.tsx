@@ -65,6 +65,7 @@ export default function Editor(props: EditorProps) {
     onError: e => {
       throw e
     },
+    editorState: () => initialEditorStateFromProsemirrorDoc($getRoot(), PROSEMIRROR_DOCUMENT),
   }
 
   return (
@@ -79,9 +80,6 @@ export default function Editor(props: EditorProps) {
           <RichTextPlugin
             contentEditable={<_ContentEditable testid="lexical-editor" />}
             placeholder={<Placeholder>Input something...</Placeholder>}
-            initialEditorState={() =>
-              initialEditorStateFromProsemirrorDoc($getRoot(), PROSEMIRROR_DOCUMENT)
-            }
           />
           <LinkPlugin />
           <CodeHighlightPlugin />

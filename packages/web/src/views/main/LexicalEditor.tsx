@@ -106,6 +106,7 @@ export default function LexicalEditor(props: LexicalEditorProps) {
       onError: e => {
         throw e
       },
+      editorState: props.defaultValue,
     }),
     [props.readOnly]
   )
@@ -276,7 +277,6 @@ export default function LexicalEditor(props: LexicalEditorProps) {
         <RichTextPlugin
           contentEditable={<_ContentEditable testid="lexical-editor" />}
           placeholder={<Placeholder>Input something...</Placeholder>}
-          initialEditorState={props.defaultValue}
         />
         {props.onChange && <OnChangePlugin onChange={props.onChange} />}
         <AutoLinkPlugin matchers={autoLinkMatchers} />
