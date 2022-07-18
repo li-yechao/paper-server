@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.1.0-alpha.4](https://github.com/li-yechao/paper/compare/@paper/web@1.1.0-alpha.3...@paper/web@1.1.0-alpha.4) (2022-07-18)
+
+### Features
+
+- save aside collapsed state ([0cbeac6](https://github.com/li-yechao/paper/commit/0cbeac6b65743bab98e5f0f1570b93f407c04ca3))
+
 # [1.1.0-alpha.3](https://github.com/li-yechao/paper/compare/@paper/web@1.1.0-alpha.2...@paper/web@1.1.0-alpha.3) (2022-07-18)
 
 ### Features
