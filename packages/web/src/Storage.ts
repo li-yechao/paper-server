@@ -39,4 +39,26 @@ export default class Storage {
       localStorage.removeItem(this.TOKEN_KEY)
     }
   }
+
+  private static ASIDE_COLLAPSED = 'PAPER_ASIDE_COLLAPSED'
+  private static _asideCollapsed: boolean | null = null
+  static get asideCollapsed(): boolean | null {
+    if (this._asideCollapsed === null) {
+      try {
+        const v = JSON.parse(localStorage.getItem(this.ASIDE_COLLAPSED) || '')
+        if (typeof v === 'boolean') {
+          this._asideCollapsed = v
+        }
+      } catch {}
+    }
+    return this._asideCollapsed
+  }
+  static set asideCollapsed(v: boolean | null) {
+    this._asideCollapsed = v
+    if (typeof v === 'boolean') {
+      localStorage.setItem(this.ASIDE_COLLAPSED, JSON.stringify(v))
+    } else {
+      localStorage.removeItem(this.ASIDE_COLLAPSED)
+    }
+  }
 }

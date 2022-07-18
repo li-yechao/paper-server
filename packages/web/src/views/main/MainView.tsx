@@ -22,6 +22,7 @@ import { useToggle } from 'react-use'
 import { useCurrentUser } from '../../apollo/viewer'
 import { HeaderAction, useHeaderActionsCtrl } from '../../components/AppBar'
 import ErrorBoundary from '../../components/ErrorBoundary'
+import Storage from '../../Storage'
 import { ErrorViewLazy, NotFoundViewLazy } from '../error'
 import CreateButton from './CreateButton'
 
@@ -34,10 +35,20 @@ export default function MainView() {
   const user = useCurrentUser()
 
   const isSmallScreen = useIsSmallScreen()
-  const [collapse, toggleCollapse] = useToggle(isSmallScreen)
+  const [collapsed, toggleCollapsed] = useToggle(
+    typeof Storage.asideCollapsed === 'boolean' ? Storage.asideCollapsed : isSmallScreen
+  )
 
   useEffect(() => {
-    toggleCollapse(isSmallScreen)
+    if (!isSmallScreen) {
+      Storage.asideCollapsed = collapsed
+    }
+  }, [isSmallScreen, collapsed])
+
+  useEffect(() => {
+    if (isSmallScreen) {
+      toggleCollapsed(isSmallScreen)
+    }
   }, [isSmallScreen])
 
   const headerActionsCtl = useHeaderActionsCtrl()
@@ -51,7 +62,7 @@ export default function MainView() {
         children: <MenuOutlined />,
         type: 'link',
         shape: 'circle',
-        onClick: toggleCollapse,
+        onClick: toggleCollapsed,
       },
     }
 
@@ -62,10 +73,10 @@ export default function MainView() {
 
   if (user?.id === userId) {
     return (
-      <_Container className={cx(collapse && 'collapse', isSmallScreen && 'small-screen')}>
+      <_Container className={cx(collapsed && 'collapse', isSmallScreen && 'small-screen')}>
         <CreateObjectAction />
 
-        <aside onClick={isSmallScreen ? toggleCollapse : undefined}>
+        <aside onClick={isSmallScreen ? toggleCollapsed : undefined}>
           <Routes>
             <Route index element={<ObjectListLazy />} />
             <Route path=":objectId/*" element={<ObjectListLazy />} />
