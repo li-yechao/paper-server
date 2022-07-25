@@ -45,6 +45,10 @@ export default function ObjectEditor() {
     throw new Error('Missing required params `objectId`')
   }
 
+  useEffect(() => {
+    window.scrollTo({ top: 0 })
+  }, [objectId])
+
   const object = useObject({ variables: { userId, objectId }, fetchPolicy: 'cache-and-network' })
 
   if (object.error) {
