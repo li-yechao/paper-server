@@ -57,12 +57,17 @@ const _Header = styled.header`
   right: 0;
   width: 100%;
   height: 48px;
-  border-bottom: 1px solid #efefef;
   padding: 0 16px;
   display: flex;
   align-items: center;
-  background-color: #ffffff;
   z-index: 100;
+  background-color: #ffffff;
+  border-bottom: 1px solid #efefef;
+
+  @media (prefers-color-scheme: dark) {
+    background-color: #202124 !important;
+    border-color: #9aa0a6;
+  }
 `
 
 const _Spacing = styled.div`
@@ -91,9 +96,9 @@ const AccountButton = () => {
     }
 
     return (
-      <Button type="link" onClick={() => navigate('/auth')}>
+      <_Button type="link" onClick={() => navigate('/auth')}>
         Login
-      </Button>
+      </_Button>
     )
   }
 
@@ -107,9 +112,21 @@ const AccountButton = () => {
 
   return (
     <Dropdown overlay={menu} trigger={['click']} arrow>
-      <Button shape="circle">
+      <_Button shape="circle">
         <UserOutlined />
-      </Button>
+      </_Button>
     </Dropdown>
   )
 }
+
+const _Button = styled(Button)`
+  @media (prefers-color-scheme: dark) {
+    background-color: #202124;
+    border-color: #9aa0a6;
+    color: #bdc1c6;
+
+    &:hover {
+      background: rgba(232, 234, 237, 0.08);
+    }
+  }
+`

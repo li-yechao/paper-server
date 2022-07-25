@@ -168,6 +168,11 @@ const _Container = styled.div`
     width: 200px;
     border-right: 1px solid #efefef;
     background-color: #ffffff;
+
+    @media (prefers-color-scheme: dark) {
+      background-color: #202124;
+      border-color: #9aa0a6;
+    }
   }
 
   @media (min-width: 1000px) {

@@ -13,6 +13,7 @@
 // limitations under the License.
 
 import { ApolloProvider } from '@apollo/client'
+import { css, Global } from '@emotion/react'
 import { ConfigProvider } from 'antd'
 import enUS from 'antd/lib/locale/en_US'
 import { Suspense, useMemo } from 'react'
@@ -31,6 +32,27 @@ export default function App() {
 
   return (
     <ConfigProvider locale={enUS}>
+      <Global
+        styles={css`
+          @media (prefers-color-scheme: dark) {
+            body {
+              background-color: #202124;
+              color: #bdc1c6;
+
+              /* overwrite antd styles */
+              h1,
+              h2,
+              h3,
+              h4,
+              h5,
+              h6 {
+                color: #bdc1c6;
+              }
+            }
+          }
+        `}
+      />
+
       <RecoilRoot>
         <ApolloProvider client={apolloClient}>
           <BrowserRouter>

@@ -134,6 +134,10 @@ const _Item = styled.div`
       background-color: rgba(0, 0, 0, 0.05);
       padding-right: 0;
 
+      @media (prefers-color-scheme: dark) {
+        background-color: rgba(232, 234, 237, 0.08);
+      }
+
       > .hover_visible {
         display: block;
       }
@@ -143,6 +147,10 @@ const _Item = styled.div`
   &.selected {
     background-color: rgba(0, 0, 0, 0.1);
     padding-right: 0;
+
+    @media (prefers-color-scheme: dark) {
+      background-color: rgba(232, 234, 237, 0.08);
+    }
 
     > .hover_visible {
       display: block;

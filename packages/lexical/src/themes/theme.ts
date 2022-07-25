@@ -186,10 +186,18 @@ const theme: EditorThemeClasses = {
     min-width: 75px;
     vertical-align: top;
     text-align: start;
+
+    @media (prefers-color-scheme: dark) {
+      border-color: #9aa0a6;
+    }
   `,
   tableCellHeader: css`
     background-color: #f2f3f5;
     text-align: start;
+
+    @media (prefers-color-scheme: dark) {
+      background: rgba(232, 234, 237, 0.08);
+    }
   `,
   code: css`
     background-color: rgb(240, 242, 245);
