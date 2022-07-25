@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.0.0-alpha.16](https://github.com/li-yechao/paper/compare/@paper/lexical@1.0.0-alpha.15...@paper/lexical@1.0.0-alpha.16) (2022-07-26)
+
+### Features
+
+- support dark mode ([ed575f5](https://github.com/li-yechao/paper/commit/ed575f5664ac23b6823a7c7b19b5000319a183b8))
+
 # [1.0.0-alpha.15](https://github.com/li-yechao/paper/compare/@paper/lexical@1.0.0-alpha.14...@paper/lexical@1.0.0-alpha.15) (2022-07-18)
 
 ### Features
