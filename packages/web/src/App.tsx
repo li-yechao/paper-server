@@ -83,7 +83,7 @@ const AppRoutes = () => {
     <Routes>
       <Route index element={<Index />} />
       <Route path="/auth" element={<AuthViewLazy />} />
-      <Route path="/auth/github" element={<GithubAuthViewLazy />} />
+      <Route path="/auth/:type/github" element={<GithubAuthViewLazy />} />
       <Route path="/:userId/*" element={<MainViewLazy />} />
       <Route path="*" element={<NotFoundViewLazy />} />
     </Routes>
