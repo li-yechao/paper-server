@@ -32,10 +32,9 @@ import {
 } from '@lexical/table'
 import {
   $getSelection,
-  $isGridSelection,
   $isRangeSelection,
   $setSelection,
-  GridSelection,
+  DEPRECATED_$isGridSelection,
   LexicalEditor,
 } from 'lexical'
 import { useCallback, useEffect, useState } from 'react'
@@ -108,8 +107,8 @@ function TableActionMenu({ editor }: { editor: LexicalEditor }) {
         const tableNode = $getTableNodeFromLexicalNodeOrThrow(cellNode)
 
         let tableRowIndex
-        if ($isGridSelection(selection)) {
-          const selectionShape = (selection as GridSelection).getShape()
+        if (DEPRECATED_$isGridSelection(selection)) {
+          const selectionShape = selection.getShape()
           tableRowIndex = after ? selectionShape.toY : selectionShape.fromY
         } else {
           tableRowIndex = $getTableRowIndexFromTableCellNode(cellNode)
@@ -138,14 +137,16 @@ function TableActionMenu({ editor }: { editor: LexicalEditor }) {
 
         let tableColumnIndex
 
-        if ($isGridSelection(selection)) {
-          const selectionShape = (selection as GridSelection).getShape()
+        if (DEPRECATED_$isGridSelection(selection)) {
+          const selectionShape = selection.getShape()
           tableColumnIndex = after ? selectionShape.toX : selectionShape.fromX
         } else {
           tableColumnIndex = $getTableColumnIndexFromTableCellNode(cellNode)
         }
 
-        $insertTableColumn(tableNode, tableColumnIndex, after, 1)
+        const grid = $getElementGridForTableNode(editor, tableNode)
+
+        $insertTableColumn(tableNode, tableColumnIndex, after, 1, grid)
 
         setVisible(false)
       })
