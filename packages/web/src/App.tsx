@@ -94,7 +94,7 @@ const Index = () => {
   const viewer = useViewer()
 
   if (viewer.error) {
-    return <Navigate to="/auth" replace />
+    throw viewer.error
   } else if (viewer.data) {
     return <Navigate to={`/${viewer.data.viewer.id}`} replace />
   }
