@@ -14,13 +14,12 @@
 
 import styled from '@emotion/styled'
 import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { useSearchParam } from 'react-use'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import auth from '../../apollo/auth'
 import { useSignIn } from '../../state/account'
 
 export default function GithubAuthView() {
-  const code = useSearchParam('code')
+  const code = useSearchParams()[0].get('code')
   const signIn = useSignIn()
   const navigate = useNavigate()
   const [error, setError] = useState<Error>()

@@ -54,22 +54,25 @@ export default function MainView() {
   const headerActionsCtl = useHeaderActionsCtrl()
 
   useEffect(() => {
-    const action: HeaderAction = {
-      key: 'ASIDE_VIEW_TRIGGER',
-      placement: 'left',
-      component: Button,
-      props: {
-        children: <MenuOutlined />,
-        type: 'link',
-        shape: 'circle',
-        onClick: toggleCollapsed,
-      },
+    if (user) {
+      const action: HeaderAction = {
+        key: 'ASIDE_VIEW_TRIGGER',
+        placement: 'left',
+        component: Button,
+        props: {
+          children: <MenuOutlined />,
+          type: 'link',
+          shape: 'circle',
+          onClick: toggleCollapsed,
+        },
+      }
+
+      headerActionsCtl.append(action)
+
+      return () => headerActionsCtl.remove(action)
     }
-
-    headerActionsCtl.append(action)
-
-    return () => headerActionsCtl.remove(action)
-  }, [])
+    return
+  }, [user])
 
   if (user?.id === userId) {
     return (

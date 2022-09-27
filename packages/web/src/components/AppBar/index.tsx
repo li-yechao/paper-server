@@ -91,7 +91,7 @@ const AccountButton = () => {
   const signOut = useSignOut()
 
   if (!viewer.data?.viewer) {
-    if (location.pathname.startsWith('/auth')) {
+    if (viewer.loading || location.pathname.startsWith('/auth')) {
       return null
     }
 
