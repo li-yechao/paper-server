@@ -31,7 +31,7 @@ import {
   $isQuoteNode,
   HeadingNode,
 } from '@lexical/rich-text'
-import { $isAtNodeEnd, $wrapLeafNodesInElements } from '@lexical/selection'
+import { $isAtNodeEnd, $wrapNodes } from '@lexical/selection'
 import {
   $createParagraphNode,
   $getSelection,
@@ -515,14 +515,14 @@ export function ToggleBlockButton({ type }: { type: 'h1' | 'h2' | 'h3' | 'quote'
 
       if ($isRangeSelection(selection)) {
         if (active) {
-          $wrapLeafNodesInElements(selection, () => $createParagraphNode())
+          $wrapNodes(selection, () => $createParagraphNode())
         } else {
           if (type === 'h1' || type === 'h2' || type === 'h3') {
-            $wrapLeafNodesInElements(selection, () => $createHeadingNode(type) as any)
+            $wrapNodes(selection, () => $createHeadingNode(type) as any)
           } else if (type === 'quote') {
-            $wrapLeafNodesInElements(selection, () => $createQuoteNode() as any)
+            $wrapNodes(selection, () => $createQuoteNode() as any)
           } else if (type === 'ol' || type === 'ul') {
-            $wrapLeafNodesInElements(
+            $wrapNodes(
               selection,
               () => $createListItemNode(),
               $createListNode(type === 'ol' ? 'number' : 'bullet')
