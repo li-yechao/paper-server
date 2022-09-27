@@ -253,6 +253,7 @@ export default function LexicalEditor(props: LexicalEditorProps) {
       CHECK_LIST,
       ...TRANSFORMERS,
       {
+        dependencies: [EquationNode],
         export: exportEquation,
         importRegExp: /\$(\S+)\$/,
         regExp: /\$(.+)\$$/,
@@ -263,6 +264,7 @@ export default function LexicalEditor(props: LexicalEditorProps) {
         type: 'text-match',
       },
       {
+        dependencies: [EquationNode],
         export: exportEquation,
         regExp: /^\$\$\s/,
         replace: parentNode => {
