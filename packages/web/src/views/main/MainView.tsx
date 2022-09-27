@@ -19,7 +19,7 @@ import { Button, Spin } from 'antd'
 import { lazy, Suspense, useEffect, useMemo, useState } from 'react'
 import { Route, Routes, useParams } from 'react-router-dom'
 import { useToggle } from 'react-use'
-import { useCurrentUser } from '../../apollo/viewer'
+import { useViewer } from '../../apollo/viewer'
 import { HeaderAction, useHeaderActionsCtrl } from '../../components/AppBar'
 import ErrorBoundary from '../../components/ErrorBoundary'
 import Storage from '../../Storage'
@@ -32,7 +32,7 @@ export default function MainView() {
     throw new Error('Missing required params `userId`')
   }
 
-  const user = useCurrentUser()
+  const user = useViewer().data?.viewer
 
   const isSmallScreen = useIsSmallScreen()
   const [collapsed, toggleCollapsed] = useToggle(

@@ -32,7 +32,7 @@ import {
 } from './apollo'
 import LexicalEditor from './LexicalEditor'
 import { ImageNode } from '@paper/lexical/src/nodes/ImageNode'
-import { useCurrentUser } from '../../apollo/viewer'
+import { useViewer } from '../../apollo/viewer'
 
 const AUTO_SAVE_TIMEOUT = 3e3
 
@@ -74,7 +74,7 @@ const _Loading = styled.div`
 `
 
 const _ObjectEditor = ({ object }: { object: { id: string; userId: string; data?: string } }) => {
-  const user = useCurrentUser()
+  const user = useViewer().data?.viewer
   const [updateObject] = useUpdateObject()
   const [state, setState] = useState<EditorState>()
   const [savedState, setSavedState] = useState<EditorState>()
