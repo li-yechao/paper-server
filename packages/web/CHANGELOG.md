@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.1.0-alpha.8](https://github.com/li-yechao/paper/compare/@paper/web@1.1.0-alpha.7...@paper/web@1.1.0-alpha.8) (2022-09-27)
+
+### Bug Fixes
+
+- allow view object without auth ([df683fa](https://github.com/li-yechao/paper/commit/df683fa07857e3fbd90b69b669ca22299457a074))
+
 # [1.1.0-alpha.7](https://github.com/li-yechao/paper/compare/@paper/web@1.1.0-alpha.6...@paper/web@1.1.0-alpha.7) (2022-09-21)
 
 ### Bug Fixes

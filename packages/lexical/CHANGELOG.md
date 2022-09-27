@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.0.0-alpha.19](https://github.com/li-yechao/paper/compare/@paper/lexical@1.0.0-alpha.18...@paper/lexical@1.0.0-alpha.19) (2022-09-27)
+
+**Note:** Version bump only for package @paper/lexical
+
 # [1.0.0-alpha.18](https://github.com/li-yechao/paper/compare/@paper/lexical@1.0.0-alpha.17...@paper/lexical@1.0.0-alpha.18) (2022-09-21)
 
 **Note:** Version bump only for package @paper/lexical
