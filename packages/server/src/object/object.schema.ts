@@ -47,6 +47,10 @@ export class Object_ {
   @Field(() => GraphQLJSONObject, { nullable: true })
   @Prop({ type: mongoose.Schema.Types.Mixed })
   meta?: unknown
+
+  @Field(() => Boolean, { nullable: true })
+  @Prop({ type: Boolean })
+  public?: boolean
 }
 
 export const ObjectSchema = SchemaFactory.createForClass(Object_)

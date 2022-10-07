@@ -26,11 +26,14 @@ export class CreateObjectInput {
 
   @Field(() => ObjectDataEncoding, { nullable: true })
   encoding?: ObjectDataEncoding
+
+  @Field(() => Boolean, { nullable: true })
+  public?: boolean
 }
 
 @InputType()
 export class UpdateObjectInput extends PartialType(
-  PickType(CreateObjectInput, ['meta', 'data', 'encoding'])
+  PickType(CreateObjectInput, ['meta', 'data', 'encoding', 'public'])
 ) {}
 
 @InputType()

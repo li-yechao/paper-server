@@ -87,6 +87,7 @@ export class ObjectService {
       updatedAt: now,
       cid,
       meta: input.meta,
+      public: input.public,
     })
 
     await this.createHistory(object)
@@ -114,6 +115,7 @@ export class ObjectService {
           updatedAt: now,
           cid,
           meta: input.meta,
+          public: input.public,
         },
       },
       { new: true }

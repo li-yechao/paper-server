@@ -31,7 +31,8 @@ export class UserObjectResolver {
     @Args('after', { nullable: true }) after?: string,
     @Args('first', { type: () => Int, nullable: true }) first?: number,
     @Args('last', { type: () => Int, nullable: true }) last?: number,
-    @Args('orderBy', { nullable: true }) orderBy?: ObjectOrder
+    @Args('orderBy', { nullable: true }) orderBy?: ObjectOrder,
+    @Args('public', { type: () => Boolean, nullable: true }) isPublic?: boolean
   ): Promise<ObjectConnection> {
     return new ObjectConnection({
       before,
@@ -40,9 +41,19 @@ export class UserObjectResolver {
       last,
       orderBy,
       find: options =>
-        this.objectService.find({ userId: user.id, parentId: parentId || null, ...options }),
+        this.objectService.find({
+          ...options,
+          userId: user.id,
+          parentId: parentId || null,
+          filter: { ...options.filter, public: isPublic },
+        }),
       count: options =>
-        this.objectService.count({ userId: user.id, parentId: parentId || null, ...options }),
+        this.objectService.count({
+          ...options,
+          userId: user.id,
+          parentId: parentId || null,
+          filter: { ...options.filter, public: isPublic },
+        }),
     })
   }
 
