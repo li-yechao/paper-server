@@ -42,7 +42,7 @@ import { UserModule } from './user/user.module'
       subscriptions: {
         'graphql-ws': {
           onConnect: ({ connectionParams, extra }) => {
-            Object.assign(extra, connectionParams)
+            Object.assign(extra as any, connectionParams)
           },
         },
       },
