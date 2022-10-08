@@ -23,10 +23,12 @@ export interface ConnectionOptions<T> {
   after?: string
   first?: number
   last?: number
+  offset?: number
   orderBy?: { field: keyof T; direction: OrderDirection }
   find: (options: {
     filter?: mongoose.FilterQuery<T>
     sort?: { [key in keyof T | '_id']?: 1 | -1 }
+    offset?: number
     limit: number
   }) => Promise<T[]>
   count: (options: { filter?: mongoose.FilterQuery<T> }) => Promise<number>
@@ -100,6 +102,7 @@ export class Connection<T extends { id: string }> {
           sort: <{ [key in '_id' | keyof T]: 1 | -1 }>{
             [sort.field]: this.isLast ? (sort.direction === 1 ? -1 : 1) : sort.direction,
           },
+          offset: this.options.offset,
           limit: this.limit,
         })
 

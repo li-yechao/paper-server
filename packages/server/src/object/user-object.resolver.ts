@@ -29,6 +29,7 @@ export class UserObjectResolver {
     @Args('parentId', { nullable: true }) parentId?: string,
     @Args('before', { nullable: true }) before?: string,
     @Args('after', { nullable: true }) after?: string,
+    @Args('offset', { type: () => Int, nullable: true }) offset?: number,
     @Args('first', { type: () => Int, nullable: true }) first?: number,
     @Args('last', { type: () => Int, nullable: true }) last?: number,
     @Args('orderBy', { nullable: true }) orderBy?: ObjectOrder,
@@ -39,12 +40,14 @@ export class UserObjectResolver {
       after,
       first,
       last,
+      offset,
       orderBy,
       find: options =>
         this.objectService.find({
           ...options,
           userId: user.id,
           parentId: parentId || null,
+          offset,
           filter: { ...options.filter, public: isPublic },
         }),
       count: options =>

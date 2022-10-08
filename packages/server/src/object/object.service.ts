@@ -41,15 +41,18 @@ export class ObjectService {
     parentId,
     filter,
     sort,
+    offset,
     limit,
   }: {
     userId: string
     parentId?: string | null
     filter?: mongoose.FilterQuery<Omit<Object_, 'userId' | 'deletedAt'>>
     sort?: { [key in keyof Object_]?: 1 | -1 }
+    offset?: number
     limit?: number
   }): Promise<Object_[]> {
     return this.objectModel.find({ userId, parentId, deletedAt: null, ...filter }, null, {
+      skip: offset,
       sort,
       limit,
     })
