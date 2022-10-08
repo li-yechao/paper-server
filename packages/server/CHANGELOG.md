@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.1.0-alpha.3](https://github.com/li-yechao/paper/compare/@paper/server@1.1.0-alpha.2...@paper/server@1.1.0-alpha.3) (2022-10-08)
+
+### Bug Fixes
+
+- type error ([5ae58f9](https://github.com/li-yechao/paper/commit/5ae58f90051fc2f189986e35754cad8676319eee))
+
+### Features
+
+- add public tag ([9008e76](https://github.com/li-yechao/paper/commit/9008e76f554abfffccc40013c86db9c8b62d8483))
+- support offset pagination ([be8b0c2](https://github.com/li-yechao/paper/commit/be8b0c2a5c2f3dc92374a469b3511a90ceb684a4))
+
 # [1.1.0-alpha.2](https://github.com/li-yechao/paper/compare/@paper/server@1.1.0-alpha.1...@paper/server@1.1.0-alpha.2) (2022-07-18)
 
 **Note:** Version bump only for package @paper/server
