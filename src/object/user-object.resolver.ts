@@ -13,7 +13,16 @@
 // limitations under the License.
 
 import { ForbiddenException } from '@nestjs/common'
-import { Args, Field, Int, ObjectType, Parent, ResolveField, Resolver } from '@nestjs/graphql'
+import {
+  Args,
+  Field,
+  Int,
+  ObjectType,
+  Parent,
+  Query,
+  ResolveField,
+  Resolver,
+} from '@nestjs/graphql'
 import { CurrentUser, CurrentUserOptional } from '../auth/auth.guard'
 import { User } from '../user/user.schema'
 import { Connection, ConnectionOptions, PageInfo } from '../utils/Connection'
@@ -24,6 +33,36 @@ import { ObjectService } from './object.service'
 @Resolver(() => User)
 export class UserObjectResolver {
   constructor(private readonly objectService: ObjectService) {}
+
+  @Query(() => ObjectConnection, { name: 'objects' })
+  async publicObjects(
+    @Args('before', { nullable: true }) before?: string,
+    @Args('after', { nullable: true }) after?: string,
+    @Args('offset', { type: () => Int, nullable: true }) offset?: number,
+    @Args('first', { type: () => Int, nullable: true }) first?: number,
+    @Args('last', { type: () => Int, nullable: true }) last?: number,
+    @Args('orderBy', { nullable: true }) orderBy?: ObjectOrder
+  ): Promise<ObjectConnection> {
+    return new ObjectConnection({
+      before,
+      after,
+      first,
+      last,
+      offset,
+      orderBy,
+      find: options =>
+        this.objectService.find({
+          ...options,
+          offset,
+          filter: { ...options.filter, public: true },
+        }),
+      count: options =>
+        this.objectService.count({
+          ...options,
+          filter: { ...options.filter, public: true },
+        }),
+    })
+  }
 
   @ResolveField(() => ObjectConnection)
   async objects(

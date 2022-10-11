@@ -44,7 +44,7 @@ export class ObjectService {
     offset,
     limit,
   }: {
-    userId: string
+    userId?: string
     parentId?: string | null
     filter?: mongoose.FilterQuery<Omit<Object_, 'userId' | 'deletedAt'>>
     sort?: { [key in keyof Object_]?: 1 | -1 }
@@ -63,7 +63,7 @@ export class ObjectService {
     parentId,
     filter,
   }: {
-    userId: string
+    userId?: string
     parentId?: string | null
     filter?: mongoose.FilterQuery<Omit<Object_, 'userId' | 'deletedAt'>>
   }): Promise<number> {
