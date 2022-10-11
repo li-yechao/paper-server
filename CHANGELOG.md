@@ -1,3 +1,9 @@
+## [1.1.0-alpha.5](https://github.com/li-yechao/paper-server/compare/v1.1.0-alpha.4...v1.1.0-alpha.5) (2022-10-11)
+
+### Features
+
+- only allow query public object if not the author ([ba22cea](https://github.com/li-yechao/paper-server/commit/ba22cea13a53b3ccc1a777219acbe0b4b76f2c1d))
+
 ## 1.1.0-alpha.4 (2022-10-09)
 
 ### ⚠ BREAKING CHANGES
