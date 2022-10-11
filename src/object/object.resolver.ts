@@ -16,6 +16,8 @@ import { ForbiddenException } from '@nestjs/common'
 import { Args, Int, Mutation, Parent, ResolveField, Resolver } from '@nestjs/graphql'
 import { CurrentUser, CurrentUserOptional } from '../auth/auth.guard'
 import { Config } from '../config'
+import { User } from '../user/user.schema'
+import { UserService } from '../user/user.service'
 import { CreateObjectInput, ObjectOrder, UpdateObjectInput } from './object.input'
 import { Object_ } from './object.schema'
 import { ObjectService } from './object.service'
@@ -23,7 +25,11 @@ import { ObjectConnection } from './user-object.resolver'
 
 @Resolver(() => Object_)
 export class ObjectResolver {
-  constructor(private readonly config: Config, private readonly objectService: ObjectService) {}
+  constructor(
+    private readonly config: Config,
+    private readonly objectService: ObjectService,
+    private readonly userService: UserService
+  ) {}
 
   @ResolveField(() => String, { nullable: true })
   async data(
@@ -104,5 +110,10 @@ export class ObjectResolver {
       throw new ForbiddenException('Forbidden')
     }
     return `${this.config.ipfs.uri}/${object.cid}`
+  }
+
+  @ResolveField(() => User)
+  async user(@Parent() object: Object_): Promise<User> {
+    return this.userService.findOne({ userId: object.userId })
   }
 }
