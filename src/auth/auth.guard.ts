@@ -13,10 +13,10 @@
 // limitations under the License.
 
 import {
-  CanActivate,
   createParamDecorator,
   ExecutionContext,
   Injectable,
+  PipeTransform,
   UnauthorizedException,
 } from '@nestjs/common'
 import { GqlExecutionContext } from '@nestjs/graphql'
@@ -27,15 +27,15 @@ export interface CurrentUser {
   id: string
 }
 
+const HttpHeaderAuthorization = createParamDecorator((_: unknown, context: ExecutionContext) => {
+  return GqlExecutionContext.create(context).getContext<GraphqlContext>().authorization
+})
+
 @Injectable()
-export class AuthGuard implements CanActivate {
+export class ParseTokenPipe implements PipeTransform {
   constructor(private readonly config: Config) {}
 
-  async canActivate(context: ExecutionContext) {
-    const ctx = GqlExecutionContext.create(context)
-    const gqlCtx = ctx.getContext<GraphqlContext>()
-    const { authorization } = gqlCtx
-
+  async transform(authorization: any) {
     if (!authorization) {
       throw new UnauthorizedException('Missing required header authorization')
     }
@@ -44,16 +44,22 @@ export class AuthGuard implements CanActivate {
       throw new UnauthorizedException('Invalid token type')
     }
 
-    gqlCtx.user = this.config.accessToken.verify(authorization)
-
-    return true
+    return this.config.accessToken.verify(authorization)
   }
 }
 
-export const CurrentUser = createParamDecorator((_: unknown, context: ExecutionContext) => {
-  const ctx = GqlExecutionContext.create(context).getContext<GraphqlContext>()
-  if (!ctx.user?.id) {
-    throw new UnauthorizedException('The user is not in context')
+export const CurrentUser = () => HttpHeaderAuthorization(undefined, ParseTokenPipe)
+
+@Injectable()
+export class ParseTokenPipeOptional implements PipeTransform {
+  constructor(private readonly config: Config) {}
+
+  async transform(authorization: any) {
+    if (!authorization) {
+      return null
+    }
+    return this.config.accessToken.verify(authorization)
   }
-  return ctx.user
-})
+}
+
+export const CurrentUserOptional = () => HttpHeaderAuthorization(undefined, ParseTokenPipeOptional)

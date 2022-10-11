@@ -12,30 +12,29 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import { Inject, UseGuards } from '@nestjs/common'
-import { Args, Int, Mutation, Parent, ResolveField, Resolver, Subscription } from '@nestjs/graphql'
-import { PubSub } from 'graphql-subscriptions'
-import { AuthGuard, CurrentUser } from '../auth/auth.guard'
+import { ForbiddenException } from '@nestjs/common'
+import { Args, Int, Mutation, Parent, ResolveField, Resolver } from '@nestjs/graphql'
+import { CurrentUser, CurrentUserOptional } from '../auth/auth.guard'
 import { Config } from '../config'
-import { GraphqlContext } from '../GraphqlContext'
 import { CreateObjectInput, ObjectOrder, UpdateObjectInput } from './object.input'
 import { Object_ } from './object.schema'
 import { ObjectService } from './object.service'
 import { ObjectConnection } from './user-object.resolver'
 
 @Resolver(() => Object_)
-@UseGuards(AuthGuard)
 export class ObjectResolver {
-  constructor(
-    @Inject('PUB_SUB') private readonly pubSub: PubSub,
-    private readonly config: Config,
-    private readonly objectService: ObjectService
-  ) {}
+  constructor(private readonly config: Config, private readonly objectService: ObjectService) {}
 
   @ResolveField(() => String, { nullable: true })
-  async data(@Parent() object: Object_): Promise<string | null> {
+  async data(
+    @CurrentUserOptional() currentUser: CurrentUser | null,
+    @Parent() object: Object_
+  ): Promise<string | null> {
     if (!object.cid) {
       return null
+    }
+    if (!object.public && object.userId !== currentUser?.id) {
+      throw new ForbiddenException('Forbidden')
     }
     return this.objectService.objectData({ cid: object.cid })
   }
@@ -46,9 +45,7 @@ export class ObjectResolver {
     @Args('input') input: CreateObjectInput,
     @Args('parentId', { nullable: true }) parentId?: string
   ): Promise<Object_> {
-    const object = await this.objectService.create({ parentId, userId: user.id, input })
-    this.pubSub.publish('objectCreated', { objectCreated: object })
-    return object
+    return this.objectService.create({ parentId, userId: user.id, input })
   }
 
   @Mutation(() => Object_)
@@ -70,6 +67,7 @@ export class ObjectResolver {
 
   @ResolveField(() => ObjectConnection)
   async objects(
+    @CurrentUserOptional() currentUser: CurrentUser | null,
     @Parent() object: Object_,
     @Args('before', { nullable: true }) before?: string,
     @Args('after', { nullable: true }) after?: string,
@@ -77,6 +75,10 @@ export class ObjectResolver {
     @Args('last', { type: () => Int, nullable: true }) last?: number,
     @Args('orderBy', { nullable: true }) orderBy?: ObjectOrder
   ): Promise<ObjectConnection> {
+    if (!object.public && object.userId !== currentUser?.id) {
+      throw new ForbiddenException('Forbidden')
+    }
+
     return new ObjectConnection({
       before,
       after,
@@ -91,19 +93,16 @@ export class ObjectResolver {
   }
 
   @ResolveField(() => String, { nullable: true })
-  async uri(@Parent() object: Object_): Promise<string | undefined> {
+  async uri(
+    @CurrentUserOptional() currentUser: CurrentUser | null,
+    @Parent() object: Object_
+  ): Promise<string | undefined> {
     if (!object.cid) {
       return
     }
+    if (!object.public && object.userId !== currentUser?.id) {
+      throw new ForbiddenException('Forbidden')
+    }
     return `${this.config.ipfs.uri}/${object.cid}`
-  }
-
-  @Subscription(() => Object_, {
-    filter: (payload: { objectCreated?: Object_ }, _, context: GraphqlContext) => {
-      return !!context.user && payload.objectCreated?.userId === context.user?.id
-    },
-  })
-  objectCreated() {
-    return this.pubSub.asyncIterator('objectCreated')
   }
 }

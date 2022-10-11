@@ -17,7 +17,6 @@ import { Global, Module } from '@nestjs/common'
 import { ConfigModule, ConfigService } from '@nestjs/config'
 import { GraphQLModule } from '@nestjs/graphql'
 import { MongooseModule } from '@nestjs/mongoose'
-import { PubSub } from 'graphql-subscriptions'
 import { AuthModule } from './auth/auth.module'
 import { Config } from './config'
 import { ObjectModule } from './object/object.module'
@@ -39,13 +38,6 @@ import { UserModule } from './user/user.module'
       driver: ApolloDriver,
       autoSchemaFile: true,
       cors: false,
-      subscriptions: {
-        'graphql-ws': {
-          onConnect: ({ connectionParams, extra }) => {
-            Object.assign(extra as any, connectionParams)
-          },
-        },
-      },
       context: ({ extra, req }) => {
         return {
           authorization: req?.get('authorization') ?? extra?.authorization,
@@ -56,7 +48,6 @@ import { UserModule } from './user/user.module'
     UserModule,
     ObjectModule,
   ],
-  providers: [Config, { provide: 'PUB_SUB', useValue: new PubSub() }],
-  exports: ['PUB_SUB'],
+  providers: [Config],
 })
 export class AppModule {}

@@ -14,8 +14,4 @@
 
 export interface GraphqlContext {
   authorization?: string
-  user?: {
-    id: string
-    [key: string]: any
-  }
 }

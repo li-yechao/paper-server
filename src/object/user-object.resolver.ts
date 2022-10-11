@@ -12,7 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import { ForbiddenException } from '@nestjs/common'
 import { Args, Field, Int, ObjectType, Parent, ResolveField, Resolver } from '@nestjs/graphql'
+import { CurrentUser, CurrentUserOptional } from '../auth/auth.guard'
 import { User } from '../user/user.schema'
 import { Connection, ConnectionOptions, PageInfo } from '../utils/Connection'
 import { ObjectOrder, ObjectOrderField } from './object.input'
@@ -26,6 +28,7 @@ export class UserObjectResolver {
   @ResolveField(() => ObjectConnection)
   async objects(
     @Parent() user: User,
+    @CurrentUserOptional() currentUser: CurrentUser | null,
     @Args('parentId', { nullable: true }) parentId?: string,
     @Args('before', { nullable: true }) before?: string,
     @Args('after', { nullable: true }) after?: string,
@@ -35,6 +38,10 @@ export class UserObjectResolver {
     @Args('orderBy', { nullable: true }) orderBy?: ObjectOrder,
     @Args('public', { type: () => Boolean, nullable: true }) isPublic?: boolean
   ): Promise<ObjectConnection> {
+    if (currentUser?.id !== user.id) {
+      isPublic = true
+    }
+
     return new ObjectConnection({
       before,
       after,
@@ -61,8 +68,18 @@ export class UserObjectResolver {
   }
 
   @ResolveField(() => Object_)
-  async object(@Parent() user: User, @Args('objectId') objectId: string): Promise<Object_> {
-    return this.objectService.findOne({ objectId, userId: user.id })
+  async object(
+    @CurrentUserOptional() currentUser: CurrentUser | null,
+    @Parent() user: User,
+    @Args('objectId') objectId: string
+  ): Promise<Object_> {
+    const object = await this.objectService.findOne({ objectId, userId: user.id })
+
+    if (!object.public && object.userId !== currentUser?.id) {
+      throw new ForbiddenException('Forbidden')
+    }
+
+    return object
   }
 }
 
