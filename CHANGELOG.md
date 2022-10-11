@@ -1,3 +1,10 @@
+## [1.1.0-alpha.6](https://github.com/li-yechao/paper-server/compare/v1.1.0-alpha.5...v1.1.0-alpha.6) (2022-10-11)
+
+### Features
+
+- allow query object's author ([85153c4](https://github.com/li-yechao/paper-server/commit/85153c434521d5ae56479ec2b409760347bf610a))
+- support query public objects ([d26b94d](https://github.com/li-yechao/paper-server/commit/d26b94d31ae25a3492bb7aa4460f30b0ce122a12))
+
 ## [1.1.0-alpha.5](https://github.com/li-yechao/paper-server/compare/v1.1.0-alpha.4...v1.1.0-alpha.5) (2022-10-11)
 
 ### Features
